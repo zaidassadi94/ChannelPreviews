@@ -14,7 +14,7 @@ Gmail — from the **Channel** dropdown inside the app.
 
 | Channel | Folder | Highlights |
 |---|---|---|
-| **Gmail** | [`gmail-preview-tool/`](gmail-preview-tool/) | Mobile (iPhone) + desktop-web skins · inbox list & open-email views · Promotions annotations · light/dark |
+| **Gmail** | [`gmail-preview-tool/`](gmail-preview-tool/) | Same Channel Studio shell · Industry/Sub dropdowns · 6 email templates per vertical (promo + transactional) · mobile + desktop skins · inbox & open-email · Promotions annotations |
 | **SMS** | [`messaging-preview-tool/?channel=sms`](messaging-preview-tool/index.html) | iOS Messages & Android (Google Messages) · text + MMS image · GSM/Unicode segment counter |
 | **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
 | **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents · light/dark |

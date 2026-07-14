@@ -8,25 +8,19 @@
   /* ---------- Reset / base ---------- */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f0f2f5;
-    --panel: #ffffff;
-    --panel-2: #f7f8fa;
-    --border: #e2e5ea;
-    --text: #1f2328;
-    --muted: #6b7280;
-    --accent: #1a73e8;
-    --accent-weak: #e8f0fe;
-    --radius: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 6px 22px rgba(0,0,0,.06);
-    /* Gmail palette */
-    --gm-red: #ea4335;
-    --gm-blue: #1a73e8;
-    --gm-green: #34a853;
-    --gm-yellow: #fbbc04;
+    --bg:#f4f5f8; --panel:#ffffff; --panel-2:#f7f8fb; --border:#e9eaf0; --line:#e9eaf0; --line-2:#eef0f4;
+    --text:#0c0e14; --ink-2:#3a3f4c; --muted:#7a8194; --muted-2:#9aa0b0;
+    --accent:#635bff; --accent-ink:#4b45d6; --accent-weak:#eeecff; --ring:rgba(99,91,255,.16);
+    --radius:12px;
+    --shadow:0 4px 14px rgba(16,18,30,.07), 0 1px 3px rgba(16,18,30,.05);
+    --shadow-sm:0 1px 2px rgba(16,18,30,.05);
+    --font:'Inter',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    /* Gmail palette (preview only) */
+    --gm-red:#ea4335; --gm-blue:#1a73e8; --gm-green:#34a853; --gm-yellow:#fbbc04;
   }
   html, body { height: 100%; }
   body {
-    font-family: 'Google Sans Text', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font);
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
@@ -50,8 +44,25 @@
     padding: 16px 20px; display: flex; align-items: center; gap: 10px;
   }
   .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -.2px; }
-  .brand .dot { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg,#ea4335,#1a73e8); display:flex; align-items:center; justify-content:center; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg,#635bff,#8b5cf6 55%,#22c1c3); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(99,91,255,.35); }
+  .brand .mark svg{ width:17px; height:17px; }
   .brand small { display:block; font-weight: 400; color: var(--muted); font-size: 11px; }
+  .ctx{ padding:16px 20px 6px; display:grid; gap:11px; }
+  .sel-wrap{ position:relative; } .sel-wrap.hide{ display:none; }
+  .sel-wrap > label{ display:block; font-size:10.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px; }
+  select.sel{ -webkit-appearance:none; appearance:none; width:100%; padding:11px 34px 11px 13px; font-family:inherit; font-size:13.5px; font-weight:550; color:var(--text); background:var(--panel-2); border:1px solid var(--border); border-radius:9px; cursor:pointer; outline:none; transition:.15s; letter-spacing:-.1px; }
+  select.sel:hover{ border-color:#d7d9e3; } select.sel:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+  .sel-wrap::after{ content:""; position:absolute; right:14px; bottom:15px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none; }
+  .divider{ height:1px; background:var(--border); }
+  .tpl-grid{ display:grid; gap:8px; }
+  .tpl{ border:1px solid var(--border); background:var(--panel); border-radius:9px; padding:11px 12px; cursor:pointer; text-align:left; font-family:inherit; transition:.14s; display:flex; align-items:flex-start; gap:10px; }
+  .tpl:hover{ border-color:#cfd2df; box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+  .tpl .ti{ width:30px; height:30px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--accent-weak); }
+  .tpl .tc{ flex:1; min-width:0; }
+  .tpl .tt{ font-size:12.5px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; letter-spacing:-.1px; }
+  .tpl .tt .kind{ font-size:9px; font-weight:700; padding:1.5px 5px; border-radius:5px; letter-spacing:.02em; }
+  .tpl .tt .Promotional{ color:#a15c00; background:#fff2d6; } .tpl .tt .Transactional{ color:#0b62c4; background:#e3f0ff; }
+  .tpl .td{ font-size:11px; color:var(--muted); line-height:1.4; margin-top:2px; }
 
   .group { border-bottom: 8px solid var(--panel-2); }
   .group > .group-head {
@@ -326,14 +337,30 @@
   <!-- ============ EDITOR ============ -->
   <aside class="editor" id="editor">
     <div class="brand">
-      <div class="dot">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 6l10 7L22 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><rect x="2" y="5" width="20" height="14" rx="2" stroke="#fff" stroke-width="2"/></svg>
-      </div>
-      <div>
-        <h1>Gmail Preview Studio</h1>
-        <small>Mock inbox &amp; email creatives for decks</small>
-      </div>
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" opacity=".95"/><circle cx="9" cy="10.5" r="1.3" fill="#635bff"/><circle cx="13" cy="10.5" r="1.3" fill="#635bff"/><circle cx="17" cy="10.5" r="1.3" fill="#635bff"/></svg></div>
+      <div><h1>Channel Studio</h1><small>Gmail · SMS · RCS · WhatsApp mockups</small></div>
     </div>
+
+    <div class="ctx">
+      <div class="sel-wrap"><label>Channel</label>
+        <select class="sel" id="selChannel">
+          <option value="gmail" selected>Gmail</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="rcs">RCS</option>
+          <option value="sms">SMS</option>
+        </select>
+      </div>
+      <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
+      <div class="sel-wrap" id="subWrap"><label>Sub-industry</label><select class="sel" id="selSub"></select></div>
+    </div>
+    <div class="divider"></div>
+    <section class="group" data-group>
+      <button class="group-head" data-head>Templates <span class="chev">▾</span></button>
+      <div class="group-body">
+        <div class="hint">Ready-made, industry-specific email mockups — promotional &amp; transactional. Pick one, then tweak.</div>
+        <div class="tpl-grid" id="tplGrid"></div>
+      </div>
+    </section>
 
     <!-- Sender -->
     <section class="group" data-group>
@@ -439,12 +466,6 @@
   <!-- ============ STAGE ============ -->
   <div class="stage-wrap">
     <div class="topbar">
-      <select class="chan-sel" id="chanNav" title="Channel">
-        <option value="gmail" selected>Gmail</option>
-        <option value="whatsapp">WhatsApp</option>
-        <option value="rcs">RCS</option>
-        <option value="sms">SMS</option>
-      </select>
       <div class="seg2" id="skinSeg">
         <button data-skin="mobile" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>Mobile</button>
         <button data-skin="desktop"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Desktop</button>
@@ -506,6 +527,73 @@
     </div>
   </div>`;
   state.htmlBody = SAMPLE_HTML;
+  state.industry='ecom'; state.sub='fashion';
+
+  // ---------- Industries + email content packs ----------
+  const INDUSTRIES=[
+    {id:'ecom', name:'E-commerce & Retail', subs:[['fashion','Fashion'],['marketplace','Marketplace'],['d2c','D2C']]},
+    {id:'bfsi', name:'Banking & Finance', subs:[['banking','Retail Banking'],['insurance','Insurance'],['fintech','Fintech']]},
+    {id:'media', name:'Media & Entertainment', subs:[['ott','OTT / Streaming'],['news','News & Publishing']]},
+    {id:'travel', name:'Travel & Hospitality', subs:[['airlines','Airlines'],['hotels','Hotels & OTA']]},
+    {id:'food', name:'Food & Delivery', subs:[['delivery','Food Delivery'],['grocery','Grocery']]},
+    {id:'edtech', name:'EdTech', subs:[]},
+    {id:'gaming', name:'Gaming', subs:[]},
+    {id:'telecom', name:'Telecom', subs:[]},
+  ];
+  const KW={fashion:'fashion,clothing',marketplace:'electronics,gadgets',d2c:'skincare,cosmetics',banking:'banking,finance',insurance:'insurance,family',fintech:'mobile,payment',ott:'cinema,movie',news:'newspaper,news',airlines:'airplane,travel',hotels:'hotel,resort',delivery:'food,restaurant',grocery:'grocery,vegetables',edtech:'education,study',gaming:'videogame,gaming',telecom:'smartphone,technology'};
+  const EPACKS={
+    fashion:{brand:'Nova',from:'hello@nova.shop',accent:'#111111',offer:'40% off new arrivals',code:'NOVA10',url:'nova.shop',products:[['Oversized Tee','SAR 89'],['Cargo Pants','SAR 149'],['Knit Hoodie','SAR 199']],orderId:'10482',total:'SAR 437',otpUse:'sign-in'},
+    marketplace:{brand:'Nova Market',from:'orders@novamarket.com',accent:'#ff6d00',offer:'Deals up to 70% off',code:'SAVE15',url:'novamarket.com',products:[['Wireless Earbuds','SAR 129'],['Smart Watch','SAR 299'],['Power Bank','SAR 79']],orderId:'88231',total:'SAR 507',otpUse:'sign-in'},
+    d2c:{brand:'GlowLab',from:'care@glowlab.co',accent:'#e91e8c',offer:'Buy 1 Get 1 on bestsellers',code:'GLOW20',url:'glowlab.co',products:[['Vitamin C Serum','SAR 119'],['Night Cream','SAR 149'],['SPF 50','SAR 89']],orderId:'4471',total:'SAR 357',otpUse:'sign-in'},
+    banking:{brand:'Meridian Bank',from:'no-reply@meridian.sa',accent:'#0b57d0',offer:'0% EMI on your card',code:'',url:'meridian.sa',products:[['Savings+ Account','3.2% p.a.'],['Gold Credit Card','Rewards'],['Auto Loan','from 4.5%']],orderId:'RQ-2093',total:'—',otpUse:'sign-in'},
+    insurance:{brand:'Meridian Assure',from:'care@meridian.sa',accent:'#0b8043',offer:'Renew early & save 15%',code:'RENEW15',url:'meridian.sa',products:[['Motor','from SAR 900/yr'],['Health','Family cover'],['Travel','Annual']],orderId:'MA-88213',total:'SAR 1,150',otpUse:'account access'},
+    fintech:{brand:'Meridian Pay',from:'hello@meridianpay.sa',accent:'#6d28d9',offer:'Cashback week — 5% back',code:'CASH5',url:'meridianpay.sa',products:[['Pay bills','Instant'],['Send money','0% fee'],['Rewards','Redeem']],orderId:'PMT-5521',total:'SAR 320',otpUse:'payment'},
+    ott:{brand:'Streamly',from:'hello@streamly.tv',accent:'#e50914',offer:'50% off your next month',code:'COMEBACK50',url:'streamly.tv',products:[['New Originals','Watch'],['Blockbusters','4K'],['Live Comedy','Tonight']],orderId:'SUB-771',total:'SAR 29',otpUse:'sign-in'},
+    news:{brand:'Streamly News',from:'daily@news.streamly.tv',accent:'#b91c1c',offer:'Go Premium — ad-free',code:'READ30',url:'news.streamly.tv',products:[['Business','Live'],['Technology','Daily'],['Sport','Scores']],orderId:'NS-330',total:'SAR 19',otpUse:'sign-in'},
+    airlines:{brand:'SkyHigh',from:'noreply@skyhigh.com',accent:'#0077c8',offer:'Fares from SAR 199',code:'FLY15',url:'skyhigh.com',products:[['Dubai','from SAR 199'],['Cairo','from SAR 320'],['Amman','from SAR 280']],orderId:'SH-233',total:'SAR 640',otpUse:'booking'},
+    hotels:{brand:'SkyHigh Stays',from:'stays@skyhigh.com',accent:'#0f766e',offer:'Weekend stays 30% off',code:'STAY30',url:'skyhigh.com/stays',products:[['Palm Grand','SAR 640/nt'],['City Suites','SAR 420/nt'],['Beach Villa','SAR 980/nt']],orderId:'SG-77120',total:'SAR 1,280',otpUse:'booking'},
+    delivery:{brand:'QuickBite',from:'orders@quickbite.app',accent:'#f4511e',offer:'Free delivery all weekend',code:'FREEDEL',url:'quickbite.app',products:[['Burger Yard','20% off'],['Sushi Bar','Free miso'],['Pizza Co','B1G1']],orderId:'5521',total:'SAR 74',otpUse:'sign-in'},
+    grocery:{brand:'QuickBite Fresh',from:'fresh@quickbite.app',accent:'#2e7d32',offer:'SAR 20 off groceries',code:'FRESH20',url:'quickbite.app/fresh',products:[['Fresh Milk','SAR 8'],['Free-range Eggs','SAR 18'],['Sourdough','SAR 12']],orderId:'7830',total:'SAR 84',otpUse:'sign-in'},
+    edtech:{brand:'LearnSphere',from:'hello@learnsphere.io',accent:'#5b3df5',offer:'Certificates 50% off',code:'LEARN50',url:'learnsphere.io',products:[['Data Analytics','12 wks'],['UX Design','8 wks'],['Cloud 101','6 wks']],orderId:'EN-9012',total:'SAR 299',otpUse:'sign-in'},
+    gaming:{brand:'PixelForge',from:'noreply@pixelforge.gg',accent:'#7c3aed',offer:'Double gems this weekend',code:'GEMS2X',url:'pixelforge.gg',products:[['Legendary Crate','500 gems'],['Season Pass','30 tiers'],['Hero Bundle','3 heroes']],orderId:'PX-4410',total:'SAR 120',otpUse:'sign-in'},
+    telecom:{brand:'ConnectTel',from:'care@connecttel.sa',accent:'#d81b60',offer:'Unlimited data — SAR 149/mo',code:'UNLTD',url:'connecttel.sa',products:[['Unlimited','SAR 149'],['Family Plan','4 SIMs'],['Data Add-on','10GB']],orderId:'CT-6621',total:'SAR 149',otpUse:'sign-in'},
+  };
+  function ctxId(){ return state.sub || state.industry; }
+
+  // ---------- Email HTML builders ----------
+  function ePhoto(kw,seed){ return 'https://loremflickr.com/600/320/'+encodeURIComponent(kw||'product')+'?lock='+(((seed||0)%60)+1); }
+  function eBtn(p,l){ return `<a href="#" style="display:inline-block;background:${p.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${l}</a>`; }
+  function eBrand(p){ return `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${p.accent};">${p.brand}</span></div>`; }
+  function eHeroImg(p,kw,seed){ return `<div style="background:linear-gradient(135deg,${p.accent},#3a3a5a);min-height:210px;"><img src="${ePhoto(kw,seed)}" width="600" style="width:100%;display:block;" onerror="this.remove()"></div>`; }
+  function eGrid(p){ return `<div style="padding:14px 22px;">`+p.products.map((pr,i)=>`<div style="display:inline-block;width:46%;vertical-align:top;margin:1.5%;text-align:center;"><div style="background:linear-gradient(135deg,${p.accent},#3a3a5a);border-radius:10px;overflow:hidden;min-height:120px;"><img src="${ePhoto(pr[0].replace(/ /g,','),i+10)}" width="260" style="width:100%;display:block;" onerror="this.remove()"></div><div style="font-size:14px;font-weight:600;color:#111;margin-top:8px;">${pr[0]}</div><div style="font-size:14px;color:${p.accent};font-weight:700;">${pr[1]}</div></div>`).join('')+`</div>`; }
+  function eOrderTable(p){ const rows=p.products.map(pr=>`<tr><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;color:#333;font-size:14px;">${pr[0]}</td><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;text-align:right;color:#333;font-size:14px;">${pr[1]}</td></tr>`).join(''); return `<table style="width:100%;border-collapse:collapse;">${rows}<tr><td style="padding:13px 0;font-weight:800;color:#111;">Total</td><td style="padding:13px 0;text-align:right;font-weight:800;color:${p.accent};">${p.total}</td></tr></table>`; }
+  function eWrap(inner){ return `<div style="background:#eef0f3;padding:20px 12px;font-family:Arial,Helvetica,sans-serif;"><div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">${inner}</div><div style="max-width:600px;margin:14px auto 0;text-align:center;color:#9aa0ac;font-size:12px;line-height:1.6;">You're receiving this because you subscribed.<br>Unsubscribe · Manage preferences</div></div>`; }
+
+  const EARCH=[
+    {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Hero image + code + CTA',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`${p.brand}: ${p.offer} 🎉`,snippet:`${p.offer}${p.code?` — use code ${p.code}`:''}. Limited time only.`,html:eWrap(eBrand(p)+eHeroImg(p,p.kw,3)+`<div style="padding:32px 34px;text-align:center;"><h1 style="margin:0 0 10px;font-size:26px;color:#111;">${p.offer}</h1><p style="margin:0 0 8px;font-size:15px;color:#555;">Treat yourself — this week only.</p>${p.code?`<div style="margin:16px 0;display:inline-block;border:2px dashed ${p.accent};border-radius:8px;padding:10px 22px;font-size:18px;font-weight:800;color:${p.accent};letter-spacing:1px;">${p.code}</div><br>`:''}<div style="margin-top:12px;">${eBtn(p,'Shop now')}</div></div>`)})},
+    {name:'Order confirmation',kind:'Transactional',icon:'📦',desc:'Receipt + track button',build:p=>({sender:p.brand,from:p.from,category:'updates',subject:`Your ${p.brand} order #${p.orderId} is confirmed`,snippet:`Thanks for your order! We'll let you know when it ships.`,html:eWrap(eBrand(p)+`<div style="padding:30px 34px;"><h2 style="margin:0 0 6px;font-size:20px;color:#111;">Order confirmed ✅</h2><p style="margin:0 0 18px;color:#666;font-size:14px;">Order <b>#${p.orderId}</b> · We'll email your tracking link soon.</p>`+eOrderTable(p)+`<div style="text-align:center;margin-top:22px;">${eBtn(p,'Track your order')}</div></div>`)})},
+    {name:'Product picks',kind:'Promotional',icon:'🖼️',desc:'Featured products grid',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`Fresh picks from ${p.brand} ✨`,snippet:`Handpicked for you — new this week.`,html:eWrap(eBrand(p)+`<div style="padding:26px 30px 6px;text-align:center;"><h1 style="margin:0 0 4px;font-size:22px;color:#111;">New this week</h1><p style="margin:0;color:#777;font-size:14px;">Handpicked, just for you</p></div>`+eGrid(p)+`<div style="text-align:center;padding:6px 0 30px;">${eBtn(p,'Shop the collection')}</div>`)})},
+    {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP email',build:p=>({sender:p.brand,from:p.from,category:'updates',subject:`Your ${p.brand} verification code`,snippet:`Use code 457812 to continue. It expires in 10 minutes.`,html:eWrap(eBrand(p)+`<div style="padding:34px;text-align:center;"><h2 style="margin:0 0 8px;font-size:20px;color:#111;">Verify it's you</h2><p style="margin:0 0 20px;color:#666;font-size:14px;">Enter this code to complete your ${p.otpUse}.</p><div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#111;background:#f5f6f8;border-radius:10px;padding:16px 0;">457812</div><p style="margin:18px 0 0;color:#999;font-size:12px;">Expires in 10 minutes. If you didn't request it, ignore this email.</p></div>`)})},
+    {name:'Welcome',kind:'Transactional',icon:'👋',desc:'Onboarding email',build:p=>({sender:p.brand,from:p.from,category:'updates',subject:`Welcome to ${p.brand} 🎉`,snippet:`We're glad you're here. Here's how to get started.`,html:eWrap(eBrand(p)+eHeroImg(p,p.kw,15)+`<div style="padding:30px 34px;text-align:center;"><h1 style="margin:0 0 10px;font-size:24px;color:#111;">Welcome aboard!</h1><p style="margin:0 0 20px;color:#555;font-size:15px;line-height:1.6;">Thanks for joining ${p.brand}. Let's get you set up in a couple of taps.</p>${eBtn(p,'Get started')}</div>`)})},
+    {name:'Win-back',kind:'Promotional',icon:'💛',desc:'We miss you + offer',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`We miss you 💛${p.code?` Here's ${p.code}`:''}`,snippet:`Come back to ${p.brand} — enjoy a welcome-back treat.`,html:eWrap(eBrand(p)+`<div style="padding:36px 34px;text-align:center;"><h1 style="margin:0 0 12px;font-size:26px;color:#111;">We miss you!</h1><p style="margin:0 0 18px;color:#555;font-size:15px;">It's been a while. Here's ${p.offer} to welcome you back.</p>${p.code?`<div style="margin:0 0 20px;display:inline-block;border:2px dashed ${p.accent};border-radius:8px;padding:10px 22px;font-size:18px;font-weight:800;color:${p.accent};">${p.code}</div><br>`:''}${eBtn(p,'Come back')}</div>`)})},
+  ];
+
+  function templatesForGmail(){ const base=EPACKS[ctxId()]; if(!base) return []; const p=Object.assign({},base,{kw:KW[ctxId()]||'product'}); return EARCH.map(a=>({name:a.name,desc:a.desc,kind:a.kind,icon:a.icon,build:()=>a.build(p)})); }
+  function gFillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
+  function gFillSubs(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); const subs=ind?ind.subs:[]; if(!subs.length){ $('#subWrap').classList.add('hide'); state.sub=null; return; } $('#subWrap').classList.remove('hide'); $('#selSub').innerHTML=subs.map(x=>`<option value="${x[0]}">${esc(x[1])}</option>`).join(''); if(!subs.find(x=>x[0]===state.sub)) state.sub=subs[0][0]; $('#selSub').value=state.sub; }
+  function gRenderTemplates(){ const list=templatesForGmail(); const g=$('#tplGrid'); g.innerHTML=list.map((t,i)=>`<button class="tpl" data-i="${i}"><span class="ti">${t.icon}</span><span class="tc"><span class="tt">${esc(t.name)} <span class="kind ${t.kind}">${t.kind==='Promotional'?'PROMO':'TXN'}</span></span><span class="td">${esc(t.desc)}</span></span></button>`).join(''); g.querySelectorAll('.tpl').forEach(b=>b.addEventListener('click',()=>applyEmailTemplate(list[+b.dataset.i]))); }
+  function applyEmailTemplate(t){ const r=t.build();
+    state.senderName=r.sender; $('#senderName').value=r.sender;
+    state.senderEmail=r.from; $('#senderEmail').value=r.from;
+    state.subject=r.subject; $('#subject').value=r.subject;
+    state.snippet=r.snippet; $('#snippet').value=r.snippet;
+    state.category=r.category; $('#category').value=r.category;
+    state.htmlBody=r.html; state.bodyMode='upload';
+    document.querySelectorAll('#bodyMode button').forEach(x=>x.classList.toggle('on',x.dataset.mode==='upload'));
+    document.querySelectorAll('[data-panel]').forEach(pp=>pp.style.display=pp.dataset.panel==='upload'?'':'none');
+    const us=$('#uploadState'); if(us) us.textContent='Loaded a ready-made template — tweak any field.';
+    render(); toast('Template applied');
+  }
 
   const $ = s => document.querySelector(s);
   const stage = $('#stage');
@@ -929,7 +1017,11 @@
     }catch(e){ toast('Copy failed — try Export PNG'); }
   });
 
-  (function(){ var cn=document.getElementById('chanNav'); if(cn) cn.addEventListener('change',function(e){ var v=e.target.value; if(v!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+v; }); })();
+  $('#selChannel').addEventListener('change',function(e){ if(e.target.value!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+e.target.value; });
+  $('#selIndustry').addEventListener('change',function(e){ state.industry=e.target.value; gFillSubs(); gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
+  $('#selSub').addEventListener('change',function(e){ state.sub=e.target.value; gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
+  gFillIndustries(); gFillSubs(); gRenderTemplates();
+  (function(){ var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); })();
   render();
 })();
 </script>

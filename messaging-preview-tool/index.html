@@ -420,6 +420,9 @@
       +(s2?"<text x='50%' y='63%' fill='rgba(255,255,255,0.92)' font-family='Inter,Arial,sans-serif' font-weight='600' font-size='"+fs2+"' text-anchor='middle' dominant-baseline='middle'>"+s2+"</text>":"")
       +"</svg>";
     return 'data:image/svg+xml,'+encodeURIComponent(svg); }
+  function photo(kw,w,h,seed){ return 'https://loremflickr.com/'+w+'/'+h+'/'+encodeURIComponent(kw||'product')+'?lock='+(((seed||0)%60)+1); }
+  function phGrad(seed){ const hue=((seed||0)%360+360)%360, h2=(hue+40)%360; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",52%,62%)'/><stop offset='1' stop-color='hsl("+h2+",48%,46%)'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><circle cx='330' cy='60' r='130' fill='rgba(255,255,255,0.10)'/><circle cx='60' cy='230' r='90' fill='rgba(0,0,0,0.06)'/></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
+  const KW={fashion:'fashion,clothing',marketplace:'electronics,gadgets',d2c:'skincare,cosmetics',banking:'banking,finance',insurance:'insurance,family',fintech:'mobile,payment',ott:'cinema,movie',news:'newspaper,news',airlines:'airplane,travel',hotels:'hotel,resort',delivery:'food,restaurant',grocery:'grocery,vegetables',edtech:'education,study',gaming:'videogame,gaming',telecom:'smartphone,technology'};
   function phGray(w,h){ w=w||600; h=h||340; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'><rect width='100%' height='100%' fill='%23e7e9ee'/><g fill='none' stroke='%23aab0bd' stroke-width='2'><rect x='"+Math.round(w*0.32)+"' y='"+Math.round(h*0.3)+"' width='"+Math.round(w*0.36)+"' height='"+Math.round(h*0.4)+"' rx='6'/><circle cx='"+Math.round(w*0.42)+"' cy='"+Math.round(h*0.43)+"' r='"+Math.round(h*0.05)+"'/><path d='M"+Math.round(w*0.35)+" "+Math.round(h*0.66)+" L"+Math.round(w*0.46)+" "+Math.round(h*0.53)+" L"+Math.round(w*0.54)+" "+Math.round(h*0.6)+" L"+Math.round(w*0.6)+" "+Math.round(h*0.55)+" L"+Math.round(w*0.65)+" "+Math.round(h*0.66)+"'/></g></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
   let uid=1; const nid=()=>'m'+(uid++);
 
@@ -536,18 +539,18 @@
   // ---------- Archetypes: exactly 6 per channel (Promotional / Transactional / Flow) ----------
   const ARCH={
     whatsapp:[
-      {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Image + offer + CTA',build:p=>[ mk('template',{img:heroImg(p,p.offer),body:`${p.emoji} *${p.offer}* at ${p.brand}!\nLimited time — treat yourself today.`,footer:p.brand,buttons:`Shop now | url | https://${p.url}`}) ]},
+      {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Image + offer + CTA',build:p=>[ mk('template',{img:photo(p.kw,600,340,3),body:`${p.emoji} *${p.offer}* at ${p.brand}!\nLimited time — treat yourself today.`,footer:p.brand,buttons:`Shop now | url | https://${p.url}`}) ]},
       {name:'Order confirmation',kind:'Transactional',icon:'📦',desc:'Details + track / support',build:p=>[ mk('template',{body:`Your ${p.orderNoun} *#${p.orderId}* is confirmed ✅\nWe'll keep you posted on every step.`,footer:p.brand,buttons:`Track ${p.orderNoun} | url | https://${p.url}/track\nContact support | call | +9668001234`}) ]},
-      {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap buttons to branch',build:p=>[ mk('template',{img:heroImg(p),body:p.flow.intro,footer:p.brand,buttons:optStr(p.flow.opts)}) ]},
+      {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap buttons to branch',build:p=>[ mk('template',{img:photo(p.kw,600,340,7),body:p.flow.intro,footer:p.brand,buttons:optStr(p.flow.opts)}) ]},
       {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP + copy button',build:p=>[ mk('template',{body:`*457 812* is your ${p.brand} ${p.otpUse} code.\nFor your security, never share it.`,footer:'Expires in 10 minutes',buttons:`Copy code | copy`}) ]},
-      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable cards',build:p=>[ mk('text',{text:`${p.emoji} Fresh picks, just for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${phImg(c[0],c[1],null,300,200)} | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')}) ]},
+      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable cards',build:p=>[ mk('text',{text:`${p.emoji} Fresh picks, just for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(c[0].replace(/ /g,','),300,200,i+1)} | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')}) ]},
       {name:'Feedback request',kind:'Flow',icon:'⭐',desc:'Rating replies branch',build:p=>[ mk('template',{body:`Thanks for choosing ${p.brand} 🙌\n${p.feedbackQ||'How did we do?'}`,footer:p.brand,buttons:`😍 Loved it | reply >> Amazing — thank you! 💛 Mind leaving a quick review? ${p.url}/review\n🙂 It was OK | reply >> Thanks for the honest feedback — we're always improving.\n😞 Not great | reply >> So sorry. Reply here and we'll make it right.`}) ]},
     ],
     rcs:[
-      {name:'Offer card',kind:'Promotional',icon:'🏷️',desc:'Rich card + chips',build:p=>[ mk('card',{img:heroImg(p,p.offer),title:p.offer,desc:`${p.brand} · Limited-time offer`,buttons:`Shop now | url | https://${p.url}`,chips:'See all deals\nNotify me'}) ]},
-      {name:'Order tracking',kind:'Transactional',icon:'📦',desc:'Status card + actions',build:p=>[ mk('card',{img:phImg(cap(p.orderNoun)+' #'+p.orderId,'On the way',hueOf(p.brand),600,340),title:`${cap(p.orderNoun)} #${p.orderId}`,desc:'On the way · Arriving today by 6 PM',buttons:`Track live | url | https://${p.url}/track`,chips:'Change address >> Sure — reply with your new delivery address.\nContact support'}) ]},
-      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable rich cards',build:p=>[ mk('text',{text:`${p.emoji} Handpicked for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${phImg(c[0],c[1],null,300,200)} | ${c[0]} | ${c[1]} | View | https://${p.url}`).join('\n'),chips:'See all\nTalk to us'}) ]},
-      {name:'Reminder card',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>[ mk('card',{img:heroImg(p,'Reminder'),title:'A quick reminder',desc:cap(p.reminder),buttons:`Open ${p.brand} | url | https://${p.url}`,chips:'Remind me later\nNot now'}) ]},
+      {name:'Offer card',kind:'Promotional',icon:'🏷️',desc:'Rich card + chips',build:p=>[ mk('card',{img:photo(p.kw,600,340,3),title:p.offer,desc:`${p.brand} · Limited-time offer`,buttons:`Shop now | url | https://${p.url}`,chips:'See all deals\nNotify me'}) ]},
+      {name:'Order tracking',kind:'Transactional',icon:'📦',desc:'Status card + actions',build:p=>[ mk('card',{img:photo(p.kw,600,340,5),title:`${cap(p.orderNoun)} #${p.orderId}`,desc:'On the way · Arriving today by 6 PM',buttons:`Track live | url | https://${p.url}/track`,chips:'Change address >> Sure — reply with your new delivery address.\nContact support'}) ]},
+      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable rich cards',build:p=>[ mk('text',{text:`${p.emoji} Handpicked for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(c[0].replace(/ /g,','),300,200,i+1)} | ${c[0]} | ${c[1]} | View | https://${p.url}`).join('\n'),chips:'See all\nTalk to us'}) ]},
+      {name:'Reminder card',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>[ mk('card',{img:photo(p.kw,600,340,9),title:'A quick reminder',desc:cap(p.reminder),buttons:`Open ${p.brand} | url | https://${p.url}`,chips:'Remind me later\nNot now'}) ]},
       {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap chips to branch',build:p=>[ mk('text',{text:p.flow.intro,chips:chipStr(p.flow.opts)}) ]},
       {name:'Feedback request',kind:'Flow',icon:'⭐',desc:'Rating chips branch',build:p=>[ mk('text',{text:`Thanks for choosing ${p.brand} 🙌 How did we do?`,chips:`😍 Great >> Thank you! Mind leaving a review? ${p.url}/review\n🙂 Okay >> Thanks — we'll keep improving.\n😞 Poor >> Sorry! Reply and we'll make it right.`}) ]},
     ],
@@ -561,7 +564,7 @@
     ],
   };
   function templatesFor(){
-    const p=PACKS[ctxId()]; if(!p) return [];
+    const base=PACKS[ctxId()]; if(!base) return []; const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
     const status = state.channel==='rcs'?'Verified business':(state.channel==='sms'?'':'online');
     return (ARCH[state.channel]||[]).map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>({biz:p.brand, status, msgs:a.build(p)}) }));
   }
@@ -576,7 +579,7 @@
     const out=msg.from!=='business'; const cls=out?'out':'in';
     const tail=waTail(out?(state.theme==='dark'?'#005c4b':'#d9fdd3'):(state.theme==='dark'?'#1f2c34':'#fff'));
     const time=`<span class="wa-time">9:41 AM${out?`<span class="tk">${IC.tick}</span>`:''}</span>`;
-    if(msg.type==='carousel'){ const cards=parseCards(msg.cards).map(c=>`<div class="wa-pcard"><img src="${esc(c.img||phImg(c.title||'Product',c.sub||'',null,300,200))}"><div class="pb"><div class="pt">${esc(c.title)}</div>${c.sub?`<div class="pp">${esc(c.sub)}</div>`:''}</div>${c.btn?`<div class="pbtn">${esc(c.btn)}</div>`:''}</div>`).join(''); return `<div class="wa-carousel">${cards}</div>`; }
+    if(msg.type==='carousel'){ const cards=parseCards(msg.cards).map(c=>`<div class="wa-pcard"><img src="${esc(c.img||photo((c.title||'product').replace(/ /g,','),300,200,1))}"><div class="pb"><div class="pt">${esc(c.title)}</div>${c.sub?`<div class="pp">${esc(c.sub)}</div>`:''}</div>${c.btn?`<div class="pbtn">${esc(c.btn)}</div>`:''}</div>`).join(''); return `<div class="wa-carousel">${cards}</div>`; }
     if(msg.type==='list'){ const items=parseListItems(msg.items).map(it=>`<div class="wa-litem${ck(true)}"${optAttr({kind:'reply',reply:it.t,response:it.response})}><div><div class="lt">${esc(it.t)}</div>${it.d?`<div class="ld">${esc(it.d)}</div>`:''}</div><span class="rd"></span></div>`).join('');
       return `<div class="wa-msg in"><div class="wa-b">${tail}<div class="wtext">${fmt(msg.body)}</div>${msg.footer?`<div class="wa-ft">${esc(msg.footer)}</div>`:''}${time}<div style="clear:both"></div></div></div>`
         +`<div class="wa-list"><div class="lh">${esc(msg.header||'Menu')}</div>${items}</div>`; }
@@ -613,7 +616,7 @@
 
   // ---------- Google Messages (RCS / Android SMS) ----------
   function rcsBtns(btns){ return btns.map(b=>{ const kind=(b.type==='reply')?'reply':b.type; return `<div class="rcs-cbtn${ck(kind==='reply')}"${optAttr({kind,reply:b.label,response:b.response,value:b.value})}>${btnIcon(b.type)}${esc(b.label)}</div>`; }).join(''); }
-  function rcsCardHTML(c){ const b=[]; if(c.btn) b.push({label:c.btn,type:/^\+?\d[\d ]+$/.test(c.val)?'call':'url',value:c.val}); return `<div class="rcs-card"><img src="${esc(c.img||phImg(c.title||'Product',c.sub||'',null,300,200))}"><div class="cb"><div class="ct">${esc(c.title)}</div>${c.sub?`<div class="cd">${esc(c.sub)}</div>`:''}</div>${b.length?`<div>${rcsBtns(b)}</div>`:''}</div>`; }
+  function rcsCardHTML(c){ const b=[]; if(c.btn) b.push({label:c.btn,type:/^\+?\d[\d ]+$/.test(c.val)?'call':'url',value:c.val}); return `<div class="rcs-card"><img src="${esc(c.img||photo((c.title||'product').replace(/ /g,','),300,200,1))}"><div class="cb"><div class="ct">${esc(c.title)}</div>${c.sub?`<div class="cd">${esc(c.sub)}</div>`:''}</div>${b.length?`<div>${rcsBtns(b)}</div>`:''}</div>`; }
   function gmMsg(msg){
     const out=msg.from!=='business';
     if(msg.type==='text') return `<div class="gm-msg ${out?'out':''}"><div class="gm-b"><div class="gtext">${fmt(msg.text)}</div></div></div><div class="gm-stamp" style="text-align:${out?'right':'left'}">${out?'Read':esc(state.bizName.slice(0,20))} · 9:41 AM</div>`;
@@ -679,6 +682,7 @@
 
   // ---------- Dispatch ----------
   const stage=$('#stage');
+  stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
   function render(){
     let screen='';
     if(state.channel==='whatsapp') screen=renderWA();
@@ -751,7 +755,7 @@
   function imageField(get,set,phTitle){
     const row=document.createElement('div'); row.className='imgf';
     const prev=document.createElement('img'); prev.className='prev';
-    const setPrev=()=>{ const v=get(); prev.src = v || phImg(phTitle||'Image','',null,120,90); };
+    const setPrev=()=>{ const v=get(); prev.src = v || phGray(120,90); };
     const col=document.createElement('div'); col.className='col';
     const up=document.createElement('button'); up.type='button'; up.className='up'; up.textContent='⬆ Upload image';
     const url=document.createElement('input'); url.type='text'; url.placeholder='…or paste an image URL';
