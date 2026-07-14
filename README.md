@@ -5,9 +5,10 @@ previews to drop into decks and screenshots — no backend, no build step, no AI
 Everything runs in the browser. Built for producing MoEngage-style creative mocks
 across email and messaging channels.
 
-Open **`index.html`** for the unified hub (tabs for every channel), or open any
-tool folder directly — each one is a standalone single HTML file you can host
-anywhere static (GitHub Pages, Vercel, Netlify, S3, an internal share).
+Open **`index.html`** (it opens the studio), or open any tool folder directly —
+each is a standalone single HTML file you can host anywhere static (Vercel,
+Netlify, GitHub Pages, S3, an internal share). Switch channels — including
+Gmail — from the **Channel** dropdown inside the app.
 
 ## Channels
 
