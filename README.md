@@ -19,6 +19,26 @@ Gmail — from the **Channel** dropdown inside the app.
 | **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
 | **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents · light/dark |
 
+
+## Real product photos (one-time setup)
+
+By default the tools render clean product **illustrations** (always relevant,
+self-contained). To use **real photos** instead, resolve them once from Pexels:
+
+1. Get a free Pexels API key: https://www.pexels.com/api/  (free tier: 200/hr, 20k/mo).
+2. From the repo root, run once:
+   ```
+   PEXELS_KEY=your_key_here node resolve-images.js
+   ```
+   This looks up one product photo per keyword (~50 lookups) and writes `images.js`.
+3. Commit `images.js` and redeploy.
+
+After that the tools just load the resolved image URLs from Pexels' CDN — **that is
+not an API call**, so it never counts against your rate limit no matter how many
+people open the tool. The key is only used during the one-time lookup and never ships
+in the app. Edit the query list at the top of `resolve-images.js` and re-run to swap
+any specific image. Anything not resolved falls back to the illustration.
+
 ## How it works
 
 - **Pick a channel** (hub tabs, or open a folder).
