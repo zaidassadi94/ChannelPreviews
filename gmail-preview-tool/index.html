@@ -32,7 +32,7 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; overflow: hidden; }
+  .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; grid-template-rows: 100vh; overflow: hidden; }
 
   /* ---------- Editor panel ---------- */
   .editor {
@@ -109,7 +109,7 @@
   .hint { font-size: 11px; color: var(--muted); margin-top: -8px; margin-bottom: 12px; line-height:1.4; }
 
   /* ---------- Preview stage ---------- */
-  .stage-wrap { display: flex; flex-direction: column; min-width: 0; }
+  .stage-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .topbar {
     height: 56px; flex: none; background: var(--panel); border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 10px; padding: 0 18px;
@@ -129,7 +129,7 @@
   .btn.ghost:hover { background:#eceff3; }
 
   .stage {
-    flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center;
+    flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: center;
     padding: 40px 24px; background:
       radial-gradient(circle at 20% 10%, #e9edf3 0, transparent 40%),
       radial-gradient(circle at 90% 80%, #e7ebf2 0, transparent 45%),
@@ -149,6 +149,9 @@
   .iphone-screen { border-radius: 44px; overflow: hidden; background: #fff; position: relative; height: 800px; display:flex; flex-direction:column; }
   .iphone-screen.dark { background: #1f1f1f; }
   .iphone-screen.dark .statusbar { color: #e8eaed; }
+  .home-ind{ flex:none; height:24px; display:flex; align-items:center; justify-content:center; }
+  .home-ind::after{ content:""; width:134px; height:5px; border-radius:3px; background:#0d0d0f; opacity:.85; }
+  .home-ind.dk::after{ background:#e8eaed; opacity:.6; }
   .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px; background:#0d0d0f; border-radius:0 0 20px 20px; z-index:40; }
   .statusbar { height: 50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding: 0 28px 0 30px; font-size:15px; font-weight:600; z-index:30; }
   .statusbar .icons { display:flex; align-items:center; gap:6px; }
@@ -770,7 +773,7 @@
     let inner='';
     if(state.skin==='mobile'){
       const screen = state.view==='inbox'? mobileInbox() : mobileOpen();
-      inner = `<div class="iphone capture-target" id="capture"><div class="notch"></div><div class="iphone-screen ${state.theme==='dark'?'dark':''}">${statusBar()}${screen}</div></div>`;
+      inner = `<div class="iphone capture-target" id="capture"><div class="notch"></div><div class="iphone-screen ${state.theme==='dark'?'dark':''}">${statusBar()}${screen}<div class="home-ind ${state.theme==='dark'?'dk':''}"></div></div></div>`;
     } else {
       const screen = state.view==='inbox'? desktopInbox() : desktopOpen();
       inner = `<div class="browser capture-target" id="capture"><div class="browser-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="url-pill">🔒 mail.google.com/mail/u/0/#inbox</div></div>${screen}</div>`;
@@ -785,7 +788,17 @@
         f.onload = ()=>{ try{ const d=f.contentDocument; f.style.height = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight)+'px'; }catch(e){ f.style.height='700px'; } };
       }
     }
+    fitDevice();
   }
+  function fitDevice(){
+    const cap=document.getElementById('capture'); if(!cap) return;
+    cap.style.transform='none'; cap.style.marginBottom='';
+    const availH=stage.clientHeight-40, availW=stage.clientWidth-24;
+    const h=cap.offsetHeight, w=cap.offsetWidth;
+    const k=Math.min(1, availH/h, availW/w);
+    if(k<1){ cap.style.transformOrigin='top center'; cap.style.transform='scale('+k+')'; cap.style.marginBottom=(-(h*(1-k)))+'px'; }
+  }
+  window.addEventListener('resize', fitDevice);
 
   // ---------- Toast ----------
   let toastT;
@@ -865,6 +878,9 @@
       toast('Screenshot library offline — use your OS screenshot (Cmd/Win+Shift+S)');
       return null;
     }
+    const _t=node.style.transform, _m=node.style.marginBottom;
+    node.style.transform='none'; node.style.marginBottom='';
+    const _restore=()=>{ node.style.transform=_t; node.style.marginBottom=_m; };
     const bodyHTML = bodyForFrame();
     return await html2canvas(node,{
       backgroundColor: state.theme==='dark'?'#20232a':'#eef1f5',
@@ -881,7 +897,7 @@
           fr.replaceWith(div);
         }
       }
-    });
+    }).then(c=>{ _restore(); return c; }, e=>{ _restore(); throw e; });
   }
   $('#btnExport').addEventListener('click', async ()=>{
     toast('Rendering…');
