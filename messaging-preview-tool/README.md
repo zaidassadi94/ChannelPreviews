@@ -1,45 +1,63 @@
-# Messaging Preview Studio — SMS · RCS · WhatsApp
+# Channel Studio — Messaging (SMS · RCS · WhatsApp)
 
 A single self-contained HTML file that renders pixel-accurate **SMS, RCS, and
 WhatsApp** conversation mockups for deck screenshots. No backend, no build, no AI.
 
 Open `index.html`, or deep-link a channel with `?channel=sms|rcs|whatsapp`.
 
-## Features
+## Pick your context (3 dropdowns)
 
-- **Three channels**, switchable via tabs:
-  - **SMS** — iOS Messages & Android (Google Messages) skins, text + MMS image,
-    live GSM-7 / Unicode character + segment counter.
-  - **RCS** — Google Messages with a verified business header, rich cards,
-    swipeable carousels, suggested reply/action chips, typing indicator.
-  - **WhatsApp** — Business chat with the green header + verified badge, template
-    messages (header image / body / footer / buttons), quick-reply and
-    call-to-action buttons, product carousels, interactive list menus, documents,
-    and light/dark themes.
-- **Templates** per channel (OTP, promo, delivery, appointment, order
-  confirmation, product catalog, list menu, feedback, …) — pick one, then tweak.
-- **Conversation editor** — add / delete / reorder message bubbles; set each
-  bubble's type and whether it's from the business (incoming) or the customer
-  (outgoing).
-- **Business identity** — name, logo (upload or auto monogram), status line,
-  phone/sender ID, verified badge.
-- **iPhone & Android** device frames, light/dark, date chip, encryption notice,
-  typing indicator.
-- **Export** to PNG (2×) or copy to clipboard.
+- **Channel** — WhatsApp · RCS · SMS
+- **Industry** — E-commerce & Retail · Banking & Finance · Media & Entertainment ·
+  Travel & Hospitality · Food & Delivery · EdTech · Gaming · Telecom
+- **Sub-industry** — appears only where it matters (e.g. BFSI → Retail Banking /
+  Insurance / Fintech; Travel → Airlines / Hotels & OTA)
+
+Each combination loads **ready-made, industry-specific templates**. Templates
+tagged **FLOW** are interactive branching conversations.
+
+## Simulate (branching conversations)
+
+Hit **Simulate** and the preview becomes clickable. Tap a WhatsApp quick-reply /
+list item, or an RCS suggestion chip, and the flow advances: your choice appears
+as an outgoing bubble, and the business's branched reply follows. Different
+options lead to different replies — that's the branch. **Reset** clears it.
+
+Author branches yourself by adding `>> your reply` after any option:
+
+```
+Confirm | reply >> ✅ All set! Your appointment is confirmed.
+Reschedule | reply >> Sure — reply with a new date and time.
+```
+
+## Faithful to each channel
+
+- **WhatsApp** — real green (light) / dark (dark) header, doodle wallpaper,
+  template messages (header image / body / footer), attached CTA buttons (link ·
+  call · copy code), separate quick-reply buttons, product carousels, interactive
+  list menus, documents, and **platform-correct input bars** for both iPhone and
+  Android.
+- **RCS** — Google Messages (Android) **and** iOS Messages (iPhone) — the device
+  toggle works. Verified-business header, **RBM verified-agent banner** (logo,
+  description, verified pill), rich cards, carousels, suggestion chips, typing.
+- **SMS** — iOS Messages & Android (Google Messages), text + MMS image, live
+  GSM-7 / Unicode segment counter.
+
+## Also
+
+- **iPhone / Android** device frames, **Light / Dark** themes, scale-to-fit so the
+  whole phone is always visible.
+- **Sender / business** — name, logo (upload or auto monogram), status line,
+  phone / sender ID, RCS agent description, verified badge, RBM agent banner.
+- **Export** to PNG (2×, full-resolution) or copy to clipboard.
 
 ## Editing formats
 
-- **Buttons** — one per line: `Label | reply|url|call | value`
-- **Carousel cards** — one per line: `imageURL | title | subtitle | buttonLabel | buttonValue`
-- **List items** — one per line: `Title | description`
-- **Suggested replies (RCS)** — comma-separated
-- **Text** supports WhatsApp-style `*bold*` and `_italic_`, and auto-links URLs.
+- **Buttons** — `Label | reply|url|call|copy | value` (one per line; add `>> reply` to branch)
+- **Carousel cards** — `imageURL | title | subtitle | buttonLabel | buttonValue`
+- **List items** — `Title | description` (add `>> reply` to branch)
+- **Suggested replies (RCS)** — comma-separated, or one per line with `>> reply`
+- Text supports `*bold*`, `_italic_`, `~strike~`, and auto-links URLs.
 
-## Notes
-
-- PNG export uses html2canvas from a CDN; for offline use, host the library
-  locally and repoint the `<script>` tag. Remote images that block cross-origin
-  requests may not appear in the PNG — the on-screen preview is always correct, so
-  a native OS screenshot is the fallback.
-- Mockups for internal creative review only — not affiliated with Google, Apple,
-  or Meta/WhatsApp.
+Mockups for internal creative review only — not affiliated with Google, Apple,
+or Meta/WhatsApp.

@@ -1,4 +1,4 @@
-# Channel Previews
+# Channel Studio
 
 Realistic, self-contained **channel mockup tools** for building marketing/campaign
 previews to drop into decks and screenshots — no backend, no build step, no AI.
