@@ -316,6 +316,7 @@
           <option value="whatsapp">WhatsApp</option>
           <option value="rcs">RCS</option>
           <option value="sms">SMS</option>
+          <option value="push">Push</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label>
@@ -944,7 +945,7 @@
   function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
   segBind('#deviceSeg','device');
 
-  $('#selChannel').addEventListener('change',e=>{ if(e.target.value==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; } state.channel=e.target.value; onChannelChange(); render(); });
+  $('#selChannel').addEventListener('change',e=>{ const v=e.target.value; if(v==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; } if(v==='push'||v==='inapp'){ location.href='../notify-preview-tool/index.html?channel='+v; return; } state.channel=v; onChannelChange(); render(); });
   $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
   $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
 

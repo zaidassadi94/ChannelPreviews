@@ -348,6 +348,7 @@
           <option value="whatsapp">WhatsApp</option>
           <option value="rcs">RCS</option>
           <option value="sms">SMS</option>
+          <option value="push">Push</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
@@ -1061,7 +1062,7 @@
     }catch(e){ toast('Copy failed — try Export PNG'); }
   });
 
-  $('#selChannel').addEventListener('change',function(e){ if(e.target.value!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+e.target.value; });
+  $('#selChannel').addEventListener('change',function(e){ const v=e.target.value; if(v==='push'||v==='inapp'){ location.href='../notify-preview-tool/index.html?channel='+v; return; } if(v!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+v; });
   $('#selIndustry').addEventListener('change',function(e){ state.industry=e.target.value; gFillSubs(); gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
   $('#selSub').addEventListener('change',function(e){ state.sub=e.target.value; gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
   gFillIndustries(); gFillSubs(); gRenderTemplates();

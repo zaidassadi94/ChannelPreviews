@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Channel Studio — Push · In-App</title>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --bg:#f4f5f8; --panel:#ffffff; --panel-2:#f7f8fb; --line:#e9eaf0; --line-2:#eef0f4;
+    --ink:#0c0e14; --ink-2:#3a3f4c; --muted:#7a8194; --muted-2:#9aa0b0;
+    --accent:#635bff; --accent-ink:#4b45d6; --accent-weak:#eeecff; --ring:rgba(99,91,255,.16);
+    --radius:12px; --radius-sm:9px;
+    --shadow-sm:0 1px 2px rgba(16,18,30,.05), 0 1px 3px rgba(16,18,30,.04);
+    --shadow:0 4px 14px rgba(16,18,30,.07), 0 1px 3px rgba(16,18,30,.05);
+    --shadow-lg:0 24px 60px rgba(16,18,30,.16);
+    --font:'Inter',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  html,body{ height:100%; }
+  body{ font-family:var(--font); background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; font-feature-settings:'cv02','cv03','cv04','ss01'; }
+  .app{ display:grid; grid-template-columns:372px 1fr; grid-template-rows:100vh; height:100vh; overflow:hidden; }
+
+  /* ============ Sidebar ============ */
+  .editor{ background:var(--panel); border-right:1px solid var(--line); overflow-y:auto; display:flex; flex-direction:column; }
+  .editor::-webkit-scrollbar{ width:9px; } .editor::-webkit-scrollbar-thumb{ background:#d9dbe4; border-radius:8px; border:3px solid var(--panel); }
+  .brand{ position:sticky; top:0; z-index:6; background:rgba(255,255,255,.86); backdrop-filter:saturate(1.4) blur(8px); border-bottom:1px solid var(--line); padding:15px 20px; display:flex; align-items:center; gap:11px; }
+  .brand .mark{ width:30px; height:30px; border-radius:9px; background:linear-gradient(140deg,#635bff,#8b5cf6 55%,#22c1c3); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(99,91,255,.35); }
+  .brand .mark svg{ width:17px; height:17px; }
+  .brand h1{ font-size:15px; font-weight:650; letter-spacing:-.3px; } .brand small{ display:block; color:var(--muted); font-size:11px; font-weight:450; letter-spacing:-.1px; }
+
+  .ctx{ padding:16px 20px 6px; display:grid; gap:11px; }
+  .sel-wrap{ position:relative; }
+  .sel-wrap > label{ display:block; font-size:10.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px; }
+  select.sel{ -webkit-appearance:none; appearance:none; width:100%; padding:11px 34px 11px 13px; font-family:inherit; font-size:13.5px; font-weight:550; color:var(--ink); background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm); cursor:pointer; outline:none; transition:.15s; letter-spacing:-.1px; }
+  select.sel:hover{ border-color:#d7d9e3; } select.sel:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+  .sel-wrap::after{ content:""; position:absolute; right:14px; bottom:15px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none; }
+  .sel-wrap.hide{ display:none; }
+
+  .divider{ height:1px; background:var(--line); margin:14px 0 0; }
+  .group + .group{ border-top:1px solid var(--line-2); }
+  .group > .ghead{ width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:15px 20px 13px; font-size:11px; font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); display:flex; align-items:center; justify-content:space-between; }
+  .group > .ghead:hover{ color:var(--ink); }
+  .ghead .chev{ transition:transform .2s; color:var(--muted-2); font-size:11px; }
+  .group.collapsed .chev{ transform:rotate(-90deg); }
+  .group.collapsed .gbody{ display:none; }
+  .group.hide{ display:none; }
+  .gbody{ padding:2px 20px 20px; }
+
+  .f{ display:block; margin-bottom:13px; }
+  .f > span{ display:block; font-size:12px; font-weight:550; color:var(--ink-2); margin-bottom:6px; letter-spacing:-.1px; }
+  input[type=text],input[type=email],textarea{ width:100%; padding:10px 12px; font-size:13px; font-family:inherit; color:var(--ink); background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm); outline:none; transition:.15s; letter-spacing:-.1px; }
+  input:focus,textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+  textarea{ resize:vertical; min-height:64px; line-height:1.55; }
+  .hint{ font-size:11px; color:var(--muted); margin:-4px 0 12px; line-height:1.5; letter-spacing:-.1px; }
+  .hint code{ background:var(--accent-weak); color:var(--accent-ink); padding:1px 5px; border-radius:4px; font-size:10.5px; font-family:'SF Mono',ui-monospace,monospace; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:7px 0; }
+  .toggle-row span{ font-size:13px; color:var(--ink-2); letter-spacing:-.1px; }
+  .switch{ position:relative; width:38px; height:22px; flex:none; } .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; inset:0; background:#d3d6e0; border-radius:999px; transition:.2s; cursor:pointer; }
+  .slider::before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+  .switch input:checked + .slider{ background:var(--accent); } .switch input:checked + .slider::before{ transform:translateX(16px); }
+
+  .drop{ border:1.5px dashed var(--line); border-radius:var(--radius-sm); padding:15px; text-align:center; cursor:pointer; transition:.15s; background:var(--panel-2); color:var(--muted); font-size:12px; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .drop svg{ width:16px; height:16px; } .drop:hover,.drop.drag{ border-color:var(--accent); background:var(--accent-weak); color:var(--accent-ink); }
+  .logo-prev{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .logo-prev img{ width:38px; height:38px; object-fit:cover; border-radius:9px; border:1px solid var(--line); background:#fff; }
+  .link-btn{ font-size:11.5px; color:var(--accent-ink); background:none; border:0; cursor:pointer; font-weight:600; padding:2px; }
+
+  .tpl-grid{ display:grid; gap:8px; }
+  .tpl{ border:1px solid var(--line); background:var(--panel); border-radius:var(--radius-sm); padding:11px 12px; cursor:pointer; text-align:left; font-family:inherit; transition:.14s; display:flex; align-items:flex-start; gap:10px; }
+  .tpl:hover{ border-color:#cfd2df; box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+  .tpl .ti{ width:30px; height:30px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--accent-weak); }
+  .tpl .tc{ flex:1; min-width:0; }
+  .tpl .tt{ font-size:12.5px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:6px; letter-spacing:-.1px; }
+  .tpl .tt .flow{ font-size:9px; font-weight:700; color:var(--accent-ink); background:var(--accent-weak); padding:1.5px 5px; border-radius:5px; letter-spacing:.02em; }
+  .tpl .td{ font-size:11px; color:var(--muted); line-height:1.4; margin-top:2px; }
+  .tpl-empty{ font-size:12px; color:var(--muted); text-align:center; padding:14px; line-height:1.5; }
+
+  .btn{ border:0; border-radius:var(--radius-sm); padding:9px 15px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:7px; justify-content:center; transition:.14s; letter-spacing:-.1px; }
+  .btn svg{ width:15px; height:15px; }
+  .btn.primary{ background:var(--accent); color:#fff; box-shadow:0 2px 6px rgba(99,91,255,.3); } .btn.primary:hover{ background:var(--accent-ink); }
+  .btn.ghost{ background:var(--panel); color:var(--ink-2); border:1px solid var(--line); } .btn.ghost:hover{ background:var(--panel-2); border-color:#d7d9e3; }
+  .btn.block{ width:100%; }
+  .btn.on{ background:#e9fbf1; color:#0b8043; border-color:#b6ebcc; }
+
+  /* DIY block builder */
+  .blk{ border:1px solid var(--line); border-radius:9px; padding:11px; margin-bottom:8px; background:#fff; }
+  .blk-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .blk-h .t{ font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .blk-h .x{ border:0; background:none; color:var(--muted-2); cursor:pointer; font-size:12px; padding:2px 6px; border-radius:5px; }
+  .blk-h .x:hover{ background:#f1f2f6; color:var(--ink); }
+  .blk label.mini{ display:block; font-size:10.5px; font-weight:600; color:var(--muted); margin:9px 0 4px; }
+  .blk input, .blk textarea, .blk select{ width:100%; padding:8px 10px; font-size:12.5px; font-family:inherit; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--ink); outline:none; }
+  .blk input:focus,.blk textarea:focus,.blk select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+  .blk select{ -webkit-appearance:none; appearance:none; background:var(--panel-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M1 2l3 3 3-3' stroke='%237a8194' stroke-width='1.4' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center; cursor:pointer; }
+  .blk-add{ width:100%; font-size:12px; font-weight:600; padding:9px; border:1px dashed #c9c6f5; background:var(--accent-weak); color:var(--accent-ink); border-radius:8px; cursor:pointer; font-family:inherit; transition:.14s; }
+  .blk-add:hover{ background:#e6e3ff; }
+  .imgf{ display:flex; gap:9px; align-items:flex-start; }
+  .imgf .prev{ width:56px; height:44px; border-radius:6px; border:1px solid var(--line); object-fit:cover; background:#f1f2f6; flex:none; }
+  .imgf .col{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .imgf .up{ font-size:11.5px; font-weight:600; color:var(--accent-ink); background:var(--accent-weak); border:1px solid #dcd9fb; border-radius:7px; padding:7px 9px; cursor:pointer; font-family:inherit; }
+  .imgf .up:hover{ background:#e6e3ff; }
+  .imgf input{ padding:8px 10px; font-size:11.5px; font-family:inherit; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--ink); outline:none; width:100%; }
+  .imgf input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+
+  /* wallpaper picker */
+  .wp-grid{ display:flex; flex-wrap:wrap; gap:8px; }
+  .wp{ width:44px; height:60px; border-radius:9px; border:2px solid transparent; cursor:pointer; box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); background-size:cover; background-position:center; transition:.14s; }
+  .wp:hover{ transform:translateY(-1px); } .wp.on{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
+  .wp-up{ width:44px; height:60px; border-radius:9px; border:1.5px dashed var(--line); background:var(--panel-2); color:var(--muted); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+  .wp-up:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-weak); }
+
+  /* ============ Stage ============ */
+  .stage-wrap{ display:flex; flex-direction:column; min-width:0; min-height:0; }
+  .topbar{ height:60px; flex:none; background:rgba(255,255,255,.85); backdrop-filter:saturate(1.4) blur(8px); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:0 18px; }
+  .grow{ flex:1; }
+  .seg{ display:flex; background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:3px; gap:2px; }
+  .seg button{ border:0; background:none; padding:7px 13px; font-size:12.5px; font-weight:600; color:var(--muted); border-radius:7px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; transition:.12s; letter-spacing:-.1px; }
+  .seg button svg{ width:15px; height:15px; }
+  .seg button.on{ background:#14151a; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28); }
+  .seg button:disabled{ opacity:.4; cursor:not-allowed; }
+  .topcap{ font-size:11px; color:var(--muted-2); font-weight:600; letter-spacing:.02em; padding-left:2px; white-space:nowrap; }
+
+  .stage{ flex:1; min-height:0; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:38px 24px; background:
+      radial-gradient(120% 120% at 15% 0%, #eef0f6 0%, transparent 45%),
+      radial-gradient(100% 100% at 100% 100%, #eaf6f3 0%, transparent 42%),
+      #eef0f5; }
+
+  /* Phone frame */
+  .phone{ width:388px; background:#0c0c0e; border-radius:52px; padding:11px; box-shadow:var(--shadow-lg); position:relative; }
+  .phone.android{ border-radius:40px; padding:9px; }
+  .screen{ border-radius:42px; overflow:hidden; background:#fff; position:relative; height:812px; display:flex; flex-direction:column; }
+  .phone.android .screen{ border-radius:32px; }
+  .notch{ position:absolute; top:11px; left:50%; transform:translateX(-50%); width:132px; height:30px; background:#0c0c0e; border-radius:0 0 18px 18px; z-index:60; }
+  .punch{ position:absolute; top:20px; left:50%; transform:translateX(-50%); width:10px; height:10px; background:#0c0c0e; border-radius:50%; z-index:60; }
+  .statusbar{ height:46px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px 0 30px; font-size:15px; font-weight:600; z-index:50; color:#000; }
+  .statusbar.lt{ color:#fff; } .statusbar .r{ display:flex; gap:6px; align-items:center; } .statusbar svg{ width:17px; height:17px; }
+  .phone.android .statusbar{ height:34px; font-size:13px; padding:0 18px 0 20px; }
+  .home-ind{ flex:none; height:22px; display:flex; align-items:center; justify-content:center; }
+  .home-ind::after{ content:""; width:130px; height:5px; border-radius:3px; background:#0c0c0e; opacity:.85; }
+  .home-ind.dk::after{ background:#e8eaed; opacity:.7; }
+
+  .clickable{ cursor:pointer; } .clickable:active{ opacity:.62; }
+  .sim-on .clickable{ box-shadow:0 0 0 2px var(--ring); }
+  .sim-badge{ position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:70; background:#635bff; color:#fff; font-size:10.5px; font-weight:650; padding:4px 11px; border-radius:999px; box-shadow:0 4px 12px rgba(99,91,255,.4); pointer-events:none; letter-spacing:.01em; }
+
+  /* ===================== iOS Lock Screen ===================== */
+  .ls{ flex:1; position:relative; display:flex; flex-direction:column; background-size:cover; background-position:center; min-height:0; }
+  .ls-clock{ text-align:center; color:#fff; margin-top:14px; text-shadow:0 1px 12px rgba(0,0,0,.22); }
+  .ls-clock .lk{ width:15px; height:15px; opacity:.92; margin-bottom:9px; }
+  .ls-clock .dt{ font-size:16px; font-weight:600; opacity:.94; letter-spacing:.2px; }
+  .ls-clock .tm{ font-size:78px; font-weight:600; letter-spacing:-2px; line-height:.98; margin-top:1px; font-variant-numeric:tabular-nums; }
+  .ls-notifs{ margin-top:auto; padding:12px 10px 6px; display:flex; flex-direction:column; gap:8px; }
+  .ls-bottom{ display:flex; align-items:center; justify-content:space-between; padding:8px 34px 6px; }
+  .ls-btn{ width:46px; height:46px; border-radius:50%; background:rgba(30,30,34,.42); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; color:#fff; }
+  .ls-btn svg{ width:21px; height:21px; }
+
+  /* ===================== iOS notification card ===================== */
+  .pn-ios{ border-radius:19px; background:rgba(250,250,252,.7); backdrop-filter:blur(22px) saturate(1.5); -webkit-backdrop-filter:blur(22px) saturate(1.5); box-shadow:0 1px 10px rgba(0,0,0,.1); overflow:hidden; }
+  .pn-ios .row{ display:flex; align-items:flex-start; gap:9px; padding:11px 13px 11px 12px; }
+  .pn-ios .icon{ width:23px; height:23px; border-radius:6px; flex:none; object-fit:cover; }
+  .pn-ios .icon.mono{ display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11.5px; }
+  .pn-ios .txt{ flex:1; min-width:0; }
+  .pn-ios .top{ display:flex; align-items:center; gap:6px; }
+  .pn-ios .appn{ text-transform:uppercase; letter-spacing:.02em; color:#5b5b60; font-weight:600; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pn-ios .time{ margin-left:auto; color:#87878c; font-size:12px; flex:none; }
+  .pn-ios .title{ font-size:14.5px; font-weight:600; color:#000; margin-top:1px; line-height:1.24; letter-spacing:-.2px; }
+  .pn-ios .body{ font-size:14.5px; color:#1c1c1e; line-height:1.28; margin-top:1px; letter-spacing:-.2px; }
+  .pn-ios .thumb{ width:38px; height:38px; border-radius:8px; flex:none; object-fit:cover; margin-left:4px; }
+  .pn-ios .big{ width:100%; display:block; height:172px; object-fit:cover; background:#e7e9ee; }
+  .pn-ios.collapsed .title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pn-ios.collapsed .body{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .pn-ios .acts{ border-top:.5px solid rgba(60,60,67,.2); }
+  .pn-ios .act{ padding:12px 13px; text-align:center; color:#007aff; font-size:15.5px; font-weight:400; border-top:.5px solid rgba(60,60,67,.16); letter-spacing:-.2px; }
+  .pn-ios .act:first-child{ border-top:0; }
+
+  /* ===================== app backdrop (behind banner / heads-up / in-app) ===================== */
+  .appbd{ position:absolute; inset:0; display:flex; flex-direction:column; background:#f6f7f9; }
+  .abd-top{ height:50px; flex:none; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid #ececf1; background:#fff; }
+  .abd-top .m{ width:19px; height:19px; color:#3a3f4c; }
+  .abd-top .tl{ font-size:16px; font-weight:650; letter-spacing:-.3px; color:#14151a; flex:1; }
+  .abd-top .ic{ display:flex; gap:15px; color:#5b6070; } .abd-top .ic svg{ width:19px; height:19px; }
+  .abd-body{ flex:1; overflow:hidden; padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .abd-hero{ height:118px; border-radius:14px; }
+  .abd-row{ height:15px; border-radius:6px; background:#e7e9ef; }
+  .abd-row.s{ width:62%; } .abd-row.m{ width:82%; }
+  .abd-cards{ display:flex; gap:12px; }
+  .abd-card{ flex:1; height:96px; border-radius:12px; background:#e7e9ef; }
+  .abd-scrim{ position:absolute; inset:0; background:rgba(8,10,16,.5); }
+
+  .ovl{ position:absolute; left:0; right:0; z-index:40; }
+  .banner-top{ top:50px; padding:0 8px; }
+  .banner-top .pn-ios{ box-shadow:0 8px 26px rgba(0,0,0,.22); }
+  .heads-top{ top:40px; padding:0 8px; }
+
+  /* ===================== Android notification card ===================== */
+  .pn-and{ background:#fef7ff; border-radius:26px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .pn-and.shade-card{ border-radius:26px; box-shadow:none; }
+  .pn-and .row{ display:flex; align-items:flex-start; gap:10px; padding:13px 16px; }
+  .pn-and .txt{ flex:1; min-width:0; }
+  .pn-and .hd{ display:flex; align-items:center; gap:5px; margin-bottom:3px; }
+  .pn-and .hd .icon{ width:16px; height:16px; border-radius:50%; flex:none; object-fit:cover; }
+  .pn-and .hd .icon.mono{ display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:9px; }
+  .pn-and .hd .appn{ font-size:12.5px; color:#49454f; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52%; }
+  .pn-and .hd .dot,.pn-and .hd .time{ font-size:12.5px; color:#79747e; flex:none; }
+  .pn-and .hd .chev{ margin-left:auto; color:#79747e; font-size:14px; flex:none; }
+  .pn-and .title{ font-size:14px; font-weight:600; color:#1d1b20; line-height:1.25; letter-spacing:-.1px; }
+  .pn-and .body{ font-size:13.5px; color:#49454f; margin-top:1px; line-height:1.3; }
+  .pn-and .thumb{ width:42px; height:42px; border-radius:9px; flex:none; object-fit:cover; }
+  .pn-and.collapsed .title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pn-and.collapsed .body{ display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+  .pn-and .big{ width:100%; display:block; height:186px; object-fit:cover; background:#e7e9ee; }
+  .pn-and .acts{ display:flex; gap:2px; padding:2px 8px 8px; }
+  .pn-and .act{ color:#65558f; font-weight:600; font-size:13px; padding:9px 12px; border-radius:999px; white-space:nowrap; letter-spacing:.1px; }
+
+  /* Android heads-up floating card */
+  .heads-top .pn-and{ box-shadow:0 6px 22px rgba(0,0,0,.2); }
+
+  /* Android shade */
+  .shade{ flex:1; position:relative; display:flex; flex-direction:column; background-size:cover; background-position:center; min-height:0; }
+  .shade-head{ text-align:center; color:#fff; padding:8px 0 14px; text-shadow:0 1px 10px rgba(0,0,0,.25); }
+  .shade-head .tm{ font-size:52px; font-weight:500; letter-spacing:-1px; line-height:1; font-variant-numeric:tabular-nums; }
+  .shade-head .dt{ font-size:13.5px; font-weight:500; opacity:.92; margin-top:3px; }
+  .shade-list{ flex:1; overflow:hidden; padding:2px 8px 8px; display:flex; flex-direction:column; gap:8px; }
+  .shade-clear{ text-align:center; padding:6px 0 2px; }
+  .shade-clear span{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.18); color:#fff; }
+  .shade-clear svg{ width:16px; height:16px; }
+
+  /* toast */
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(80px); background:#14151a; color:#fff; padding:11px 18px; border-radius:10px; font-size:12.5px; box-shadow:0 10px 30px rgba(0,0,0,.3); opacity:0; transition:.3s cubic-bezier(.2,.8,.2,1); z-index:200; font-weight:500; max-width:80%; text-align:center; }
+  .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+  @media (max-width:920px){ .app{ grid-template-columns:1fr; } .editor{ display:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="editor" id="editor">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" opacity=".95"/><circle cx="9" cy="10.5" r="1.3" fill="#635bff"/><circle cx="13" cy="10.5" r="1.3" fill="#635bff"/><circle cx="17" cy="10.5" r="1.3" fill="#635bff"/></svg></div>
+      <div><h1>Channel Studio</h1><small>Push &amp; In-App mockups</small></div>
+    </div>
+
+    <div class="ctx">
+      <div class="sel-wrap"><label>Channel</label>
+        <select class="sel" id="selChannel">
+          <option value="gmail">Gmail</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="rcs">RCS</option>
+          <option value="sms">SMS</option>
+          <option value="push">Push</option>
+        </select>
+      </div>
+      <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
+      <div class="sel-wrap" id="subWrap"><label>Sub-industry</label><select class="sel" id="selSub"></select></div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="group" data-group>
+      <button class="ghead" data-head>Templates <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="hint">Ready-made push notifications per industry. <span style="color:var(--accent-ink);font-weight:600">FLOW</span> ones have tappable action buttons — hit <b>Simulate</b> and tap them.</div>
+        <div class="tpl-grid" id="tplGrid"></div>
+        <button class="btn ghost block" id="clearMsgs" style="margin-top:11px;">Clear &amp; start blank</button>
+      </div>
+    </div>
+
+    <div class="group" data-group>
+      <button class="ghead" data-head>App <span class="chev">▾</span></button>
+      <div class="gbody">
+        <label class="f"><span>App name</span><input type="text" id="appName"></label>
+        <label class="f"><span>App icon</span>
+          <div class="drop" id="iconDrop"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2"/></svg> Upload icon (or use monogram)</div>
+          <input type="file" id="iconInput" accept="image/*" hidden>
+          <div class="logo-prev" id="iconPrev" style="display:none;"><img id="iconImg"><button class="link-btn" id="iconClear">Remove</button></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="group" data-group>
+      <button class="ghead" data-head>Notification <span class="chev">▾</span></button>
+      <div class="gbody">
+        <label class="f"><span>Title (bold line)</span><input type="text" id="pnTitle"></label>
+        <label class="f"><span>Body</span><textarea id="pnBody"></textarea></label>
+        <div class="f"><span>Big image (shows when expanded)</span><div class="imgz" id="pnImg"></div></div>
+        <div class="row2">
+          <label class="f"><span>Timestamp</span><input type="text" id="pnTime" value="now"></label>
+        </div>
+        <div class="toggle-row"><span>Expanded (rich / big picture)</span><label class="switch"><input type="checkbox" id="pnExpanded" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <div class="group" data-group>
+      <button class="ghead" data-head>Action buttons <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="hint">Up to 3 buttons. They show when the notification is <b>expanded</b>.</div>
+        <div class="blkz" id="pnActs"></div>
+      </div>
+    </div>
+
+    <div class="group" data-group id="grpAppearance">
+      <button class="ghead" data-head>Wallpaper <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="hint">Shows behind the notification on the <b>Lock Screen</b> and <b>Shade</b>.</div>
+        <div class="wp-grid" id="wpGrid"></div>
+        <input type="file" id="wpInput" accept="image/*" hidden>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage-wrap">
+    <div class="topbar">
+      <div class="seg" id="deviceSeg">
+        <button data-device="ios" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>iPhone</button>
+        <button data-device="android"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Android</button>
+      </div>
+      <div class="seg" id="surfaceSeg"></div>
+      <span class="topcap" id="chanCap"></span>
+      <div class="grow"></div>
+      <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
+      <button class="btn ghost" id="btnCopy">Copy</button>
+      <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmtLite=s=>esc(s).replace(/\*(.+?)\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+  const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):x;
+  function oneLine(s){ return (s||'').replace(/[*_~]/g,'').replace(/\s*\n\s*/g,' ').trim(); }
+  const AV=['#5b6abf','#e07a5f','#3aa99f','#d96a97','#7b68c9','#8a63d2','#2aa9c9','#5aab6a','#e0a34e','#a1887f','#4a90d9','#0b8043','#e26b3a'];
+  const avColor=n=>{ let h=0; const s=n||'?'; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return AV[h%AV.length]; };
+  const initial=n=>{ const t=(n||'?').trim(); return t?t[0].toUpperCase():'?'; };
+  function hueOf(x){ let h=0; x=x||'x'; for(let i=0;i<x.length;i++) h=(h*31+x.charCodeAt(i))>>>0; return h%360; }
+
+  // ---------- Self-contained product illustrations (fallback for images) ----------
+  const ILLUS={
+    shirt:"M8 3l-4 2 1 4 2-1v13h10V8l2 1 1-4-4-2a3 3 0 01-8 0z",
+    pants:"M7 3h10l-1 18h-4l-1-10-1 10H6z",
+    hoodie:"M6 8l-2 2 2 2v9h12v-9l2-2-2-2M8 6a4 4 0 018 0M9 6c1 1.5 5 1.5 6 0",
+    headphones:"M5 13a7 7 0 0114 0M4 13h2v6H5a1 1 0 01-1-1zM20 13h-2v6h1a1 1 0 001-1z",
+    watch:"M8 6V3h8v3M8 18v3h8v-3M6 6h12v12H6zM12 9v3l2 1",
+    phone:"M7 2h10a1 1 0 011 1v18a1 1 0 01-1 1H7a1 1 0 01-1-1V3a1 1 0 011-1zM10 19h4",
+    battery:"M3 8h15a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V9a1 1 0 011-1zM21 11v2M6 12h4",
+    bottle:"M10 2h4v3l1 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V7l1-2zM9 12h6",
+    card:"M2 6h20a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V7a1 1 0 011-1zM1 10h22M5 15h4",
+    coins:"M8 7c0-1.7 2.7-3 6-3s6 1.3 6 3-2.7 3-6 3-6-1.3-6-3zM8 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M4 14c0-1.4 2.2-2.5 5-2.5M4 14v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-2",
+    piggy:"M3 13a7 6 0 0113-3.5L20 9l1 3-1.5 1.5.5 3h-3l-1-1.5a7 6 0 01-9 0L6 19H4l-.5-3A3.5 3.5 0 013 13zM16 11.5h.01",
+    umbrella:"M12 3v2M3 11a9 8 0 0118 0zM3 11h18M12 11v7a2 2 0 003 1.7",
+    gift:"M3 9h18v11H3zM2 6h20v3H2zM12 6V4a2 2 0 10-2 2h2zm0 0V4a2 2 0 112 2h-2zM12 6v14",
+    film:"M4 4h16v16H4zM8 4v16M16 4v16M4 8h4M4 12h4M4 16h4M16 8h4M16 12h4M16 16h4",
+    news:"M4 5h14v15H5a1 1 0 01-1-1zM18 8h2v10a2 2 0 01-2 2M7 8h6M7 12h6M7 16h4",
+    laptop:"M5 5h14v10H5zM3 18l1-3h16l1 3zM9 15h6",
+    plane:"M12 3c1 0 1.5 1 1.5 2v4l7 4v2l-7-2v4l2 1.5V21l-3.5-1L9 21v-1.5L11 18v-4l-7 2v-2l7-4V5c0-1 .5-2 1-2z",
+    bed:"M3 9v10M3 12h18v7M21 15v4M3 12V9a1 1 0 011-1h6a1 1 0 011 1v3M11 12h9a1 1 0 011 1",
+    burger:"M4 9a8 4 0 0116 0zM4 12h16M4 15h16a4 3 0 01-4 3H8a4 3 0 01-4-3zM8 6.5h.01M12 5.8h.01M15.5 6.5h.01",
+    pizza:"M12 3l9 15a1 1 0 01-.5 1.4L4 20 3 6a1 1 0 011-1zM9 9h.01M14 13h.01M11 15h.01",
+    basket:"M4 8h16l-1.5 11h-13zM4 8l3-4M20 8l-3-4M9 12v4M15 12v4M12 12v4",
+    controller:"M7 8h10a4 4 0 014 4v2a3 3 0 01-5.5 1.6L15 14H9l-.5 1.6A3 3 0 013 14v-2a4 4 0 014-4zM6.5 11v3M5 12.5h3M15.5 11.5h.01M17.5 13h.01",
+    chart:"M4 4v16h16M8 16v-5M12 16V9M16 16v-8",
+    building:"M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2",
+    box:"M3 8l9-5 9 5-9 5zM3 8v8l9 5 9-5V8M12 13v8",
+    car:"M4 12l1.5-4.5A2 2 0 017.4 6h9.2a2 2 0 011.9 1.5L20 12M3 12h18v4a1 1 0 01-1 1M5 17H4a1 1 0 01-1-1v-4M7 17a2 2 0 004 0M13 17a2 2 0 004 0M6 12h12",
+    stethoscope:"M6 3v6a4 4 0 008 0V3M6 3H4M12 3h2M10 13v2a4 4 0 008 0M18 13a2 2 0 100-.01",
+    suitcase:"M5 8h14v11H5zM9 8V5h6v3M12 8v11",
+    mic:"M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3zM7 11a5 5 0 0010 0M12 16v4M9 21h6",
+    trophy:"M7 4h10v4a5 5 0 01-10 0zM7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 13h4l1 4H9zM8 20h8",
+    family:"M8 8a2 2 0 100-.01M16 8a2 2 0 100-.01M5 20v-4a2 2 0 012-2h2M19 20v-4a2 2 0 00-2-2h-2M12 14a2 2 0 100-.01M10 20v-3a2 2 0 014 0v3",
+    server:"M4 4h16v6H4zM4 14h16v6H4zM7 7h.01M7 17h.01",
+    sun:"M12 8a4 4 0 100 8 4 4 0 000-8zM12 3v2M12 19v2M3 12h2M19 12h2M6 6l1 1M17 17l1 1M18 6l-1 1M7 17l-1 1"
+  };
+  const ILMAP={tshirt:'shirt',clothing:'shirt',trousers:'pants',hoodie:'hoodie',earbuds:'headphones',electronics:'headphones',smartwatch:'watch',battery:'battery',serum:'bottle',cosmetics:'bottle',sunscreen:'bottle',milk:'bottle',savings:'coins',cash:'coins',money:'coins',piggybank:'piggy',creditcard:'card',invoice:'card',car:'car',stethoscope:'stethoscope',suitcase:'suitcase',umbrella:'umbrella',gift:'gift',treasure:'gift',cinema:'film',popcorn:'film',microphone:'mic',newspaper:'news',laptop:'laptop',wireframe:'laptop',classroom:'laptop',dashboard:'chart',stockmarket:'chart',plane:'plane',airplane:'plane',hotel:'bed',hotelroom:'bed',beach:'sun',burger:'burger',food:'burger',sushi:'burger',pizza:'pizza',vegetables:'basket',groceries:'basket',eggs:'box',bread:'box',product:'box',server:'server',controller:'controller',videogame:'controller',gamepad:'controller',smartphone:'phone',wifi:'phone',family:'family',stadium:'trophy',sport:'trophy',building:'building',city:'building',miami:'building',newyork:'building',chicago:'building'};
+  function illusFor(kw){ kw=(kw||'').toLowerCase(); return ILMAP[kw] || (ILLUS[kw]?kw:'box'); }
+  function tile(kw,hue,w,h){ w=w||600; h=h||360; if(hue==null) hue=hueOf(kw); const h2=(hue+34)%360;
+    const d=ILLUS[illusFor(kw)]||ILLUS.box; const S=(Math.min(w,h)*0.4/24), cx=w/2, cy=h/2, r=Math.min(w,h)*0.31;
+    const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'>"
+      +"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",56%,58%)'/><stop offset='1' stop-color='hsl("+h2+",52%,44%)'/></linearGradient></defs>"
+      +"<rect width='100%' height='100%' fill='url(#g)'/>"
+      +"<circle cx='"+cx.toFixed(0)+"' cy='"+cy.toFixed(0)+"' r='"+r.toFixed(0)+"' fill='rgba(255,255,255,0.13)'/>"
+      +"<g transform='translate("+cx.toFixed(1)+","+cy.toFixed(1)+") scale("+S.toFixed(3)+") translate(-12,-12)' fill='none' stroke='#fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'><path d='"+d+"'/></g>"
+      +"</svg>";
+    return 'data:image/svg+xml,'+encodeURIComponent(svg); }
+  function photo(kw,w,h){ const m=(window.__PXIMG||{}); return m[kw] || tile(kw,null,w,h); }
+  function phGrad(seed){ const hue=((seed||0)%360+360)%360, h2=(hue+40)%360; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",52%,62%)'/><stop offset='1' stop-color='hsl("+h2+",48%,46%)'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><circle cx='330' cy='60' r='130' fill='rgba(255,255,255,0.10)'/><circle cx='60' cy='230' r='90' fill='rgba(0,0,0,0.06)'/></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
+  function phGray(w,h){ w=w||120; h=h||90; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'><rect width='100%' height='100%' fill='%23e7e9ee'/><g fill='none' stroke='%23aab0bd' stroke-width='2'><rect x='"+Math.round(w*0.32)+"' y='"+Math.round(h*0.3)+"' width='"+Math.round(w*0.36)+"' height='"+Math.round(h*0.4)+"' rx='6'/><circle cx='"+Math.round(w*0.42)+"' cy='"+Math.round(h*0.43)+"' r='"+Math.round(h*0.06)+"'/><path d='M"+Math.round(w*0.35)+" "+Math.round(h*0.66)+" L"+Math.round(w*0.46)+" "+Math.round(h*0.53)+" L"+Math.round(w*0.54)+" "+Math.round(h*0.6)+" L"+Math.round(w*0.6)+" "+Math.round(h*0.55)+" L"+Math.round(w*0.65)+" "+Math.round(h*0.66)+"'/></g></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
+  const KW={fashion:'clothing',marketplace:'electronics',d2c:'cosmetics',banking:'money',insurance:'umbrella',fintech:'smartphone',ott:'cinema',news:'newspaper',airlines:'airplane',hotels:'hotel',delivery:'food',grocery:'vegetables',edtech:'classroom',gaming:'videogame',telecom:'smartphone'};
+  const IMGKW={'Oversized Tee':'tshirt','Cargo Pants':'trousers','Knit Hoodie':'hoodie','Wireless Earbuds':'earbuds','Smart Watch':'smartwatch','Power Bank':'battery','Vitamin C Serum':'serum','Night Cream':'cosmetics','SPF 50':'sunscreen','Savings+':'savings','Gold Card':'creditcard','Auto Loan':'car','Youth Account':'piggybank','Motor':'car','Health':'stethoscope','Travel':'suitcase','Pay bills':'invoice','Send money':'cash','Rewards':'gift','Originals':'cinema','Blockbusters':'popcorn','Live comedy':'microphone','Business':'chart','Tech':'laptop','Sport':'stadium','Miami':'miami','New York':'newyork','Chicago':'chicago','Palm Grand':'hotel','City Suites':'hotelroom','Beach Villa':'beach','Burger Yard':'burger','Sushi Bar':'sushi','Pizza Co':'pizza','Fresh Milk':'milk','Free-range Eggs':'eggs','Sourdough':'bread','Data Analytics':'dashboard','UX Design':'wireframe','Cloud 101':'server','Legendary Crate':'treasure','Season Pass':'videogame','Hero Bundle':'gamepad','Unlimited':'smartphone','Family Plan':'family','Data Add-on':'wifi'};
+  function kwFor(name){ return IMGKW[name] || (name||'product').split(' ')[0].toLowerCase(); }
+  let uid=1; const nid=()=>'m'+(uid++);
+
+  // ---------- Industries & content packs ----------
+  const INDUSTRIES=[
+    {id:'ecom', name:'E-commerce & Retail', biz:'Nova', subs:[['fashion','Fashion'],['marketplace','Marketplace'],['d2c','D2C']]},
+    {id:'bfsi', name:'Banking & Finance', biz:'Meridian Bank', subs:[['banking','Retail Banking'],['insurance','Insurance'],['fintech','Fintech']]},
+    {id:'media', name:'Media & Entertainment', biz:'Streamly', subs:[['ott','OTT / Streaming'],['news','News & Publishing']]},
+    {id:'travel', name:'Travel & Hospitality', biz:'SkyHigh', subs:[['airlines','Airlines'],['hotels','Hotels & OTA']]},
+    {id:'food', name:'Food & Delivery', biz:'QuickBite', subs:[['delivery','Food Delivery'],['grocery','Grocery']]},
+    {id:'edtech', name:'EdTech', biz:'LearnSphere', subs:[]},
+    {id:'gaming', name:'Gaming', biz:'PixelForge', subs:[]},
+    {id:'telecom', name:'Telecom', biz:'ConnectTel', subs:[]},
+  ];
+  const PACKS={
+    fashion:{brand:"Nova",emoji:"🛍️",offer:"40% off new arrivals",url:"nova.shop",orderId:"10482",code:"NOVA10",otpUse:"login",reminder:"your wishlist item is back in stock",feedbackQ:"How was your recent order?",flow:{intro:"You left Nova Air Runner (US 9) in your bag 👟 Still want it? We saved your size.",opts:[["Complete purchase"],["Remind me later"],["Not now"]]}},
+    marketplace:{brand:"Nova Market",emoji:"🛒",offer:"Deals up to 70% off",url:"novamarket.com",orderId:"88231",code:"SAVE15",otpUse:"login",reminder:"prices dropped on items in your cart",feedbackQ:"How was your delivery?",flow:{intro:"Your cart is waiting — 3 items, and one just dropped in price!",opts:[["Checkout now"],["Save for later"],["Dismiss"]]}},
+    d2c:{brand:"GlowLab",emoji:"✨",offer:"Buy 1 Get 1 on bestsellers",url:"glowlab.co",orderId:"4471",code:"GLOW20",otpUse:"login",reminder:"time to restock your Vitamin C serum",feedbackQ:"How's your skin feeling?",flow:{intro:"Running low? Your Vitamin C Serum usually lasts 30 days — time to restock.",opts:[["Reorder now"],["See bestsellers"],["Not yet"]]}},
+    banking:{brand:"Meridian Bank",emoji:"🏦",offer:"0% EMI on your credit card",url:"meridian.com",orderId:"RQ-2093",code:"",otpUse:"login",reminder:"your monthly statement is ready",feedbackQ:"How was your branch visit?",flow:{intro:"A payment of $220.00 was made on your Gold Card at Nova Retail.",opts:[["View details"],["Not me"],["Dismiss"]]}},
+    insurance:{brand:"Meridian Assure",emoji:"🛡️",offer:"Renew early & save 15%",url:"meridian.com/renew",orderId:"MA-88213",code:"",otpUse:"account",reminder:"your motor policy expires on 20 Jul",feedbackQ:"How was your claim experience?",flow:{intro:"Your motor policy MA-88213 expires on 20 Jul. Renew now to stay covered.",opts:[["Renew now"],["Remind me"],["Dismiss"]]}},
+    fintech:{brand:"Meridian Pay",emoji:"💳",offer:"Cashback week — 5% back",url:"meridianpay.com",orderId:"PMT-5521",code:"CASH5",otpUse:"payment",reminder:"you have $40 in unused rewards",feedbackQ:"How was your last payment?",flow:{intro:"You received $150.00 from Alex Carter. Tap to view your balance.",opts:[["View balance"],["Send back"],["Dismiss"]]}},
+    ott:{brand:"Streamly",emoji:"🎬",offer:"50% off your next month",url:"streamly.tv",orderId:"SUB-771",code:"COMEBACK50",otpUse:"login",reminder:"3 new seasons landed in your watchlist",feedbackQ:"Enjoying the new releases?",flow:{intro:"3 new seasons just landed in your watchlist 🍿 Come back for 50% off?",opts:[["Claim 50% off"],["See what's new"],["Not now"]]}},
+    news:{brand:"Streamly News",emoji:"📰",offer:"Go Premium — ad-free",url:"news.streamly.tv",orderId:"NS-330",code:"READ30",otpUse:"login",reminder:"your morning briefing is ready",feedbackQ:"How do you like your briefing?",flow:{intro:"Breaking: Markets rally to a record high. Tap to read the full story.",opts:[["Read now"],["Save"],["Dismiss"]]}},
+    airlines:{brand:"SkyHigh",emoji:"✈️",offer:"Fares from $199",url:"skyhigh.com",orderId:"SH-233",code:"FLY15",otpUse:"booking",reminder:"online check-in is open for SH-233",feedbackQ:"How was your flight?",flow:{intro:"Check-in is open for SH-233 (New York → Miami), departs Fri 14:20.",opts:[["Check in now"],["Add baggage"],["Later"]]}},
+    hotels:{brand:"SkyHigh Stays",emoji:"🏨",offer:"Weekend stays 30% off",url:"skyhigh.com/stays",orderId:"SG-77120",code:"STAY30",otpUse:"booking",reminder:"your stay at Palm Grand is in 2 days",feedbackQ:"How was your stay?",flow:{intro:"Your stay at Palm Grand, Miami is in 2 days. Anything we can arrange?",opts:[["Early check-in"],["Airport pickup"],["View booking"]]}},
+    delivery:{brand:"QuickBite",emoji:"🍔",offer:"Free delivery all weekend",url:"quickbite.app",orderId:"5521",code:"FREEDEL",otpUse:"login",reminder:"hungry? your favourites are one tap away",feedbackQ:"How was your meal?",flow:{intro:"Your order #5521 from Burger Yard is on the way 🛵 Ahmed is 8 min away.",opts:[["Track rider"],["Call rider"],["Dismiss"]]}},
+    grocery:{brand:"QuickBite Fresh",emoji:"🛒",offer:"$20 off your groceries",url:"quickbite.app/fresh",orderId:"7830",code:"FRESH20",otpUse:"login",reminder:"running low? reorder your weekly essentials",feedbackQ:"How was your delivery?",flow:{intro:"Running low? Reorder your weekly essentials (milk, eggs, bread +4) in one tap.",opts:[["Reorder now"],["Edit list"],["Skip week"]]}},
+    edtech:{brand:"LearnSphere",emoji:"🎓",offer:"Certificates 50% off",url:"learnsphere.io",orderId:"EN-9012",code:"LEARN50",otpUse:"login",reminder:"you're 68% through your course",feedbackQ:"How's the course going?",flow:{intro:"You're 68% through Data Analytics Foundations 📈 Just 3 lessons to your certificate!",opts:[["Resume lesson"],["Book a mentor"],["Later"]]}},
+    gaming:{brand:"PixelForge",emoji:"🎮",offer:"Double gems this weekend",url:"pixelforge.gg",orderId:"PX-4410",code:"GEMS2X",otpUse:"login",reminder:"your energy is full — time to play",feedbackQ:"Enjoying the new season?",flow:{intro:"Your squad misses you, Commander ⚔️ Log in for a free Legendary crate + 500 gems.",opts:[["Claim reward"],["See what's new"],["Dismiss"]]}},
+    telecom:{brand:"ConnectTel",emoji:"📱",offer:"Unlimited data — $149/mo",url:"connecttel.com",orderId:"CT-6621",code:"UNLTD",otpUse:"login",reminder:"you've used 90% of your data",feedbackQ:"How's your network experience?",flow:{intro:"Heads up — you've used 90% of your data 📶 3 days left in your cycle.",opts:[["Add 10GB · $30"],["Upgrade plan"],["No thanks"]]}},
+  };
+  const CONFIRM={
+    fashion:{noun:'order',line:"We'll let you know when it ships.",cta:'Track order',ship:true},
+    marketplace:{noun:'order',line:"We'll notify you when it ships.",cta:'Track order',ship:true},
+    d2c:{noun:'order',line:"We'll email tracking once it ships.",cta:'Track order',ship:true},
+    banking:{noun:'request',line:"Your request is being processed.",cta:'View request',ship:false},
+    insurance:{noun:'policy',line:'Your policy is now active. Documents are ready.',cta:'View policy',ship:false},
+    fintech:{noun:'payment',line:'Your payment went through. Tap for the receipt.',cta:'View receipt',ship:false},
+    ott:{noun:'subscription',line:'Your subscription is active — start watching now.',cta:'Start watching',ship:false},
+    news:{noun:'subscription',line:'Ad-free reading is unlocked on all your devices.',cta:'Start reading',ship:false},
+    airlines:{noun:'booking',line:'Your seats are reserved. Check-in opens 48h before departure.',cta:'View booking',ship:false},
+    hotels:{noun:'reservation',line:"Your stay is booked — we can't wait to host you.",cta:'View reservation',ship:false},
+    delivery:{noun:'order',line:'Your food is being prepared — track your rider live.',cta:'Track order',ship:true},
+    grocery:{noun:'order',line:"We'll notify you when your delivery is on the way.",cta:'Track order',ship:true},
+    edtech:{noun:'enrollment',line:'Your seat is confirmed. Jump into your first lesson.',cta:'Start learning',ship:false},
+    gaming:{noun:'purchase',line:'Your items have been added to your account.',cta:'Open game',ship:false},
+    telecom:{noun:'plan',line:'Your new plan is live. Enjoy!',cta:'Manage plan',ship:false},
+  };
+  function ctxId(){ return state.sub || state.industry; }
+  function ecx(){ return CONFIRM[ctxId()]||{noun:'order',line:'',cta:'View details',ship:true}; }
+
+  // ---------- State ----------
+  const state={
+    channel:'push', device:'ios', surface:'lock', play:false,
+    industry:'ecom', sub:'fashion',
+    appLogo:null, expanded:true, wallpaper:'aurora',
+    push:{ appName:'Nova', title:'', body:'', image:'', actions:'', time:'now' },
+  };
+
+  const IC={
+    wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
+    batt:'<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor"/><rect x="21" y="10" width="1.6" height="4" rx=".8" fill="currentColor"/></svg>',
+    cell:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg>',
+    lock:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V8a6 6 0 0112 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V8a4 4 0 00-8 0v2z"/></svg>',
+    flash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6l-1 7h4l-9 13 2-9H7z"/></svg>',
+    cam:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.9"/></svg>',
+    menu:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    bell:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6zM9.5 20a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    clear:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  };
+
+  // ---------- Simulate affordance ----------
+  function optAttr(o){ if(!state.play) return ''; return ` data-opt="1" data-reply="${esc(o.reply||'')}"`; }
+  const ck=on=> (state.play&&on)?' clickable':'';
+
+  // ---------- Wallpapers ----------
+  const WALLS={
+    aurora:'linear-gradient(155deg,#3a1c71,#8a2387 46%,#e94057 82%,#f27121)',
+    ocean:'linear-gradient(160deg,#0f2027,#203a43 50%,#2c5364)',
+    dusk:'linear-gradient(160deg,#5f4b8b,#6a7fbf 42%,#a8c0d8)',
+    sunset:'linear-gradient(160deg,#ee9ca7,#ff746c 50%,#c94b4b)',
+    forest:'linear-gradient(160deg,#134e5e,#3c8c74 55%,#71b280)',
+    mono:'linear-gradient(160deg,#232526,#414345)',
+  };
+  function wallBg(){ const w=state.wallpaper; if(w && /^(data:|https?:)/.test(w)) return "url('"+w.replace(/'/g,"%27")+"') center/cover"; return WALLS[w]||WALLS.aurora; }
+
+  // ---------- App icon ----------
+  function appIcon(cls){ const nm=state.push.appName; return state.appLogo?`<img class="${cls}" src="${state.appLogo}" alt="${esc(nm)}">`:`<div class="${cls} mono" style="background:${avColor(nm)}">${esc(initial(nm))}</div>`; }
+  function pushActions(){ return (state.push.actions||'').split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3); }
+
+  // ---------- Status bar ----------
+  function statusBar(lt){ const r=state.device==='android'?`${IC.wifi}${IC.cell}${IC.batt}`:`${IC.cell}${IC.wifi}${IC.batt}`; return `<div class="statusbar ${lt?'lt':''}"><span>9:41</span><div class="r">${r}</div></div>`; }
+
+  // ---------- iOS notification card ----------
+  function pushCardIOS(){
+    const p=state.push, exp=state.expanded, acts=pushActions(), hasImg=!!p.image;
+    const thumb=(!exp&&hasImg)?`<img class="thumb" src="${esc(p.image)}" alt="${esc(kwFor(p.title))}">`:'';
+    const big=(exp&&hasImg)?`<img class="big" src="${esc(p.image)}" alt="${esc(kwFor(p.title))}">`:'';
+    const actsHTML=(exp&&acts.length)?`<div class="acts">${acts.map(a=>`<div class="act${ck(true)}"${optAttr({reply:a})}>${esc(a)}</div>`).join('')}</div>`:'';
+    return `<div class="pn-ios ${exp?'':'collapsed'}">
+      <div class="row">
+        ${appIcon('icon')}
+        <div class="txt">
+          <div class="top"><span class="appn">${esc(p.appName)}</span><span class="time">${esc(p.time||'now')}</span></div>
+          ${p.title?`<div class="title">${esc(p.title)}</div>`:''}
+          ${p.body?`<div class="body">${fmtLite(p.body)}</div>`:''}
+        </div>
+        ${thumb}
+      </div>
+      ${big}${actsHTML}
+    </div>`;
+  }
+  // ---------- Android notification card ----------
+  function pushCardAnd(inShade){
+    const p=state.push, exp=state.expanded, acts=pushActions(), hasImg=!!p.image;
+    const thumb=(!exp&&hasImg)?`<img class="thumb" src="${esc(p.image)}" alt="${esc(kwFor(p.title))}">`:'';
+    const big=(exp&&hasImg)?`<img class="big" src="${esc(p.image)}" alt="${esc(kwFor(p.title))}">`:'';
+    const actsHTML=(exp&&acts.length)?`<div class="acts">${acts.map(a=>`<div class="act${ck(true)}"${optAttr({reply:a})}>${esc(a)}</div>`).join('')}</div>`:'';
+    return `<div class="pn-and ${inShade?'shade-card':''} ${exp?'':'collapsed'}">
+      <div class="row">
+        <div class="txt">
+          <div class="hd">${appIcon('icon')}<span class="appn">${esc(p.appName)}</span><span class="dot">·</span><span class="time">${esc(p.time||'now')}</span><span class="chev">⌄</span></div>
+          ${p.title?`<div class="title">${esc(p.title)}</div>`:''}
+          ${p.body?`<div class="body">${fmtLite(p.body)}</div>`:''}
+        </div>
+        ${thumb}
+      </div>
+      ${big}${actsHTML}
+    </div>`;
+  }
+  // ---------- Generic app backdrop ----------
+  function appBackdrop(){
+    return `<div class="appbd">
+      ${statusBar(false)}
+      <div class="abd-top"><span class="m">${IC.menu}</span><span class="tl">${esc(state.push.appName||'App')}</span><span class="ic">${IC.search}${IC.bell}</span></div>
+      <div class="abd-body">
+        <div class="abd-hero" style="background:${tileBg()}"></div>
+        <div class="abd-row m"></div><div class="abd-row s"></div>
+        <div class="abd-cards"><div class="abd-card"></div><div class="abd-card"></div></div>
+        <div class="abd-row m"></div><div class="abd-row s"></div>
+      </div>
+      <div class="home-ind"></div>
+    </div>`;
+  }
+  function tileBg(){ const kw=KW[ctxId()]||'product'; return "url('"+photo(kw,600,340).replace(/'/g,"%27")+"') center/cover, linear-gradient(135deg,hsl("+hueOf(kw)+",50%,60%),hsl("+((hueOf(kw)+40)%360)+",46%,46%))"; }
+
+  // ---------- Surfaces ----------
+  function iosLock(){
+    return `<div class="ls" style="background:${wallBg()}">
+      ${statusBar(true)}
+      <div class="ls-clock"><div class="lk">${IC.lock}</div><div class="dt">Monday, July 14</div><div class="tm">9:41</div></div>
+      <div class="ls-notifs">${pushCardIOS()}</div>
+      <div class="ls-bottom"><div class="ls-btn">${IC.flash}</div><div class="ls-btn">${IC.cam}</div></div>
+      <div class="home-ind dk"></div>
+    </div>`;
+  }
+  function iosBanner(){ return appBackdrop()+`<div class="ovl banner-top">${pushCardIOS()}</div>`; }
+  function andHeads(){ return appBackdrop()+`<div class="ovl heads-top">${pushCardAnd(false)}</div>`; }
+  function andShade(){
+    const filler=`<div class="pn-and shade-card collapsed"><div class="row"><div class="txt"><div class="hd"><div class="icon mono" style="background:#ea4335;font-size:9px">G</div><span class="appn">Gmail</span><span class="dot">·</span><span class="time">8:12</span></div><div class="title">Weekly report is ready</div><div class="body">Your dashboard summary for this week…</div></div></div></div>`;
+    return `<div class="shade" style="background:linear-gradient(rgba(14,16,22,.82),rgba(14,16,22,.9)), ${wallBg()}">
+      ${statusBar(true)}
+      <div class="shade-head"><div class="tm">9:41</div><div class="dt">Monday, July 14</div></div>
+      <div class="shade-list">${pushCardAnd(true)}${filler}</div>
+      <div class="shade-clear"><span>${IC.clear}</span></div>
+      <div class="home-ind dk"></div>
+    </div>`;
+  }
+
+  const stage=$('#stage');
+  stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
+
+  function renderPush(){
+    if(state.device==='ios') return state.surface==='banner'?iosBanner():iosLock();
+    return state.surface==='shade'?andShade():andHeads();
+  }
+  function render(){
+    const android=state.device==='android';
+    const head=android?`<div class="punch"></div>`:`<div class="notch"></div>`;
+    stage.className='stage'+(state.play?' sim-on':'');
+    const badge=state.play?`<div class="sim-badge">● Simulate — tap the buttons</div>`:'';
+    const inner=renderPush();
+    stage.innerHTML=`<div class="phone ${android?'android':''}" id="capture">${head}${badge}<div class="screen">${inner}</div></div>`;
+    bindOpts(); fitDevice();
+  }
+  function fitDevice(){ const cap=$('#capture'); if(!cap) return; cap.style.transform='none'; cap.style.marginBottom='';
+    const availH=stage.clientHeight-40, availW=stage.clientWidth-24, h=cap.offsetHeight, w=cap.offsetWidth;
+    const k=Math.min(1, availH/h, availW/w); if(k<1){ cap.style.transformOrigin='top center'; cap.style.transform='scale('+k+')'; cap.style.marginBottom=(-(h*(1-k)))+'px'; } }
+  window.addEventListener('resize', fitDevice);
+  function bindOpts(){ if(!state.play) return; stage.querySelectorAll('[data-opt]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); const r=el.dataset.reply||''; toast('▸ '+(r?('“'+r+'” → opens '+state.push.appName):('Opens '+state.push.appName))); })); }
+
+  // ======================================================================
+  //  TEMPLATES
+  // ======================================================================
+  const PUSH_ARCH=[
+    {name:'Promotional offer',kind:'Promotional',icon:'🏷️',desc:'Big image + CTA',build:p=>({title:`${p.emoji} ${p.offer}`,body:`Shop the latest at ${p.brand} — for a limited time only.`,image:photo(p.kw,600,340,3),actions:'Shop now\nRemind me',expanded:true})},
+    {name:'Order update',kind:'Transactional',icon:'✅',desc:'Confirmation / delivery',build:p=>{ const c=ecx(); return {title:`${cap(c.noun)} #${p.orderId} ${c.ship?'is on the way':'confirmed'}`,body:c.ship?'Arriving today by 6 PM. Tap to track it live.':c.line,image:'',actions:c.ship?'Track order':c.cta,expanded:true}; }},
+    {name:'Win-back',kind:'Flow',icon:'💛',desc:'Re-engagement + choices',build:p=>({title:`We miss you at ${p.brand}`,body:oneLine(p.flow.intro),image:photo(p.kw,600,340,7),actions:p.flow.opts.slice(0,3).map(o=>o[0]).join('\n'),expanded:true})},
+    {name:'Reminder',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>({title:`Reminder from ${p.brand}`,body:cap(p.reminder),image:'',actions:`Open ${p.brand}`,expanded:false})},
+    {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + image',build:p=>({title:`⏰ Last chance — ${p.offer}`,body:`Ends at midnight. Don't miss out on ${p.brand}.`,image:photo(p.kw,600,340,5),actions:'Shop now',expanded:true})},
+    {name:'Feedback',kind:'Flow',icon:'⭐',desc:'Rating buttons',build:p=>({title:'How did we do?',body:p.feedbackQ||`Tell us how ${p.brand} did — it takes 10 seconds.`,image:'',actions:'😍 Great\n🙂 Okay\n😞 Poor',expanded:true})},
+  ];
+  function templatesFor(){
+    const base=PACKS[ctxId()]; if(!base) return [];
+    const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
+    return PUSH_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>Object.assign({appName:p.brand}, a.build(p)) }));
+  }
+  function renderTemplates(){
+    const list=templatesFor(); const g=$('#tplGrid');
+    if(!list.length){ g.innerHTML=`<div class="tpl-empty">No preset for this combo — start blank below.</div>`; return; }
+    g.innerHTML=list.map((t,i)=>`<button class="tpl" data-i="${i}"><span class="ti">${t.icon}</span><span class="tc"><span class="tt">${esc(t.name)}${t.flow?'<span class="flow">FLOW</span>':''}</span><span class="td">${esc(t.desc)}</span></span></button>`).join('');
+    g.querySelectorAll('.tpl').forEach(b=>b.addEventListener('click',()=>applyTemplate(list[+b.dataset.i])));
+  }
+  function applyTemplate(t){
+    const f=t.build();
+    state.push.appName=f.appName!=null?f.appName:state.push.appName;
+    state.push.title=f.title||''; state.push.body=f.body||''; state.push.image=f.image||'';
+    state.push.actions=f.actions||''; if(f.time!=null) state.push.time=f.time;
+    if(f.expanded!=null) state.expanded=f.expanded;
+    syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to tap actions':''));
+  }
+
+  // ---------- DIY block builder (actions) ----------
+  function serActions(rows){ return rows.map(r=>r.label||'').filter(Boolean).join('\n'); }
+  function parseActions(val){ return (val||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>({label:l})); }
+  function buildActions(host){
+    let rows=parseActions(state.push.actions);
+    const commit=()=>{ state.push.actions=serActions(rows); render(); };
+    function draw(){
+      host.innerHTML='';
+      rows.forEach((row,ri)=>{
+        const blk=document.createElement('div'); blk.className='blk';
+        const head=document.createElement('div'); head.className='blk-h';
+        const t=document.createElement('span'); t.className='t'; t.textContent='Button '+(ri+1); head.appendChild(t);
+        const x=document.createElement('button'); x.className='x'; x.type='button'; x.textContent='✕'; x.onclick=()=>{ rows.splice(ri,1); commit(); draw(); }; head.appendChild(x);
+        blk.appendChild(head);
+        const l=document.createElement('label'); l.className='mini'; l.textContent='Button label'; blk.appendChild(l);
+        const inp=document.createElement('input'); inp.type='text'; inp.value=row.label||''; inp.placeholder='e.g. Shop now'; inp.addEventListener('input',()=>{ row.label=inp.value; commit(); }); blk.appendChild(inp);
+        host.appendChild(blk);
+      });
+      if(rows.length<3){ const add=document.createElement('button'); add.type='button'; add.className='blk-add'; add.textContent='+ Add button'; add.onclick=()=>{ rows.push({label:'Open'}); commit(); draw(); }; host.appendChild(add); }
+    }
+    draw();
+  }
+
+  // ---------- image field ----------
+  function pickImage(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
+  function imageField(get,set){
+    const row=document.createElement('div'); row.className='imgf';
+    const prev=document.createElement('img'); prev.className='prev';
+    const setPrev=()=>{ const v=get(); prev.src = v || phGray(120,90); };
+    const col=document.createElement('div'); col.className='col';
+    const up=document.createElement('button'); up.type='button'; up.className='up'; up.textContent='⬆ Upload image';
+    const url=document.createElement('input'); url.type='text'; url.placeholder='…or paste an image URL';
+    const cur=get(); url.value=(cur && !/^data:/.test(cur))?cur:'';
+    up.onclick=()=>pickImage(d=>{ set(d); url.value=''; setPrev(); });
+    url.addEventListener('input',()=>{ set(url.value.trim()); setPrev(); });
+    col.appendChild(up); col.appendChild(url); row.appendChild(prev); row.appendChild(col);
+    setPrev(); return row;
+  }
+
+  // ---------- editor sync ----------
+  function syncEditor(){
+    $('#appName').value=state.push.appName||'';
+    $('#pnTitle').value=state.push.title||'';
+    $('#pnBody').value=state.push.body||'';
+    $('#pnTime').value=state.push.time||'now';
+    $('#pnExpanded').checked=!!state.expanded;
+    const pi=$('#pnImg'); pi.innerHTML=''; pi.appendChild(imageField(()=>state.push.image, v=>{ state.push.image=v; render(); }));
+    buildActions($('#pnActs'));
+  }
+
+  // ---------- industries ----------
+  function fillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
+  function fillSubs(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); const subs=ind?ind.subs:[];
+    if(!subs.length){ $('#subWrap').classList.add('hide'); state.sub=null; return; }
+    $('#subWrap').classList.remove('hide'); $('#selSub').innerHTML=subs.map(s=>`<option value="${s[0]}">${esc(s[1])}</option>`).join('');
+    if(!subs.find(s=>s[0]===state.sub)) state.sub=subs[0][0]; $('#selSub').value=state.sub; }
+
+  // ---------- surface segmented control ----------
+  const SURFACES={ ios:[['lock','Lock Screen'],['banner','Banner']], android:[['heads','Heads-up'],['shade','Shade']] };
+  function fillSurface(){
+    const opts=SURFACES[state.device];
+    if(!opts.find(o=>o[0]===state.surface)) state.surface=opts[0][0];
+    const seg=$('#surfaceSeg');
+    seg.innerHTML=opts.map(o=>`<button data-surface="${o[0]}" class="${state.surface===o[0]?'on':''}">${o[1]}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.surface=b.dataset.surface; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); syncAppearance(); render(); }));
+  }
+  function syncAppearance(){ const wp=(state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade'); $('#grpAppearance').classList.toggle('hide', !wp); }
+
+  // ---------- wallpaper picker ----------
+  function fillWallpapers(){
+    const g=$('#wpGrid');
+    g.innerHTML=Object.keys(WALLS).map(k=>`<div class="wp ${state.wallpaper===k?'on':''}" data-wp="${k}" style="background:${WALLS[k]}"></div>`).join('')+`<div class="wp-up" id="wpUp">＋</div>`;
+    g.querySelectorAll('.wp').forEach(el=>el.addEventListener('click',()=>{ state.wallpaper=el.dataset.wp; g.querySelectorAll('.wp,.wp-up').forEach(x=>x.classList.remove('on')); el.classList.add('on'); render(); }));
+    $('#wpUp').addEventListener('click',()=>$('#wpInput').click());
+  }
+  $('#wpInput').addEventListener('change',()=>{ const f=$('#wpInput').files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ state.wallpaper=r.result; $('#wpGrid').querySelectorAll('.wp').forEach(x=>x.classList.remove('on')); render(); }; r.readAsDataURL(f); });
+
+  // ---------- static field bindings ----------
+  $('#appName').addEventListener('input',e=>{ state.push.appName=e.target.value; render(); });
+  $('#pnTitle').addEventListener('input',e=>{ state.push.title=e.target.value; render(); });
+  $('#pnBody').addEventListener('input',e=>{ state.push.body=e.target.value; render(); });
+  $('#pnTime').addEventListener('input',e=>{ state.push.time=e.target.value; render(); });
+  $('#pnExpanded').addEventListener('change',e=>{ state.expanded=e.target.checked; render(); });
+
+  (function(){ const drop=$('#iconDrop'),inp=$('#iconInput');
+    const set=d=>{ state.appLogo=d; $('#iconImg').src=d; $('#iconPrev').style.display='flex'; render(); };
+    drop.addEventListener('click',()=>inp.click());
+    inp.addEventListener('change',()=>{ const f=inp.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    $('#iconClear').addEventListener('click',e=>{ e.stopPropagation(); state.appLogo=null; $('#iconPrev').style.display='none'; inp.value=''; render(); });
+  })();
+
+  function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
+  segBind('#deviceSeg','device',()=>{ fillSurface(); syncAppearance(); });
+
+  $('#selChannel').addEventListener('change',e=>{ const v=e.target.value;
+    if(v==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; }
+    if(v==='whatsapp'||v==='rcs'||v==='sms'){ location.href='../messaging-preview-tool/index.html?channel='+v; return; }
+    if(v==='inapp'){ location.href='./index.html?channel=inapp'; return; }
+    state.channel=v; onChannelChange(); render();
+  });
+  $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
+  $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
+
+  function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.push.appName=ind.biz; } }
+  function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
+  function onChannelChange(){ $('#chanCap').textContent='Push notifications'; renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { syncEditor(); render(); } }
+
+  $('#clearMsgs').addEventListener('click',()=>{ state.push={ appName:state.push.appName, title:'New notification', body:'Your message here.', image:'', actions:'', time:'now' }; syncEditor(); render(); });
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+
+  $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the action buttons':'Back to editing'); });
+
+  let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
+  async function capture(){ const node=$('#capture'); if(!node) return null;
+    if(window.__noH2C||typeof html2canvas==='undefined'){ toast('Screenshot library offline — use OS screenshot (Cmd/Win+Shift+S)'); return null; }
+    const t=node.style.transform, m=node.style.marginBottom; node.style.transform='none'; node.style.marginBottom='';
+    const wasSim=stage.classList.contains('sim-on'); stage.classList.remove('sim-on'); const badge=node.querySelector('.sim-badge'); if(badge) badge.style.display='none';
+    try{ return await html2canvas(node,{ backgroundColor:'#eef0f5', scale:2, useCORS:true, allowTaint:false, logging:false }); }
+    finally{ node.style.transform=t; node.style.marginBottom=m; if(wasSim) stage.classList.add('sim-on'); if(badge) badge.style.display=''; }
+  }
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`push-${state.industry}-${state.device}-${state.surface}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
+  $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
+
+  // ---------- Init ----------
+  const qp=new URLSearchParams(location.search); const qc=(qp.get('channel')||'').toLowerCase();
+  if(qc==='push'||qc==='inapp') state.channel=qc;
+  $('#selChannel').value=state.channel;
+  fillIndustries(); fillSubs(); fillSurface(); fillWallpapers(); syncAppearance();
+  onChannelChange();
+})();
+</script>
+</body>
+</html>

@@ -29,6 +29,7 @@ resolve-images.js               # Node CLI resolver (alt to setup.html; user is 
 images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
+notify-preview-tool/index.html      # Push (+ In-App, in progress)  (notifications tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -43,13 +44,17 @@ headless Chromium via the global Playwright at
 
 ## 3. Navigation & channels
 
-- **Channel is a dropdown** in each tool's sidebar: **Gmail · WhatsApp · RCS · SMS**.
-  Selecting a channel that lives in the *other* tool navigates there:
-  - messaging → pick "Gmail" → `location.href='../gmail-preview-tool/index.html'`
-  - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`
-- There is **one top bar** (an earlier hub-iframe wrapper caused a duplicated top bar
-  and was removed). Root `index.html` just redirects into the messaging tool.
-- `?channel=sms|rcs|whatsapp` deep-links the messaging tool to a channel.
+- **Channel is a dropdown** in each tool's sidebar: **Gmail · WhatsApp · RCS · SMS ·
+  Push · In-App**. Selecting a channel that lives in the *other* tool navigates there:
+  - messaging → pick "Gmail" → `../gmail-preview-tool/index.html`; pick Push/In-App →
+    `../notify-preview-tool/index.html?channel=push|inapp`
+  - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`;
+    pick Push/In-App → `../notify-preview-tool/index.html?channel=push|inapp`
+  - notify → pick Gmail / WA·RCS·SMS → routes back to those tools; Push↔In-App stay local
+- The **three tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
+  Gmail, notify = Push/In-App) but all share the same dropdown so it feels like one app.
+- There is **one top bar**. Root `index.html` just redirects into the messaging tool.
+- `?channel=sms|rcs|whatsapp` deep-links messaging; `?channel=push|inapp` deep-links notify.
 
 ---
 
@@ -82,6 +87,29 @@ headless Chromium via the global Playwright at
   Promotions annotations; realistic filler inbox rows.
 - Email body: upload HTML / paste HTML / plain, **plus** 6 industry email templates.
 - Same Channel/Industry/Sub dropdowns.
+
+### notify-preview-tool (Push / In-App)
+- Same Channel Studio shell + Industry/Sub dropdowns + 6-templates-per-vertical model,
+  same DIY block builder + `photo()`/`tile()`/`kwFor()` image system + iPhone/Android
+  frames + `fitDevice()` scale-to-fit + html2canvas export as the other tools. It hosts
+  **two channels** the way messaging hosts three.
+- **Push (done):** a single notification (not a message list) edited via fields —
+  app name, app icon (upload/monogram), title, body, big image, timestamp, up to 3
+  action buttons, an **Expanded** toggle (collapsed thumbnail vs. big-picture + actions).
+  Topbar has a **device seg** (iPhone/Android) and a device-aware **surface seg**:
+  iOS = **Lock Screen / Banner**, Android = **Heads-up / Shade**. Lock & shade render a
+  **wallpaper** (gradient presets + upload, `WALLS`/`wallBg()`); banner & heads-up float
+  over a generic **`appBackdrop()`** (also the base for In-App's dimmed app screen).
+  `state.push={appName,title,body,image,actions,time}` + `state.expanded/surface/wallpaper/appLogo`.
+  Templates = `PUSH_ARCH` (6: 2 Promo / 2 Txn / 2 Flow) × `PACKS`. Simulate makes the
+  action buttons tappable (toast feedback) — push has no branching conversation.
+- **In-App (in progress):** Modal / Banner / Full-screen / Bottom-sheet / Image-only
+  over the dimmed `appBackdrop()`, with a type selector.
+- **Gotcha learned here:** don't reuse the root layout class names for in-preview
+  elements — a notification `class="app"` inherited the root `.app{height:100vh}` rule
+  and blew up the card height. Card app-name is `.appn`. Also give notification images a
+  **fixed `height`** (not `max-height`) + `object-fit:cover` so they don't collapse to
+  0px while a remote photo is still loading/blocked (sandbox) — `.pn-ios/.pn-and .big`.
 
 ---
 
@@ -199,12 +227,20 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
-**Done:** all 4 channels, Channel Studio design across both tools, 6 templates ×
-channel × (sub)industry, DIY block builders, Simulate/branching, US locale,
-digital-aware confirmations, dark mode removed, real Pexels photos live (56) with
-illustration fallback, no-terminal `setup.html` resolver.
+**Done:** SMS/RCS/WhatsApp + Gmail + **Push** (5 of 6 channels), Channel Studio design
+across all three tools, 6 templates × channel × (sub)industry, DIY block builders,
+Simulate, US locale, digital-aware confirmations, dark mode removed, real Pexels photos
+live (56) with illustration fallback, no-terminal `setup.html` resolver, unified
+6-channel dropdown wired across all tools.
+
+**In progress:** **In-App** channel in `notify-preview-tool` (Modal / Banner /
+Full-screen / Bottom-sheet / Image-only over the dimmed `appBackdrop()`).
 
 **Open / possible next (not started):**
+- **Screen recording** (asked about 2026-07-14): record just the device view. Recommended
+  approach is Chromium Region Capture (`getDisplayMedia` + `CropTarget.fromElement` →
+  `track.cropTo` → `MediaRecorder` → `.webm`), reusing the `#capture`/`fitDevice` plumbing.
+  Medium effort; Chromium-only + one tab-share click + `.webm` output are the caveats.
 - Gmail email body could become the same **drag-and-drop block builder** (currently
   sender/subject fields + HTML upload/paste/plain + the 6 templates).
 - Review the `family` photo (telecom) per the demographic ask; swap if needed.

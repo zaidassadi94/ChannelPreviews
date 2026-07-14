@@ -17,7 +17,8 @@ Gmail — from the **Channel** dropdown inside the app.
 | **Gmail** | [`gmail-preview-tool/`](gmail-preview-tool/) | Same Channel Studio shell · Industry/Sub dropdowns · 6 email templates per vertical (promo + transactional) · mobile + desktop skins · inbox & open-email · Promotions annotations |
 | **SMS** | [`messaging-preview-tool/?channel=sms`](messaging-preview-tool/index.html) | iOS Messages & Android (Google Messages) · text + MMS image · GSM/Unicode segment counter |
 | **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
-| **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents · light/dark |
+| **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents |
+| **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
 
 
 ## Real product photos (one-time setup)
@@ -62,6 +63,8 @@ any specific image. Anything not resolved falls back to the illustration.
 - **RCS** — text, image, rich card, carousel (+ suggestion chips on any message)
 - **WhatsApp** — text, image + caption, template (header/body/footer + buttons),
   product carousel, list menu, document
+- **Push** — iOS lock-screen & banner, Android heads-up & notification shade;
+  collapsed or expanded (big-picture) with a large image; up to 3 action buttons
 
 Buttons use a simple one-per-line format: `Label | reply|url|call | value`.
 Carousel cards: `imageURL | title | subtitle | buttonLabel | buttonValue` per line.
