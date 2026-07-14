@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gmail Preview Studio</title>
+<style>
+  /* ---------- Reset / base ---------- */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0f2f5;
+    --panel: #ffffff;
+    --panel-2: #f7f8fa;
+    --border: #e2e5ea;
+    --text: #1f2328;
+    --muted: #6b7280;
+    --accent: #1a73e8;
+    --accent-weak: #e8f0fe;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 6px 22px rgba(0,0,0,.06);
+    /* Gmail palette */
+    --gm-red: #ea4335;
+    --gm-blue: #1a73e8;
+    --gm-green: #34a853;
+    --gm-yellow: #fbbc04;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Google Sans Text', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; overflow: hidden; }
+
+  /* ---------- Editor panel ---------- */
+  .editor {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 0 0 60px;
+  }
+  .editor::-webkit-scrollbar { width: 10px; }
+  .editor::-webkit-scrollbar-thumb { background: #d6dae0; border-radius: 8px; border: 3px solid var(--panel); }
+  .brand {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px; display: flex; align-items: center; gap: 10px;
+  }
+  .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -.2px; }
+  .brand .dot { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg,#ea4335,#1a73e8); display:flex; align-items:center; justify-content:center; }
+  .brand small { display:block; font-weight: 400; color: var(--muted); font-size: 11px; }
+
+  .group { border-bottom: 8px solid var(--panel-2); }
+  .group > .group-head {
+    width: 100%; text-align: left; background: none; border: 0; cursor: pointer;
+    padding: 14px 20px; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between;
+  }
+  .group > .group-head:hover { color: var(--text); }
+  .group-head .chev { transition: transform .2s; font-size: 10px; }
+  .group.collapsed .chev { transform: rotate(-90deg); }
+  .group.collapsed .group-body { display: none; }
+  .group-body { padding: 4px 20px 20px; }
+
+  label.field { display: block; margin-bottom: 14px; }
+  label.field > span { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+  input[type=text], input[type=email], textarea, select {
+    width: 100%; padding: 9px 11px; font-size: 13px; font-family: inherit; color: var(--text);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-weak); background: #fff; }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  textarea.code { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 12px; min-height: 150px; white-space: pre; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; cursor: pointer; user-select: none;
+  }
+  .chip.on { background: var(--accent-weak); border-color: #c6dafc; color: var(--accent); font-weight: 500; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; }
+  .toggle-row span { font-size: 13px; }
+  .switch { position: relative; width: 38px; height: 22px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: #cbd2da; border-radius: 999px; transition: .2s; cursor: pointer; }
+  .slider::before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::before { transform: translateX(16px); }
+
+  .segmented { display: flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+  .segmented button { flex: 1; border: 0; background: none; padding: 7px 6px; font-size: 12px; font-weight: 500; color: var(--muted); border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .segmented button.on { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+  .drop {
+    border: 1.5px dashed var(--border); border-radius: 10px; padding: 20px; text-align: center;
+    cursor: pointer; transition: .15s; background: var(--panel-2); color: var(--muted); font-size: 12px;
+  }
+  .drop:hover, .drop.drag { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
+  .drop .up-ic { font-size: 20px; display:block; margin-bottom: 6px; }
+  .logo-preview { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .logo-preview img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border:1px solid var(--border); background:#fff; }
+  .btn-mini { font-size:11px; color:var(--accent); background:none; border:0; cursor:pointer; padding:4px; }
+  .hint { font-size: 11px; color: var(--muted); margin-top: -8px; margin-bottom: 12px; line-height:1.4; }
+
+  /* ---------- Preview stage ---------- */
+  .stage-wrap { display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: 56px; flex: none; background: var(--panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; padding: 0 18px;
+  }
+  .topbar .grow { flex: 1; }
+  .seg2 { display:flex; background: var(--panel-2); border:1px solid var(--border); border-radius: 9px; padding: 3px; gap:3px; }
+  .seg2 button { border:0; background:none; padding: 7px 14px; font-size: 13px; font-weight:500; color: var(--muted); border-radius:6px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+  .seg2 button.on { background:#fff; color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .seg2 button svg { width:15px; height:15px; }
+  .btn {
+    border:0; border-radius:8px; padding: 9px 16px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:inherit; display:flex; align-items:center; gap:7px;
+  }
+  .btn.primary { background: var(--accent); color:#fff; }
+  .btn.primary:hover { background:#1665d8; }
+  .btn.ghost { background: var(--panel-2); color: var(--text); border:1px solid var(--border); }
+  .btn.ghost:hover { background:#eceff3; }
+
+  .stage {
+    flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 24px; background:
+      radial-gradient(circle at 20% 10%, #e9edf3 0, transparent 40%),
+      radial-gradient(circle at 90% 80%, #e7ebf2 0, transparent 45%),
+      #eef1f5;
+  }
+  .stage.dark-stage { background:#20232a; }
+
+  /* Device frames */
+  .capture-target { transition: none; }
+
+  /* --- iPhone frame --- */
+  .iphone {
+    width: 390px; background: #0d0d0f; border-radius: 54px; padding: 12px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.35), inset 0 0 2px rgba(255,255,255,.2);
+    position: relative;
+  }
+  .iphone-screen { border-radius: 44px; overflow: hidden; background: #fff; position: relative; height: 800px; display:flex; flex-direction:column; }
+  .iphone-screen.dark { background: #1f1f1f; }
+  .iphone-screen.dark .statusbar { color: #e8eaed; }
+  .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px; background:#0d0d0f; border-radius:0 0 20px 20px; z-index:40; }
+  .statusbar { height: 50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding: 0 28px 0 30px; font-size:15px; font-weight:600; z-index:30; }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { width: 17px; height:17px; }
+
+  /* --- Desktop browser frame --- */
+  .browser {
+    width: 1180px; max-width: 100%; background:#fff; border-radius: 12px; overflow:hidden;
+    box-shadow: 0 30px 70px rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.06);
+  }
+  .browser-bar { height: 42px; background:#dfe3e8; display:flex; align-items:center; gap:8px; padding: 0 14px; }
+  .dark .browser-bar { background:#2b2c30; }
+  .traffic { display:flex; gap:8px; }
+  .traffic i { width:12px; height:12px; border-radius:50%; display:block; }
+  .traffic .r{background:#ff5f57;} .traffic .y{background:#febc2e;} .traffic .g{background:#28c840;}
+  .url-pill { flex:1; height:26px; background:#fff; border-radius:14px; display:flex; align-items:center; padding:0 14px; font-size:12px; color:#5f6368; gap:8px; max-width:520px; margin:0 auto; }
+  .dark .url-pill { background:#3c4043; color:#bdc1c6; }
+
+  /* ---------- Gmail chrome (shared) ---------- */
+  .gm { --g-text:#202124; --g-muted:#5f6368; --g-line:#e0e0e0; --g-bg:#fff; --g-hover:#f2f6fc; --g-unread:#fff; --g-read:#f2f6fc; --g-chip:#f1f3f4;
+        font-family: Roboto, 'Google Sans Text', Arial, sans-serif; color: var(--g-text); background: var(--g-bg); height:100%; display:flex; flex-direction:column; }
+  .gm.dark { --g-text:#e8eaed; --g-muted:#9aa0a6; --g-line:#3c4043; --g-bg:#1f1f1f; --g-hover:#2a2a2a; --g-unread:#1f1f1f; --g-read:#2a2a2a; --g-chip:#37383a; }
+
+  /* Mobile Gmail */
+  .gm-m-search { flex:none; margin: 8px 12px 6px; height:48px; background:var(--g-chip); border-radius:26px; display:flex; align-items:center; gap:12px; padding: 0 14px; }
+  .gm-m-search .q { flex:1; color:var(--g-muted); font-size:15px; }
+  .gm-m-search .av { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:600; }
+  .hamb { width:22px; height:22px; color: var(--g-muted); }
+  .gm-tabs { display:flex; padding: 2px 6px 0; border-bottom:1px solid var(--g-line); flex:none; overflow-x:auto; }
+  .gm-tabs.mob { gap: 0; }
+  .gm-tab { padding: 10px 12px 12px; font-size:13px; font-weight:500; color:var(--g-muted); white-space:nowrap; display:flex; align-items:center; gap:7px; border-bottom: 3px solid transparent; cursor:pointer; }
+  .gm-tab.on { color: var(--gm-blue); border-bottom-color: var(--gm-blue); }
+  .gm.dark .gm-tab.on { color:#8ab4f8; border-bottom-color:#8ab4f8; }
+  .gm-tab .tdot { width:8px; height:8px; border-radius:50%; }
+
+  .gm-list { flex:1; overflow-y:auto; }
+  .gm-row { display:flex; gap:14px; padding: 12px 16px; align-items:flex-start; border-bottom:1px solid transparent; cursor:pointer; position:relative; }
+  .gm-row:hover { background: var(--g-hover); }
+  .gm-row .avatar { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:500; overflow:hidden; }
+  .gm-row .avatar img { width:100%; height:100%; object-fit:cover; }
+  .gm-row .rbody { flex:1; min-width:0; }
+  .gm-row .line1 { display:flex; align-items:center; gap:8px; }
+  .gm-row .sender { font-size:14px; color:var(--g-text); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gm-row.unread .sender { font-weight:700; }
+  .gm-row .time { font-size:12px; color:var(--g-muted); flex:none; }
+  .gm-row.unread .time { color: var(--g-text); font-weight:600; }
+  .gm-row .subject { font-size:14px; color:var(--g-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+  .gm-row.unread .subject { font-weight:700; }
+  .gm-row .snippet { font-size:13px; color:var(--g-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+  .gm-row .star { flex:none; color:var(--g-muted); }
+  .gm-row .star.on { color: var(--gm-yellow); }
+  .gm-row .imp { color: var(--gm-yellow); }
+  .unread-dot { position:absolute; left:6px; top:50%; width:6px; height:6px; border-radius:50%; background:var(--gm-blue); transform:translateY(-50%); }
+
+  /* Promotions annotation card */
+  .annot { border:1px solid var(--g-line); border-radius:12px; margin: 6px 16px 10px 70px; overflow:hidden; }
+  .annot-head { display:flex; align-items:center; gap:10px; padding:10px 12px; }
+  .annot-head .alogo { width:28px; height:28px; border-radius:6px; object-fit:contain; background:#fff; border:1px solid var(--g-line); }
+  .annot-head .abrand { font-size:13px; font-weight:600; flex:1; }
+  .annot-head .adeal { font-size:12px; color:var(--gm-green); font-weight:600; }
+  .annot-body { display:flex; gap:2px; padding: 0 8px 10px; }
+  .annot-card { flex:1; border-radius:8px; overflow:hidden; background:var(--g-chip); }
+  .annot-card img { width:100%; height:88px; object-fit:cover; display:block; }
+  .annot-card .ac-t { font-size:11px; padding:6px 8px; color:var(--g-text); font-weight:500; }
+  .annot-code { font-size:11px; color:var(--g-muted); padding: 0 12px 12px; }
+  .annot-code b { color:var(--g-text); background:var(--g-chip); padding:2px 7px; border-radius:5px; border:1px dashed var(--g-line); }
+
+  /* FAB / compose */
+  .fab { position:absolute; right:16px; bottom:20px; height:48px; background:#c2e7ff; border-radius:16px; display:flex; align-items:center; gap:10px; padding:0 18px 0 16px; box-shadow:0 3px 8px rgba(0,0,0,.2); font-size:14px; font-weight:600; color:#001d35; z-index:20; }
+  .gm.dark .fab { background:#004a77; color:#c2e7ff; }
+  .gm-bottomnav { flex:none; display:flex; border-top:1px solid var(--g-line); }
+  .gm-bottomnav div { flex:1; text-align:center; padding:8px 0 10px; font-size:11px; color:var(--g-muted); }
+  .gm-bottomnav div.on { color: var(--gm-blue); }
+  .gm-bottomnav .bic { width:22px; height:22px; margin:0 auto 3px; }
+
+  /* Mobile open-email */
+  .gm-m-openbar { flex:none; display:flex; align-items:center; gap:6px; padding: 6px 12px; }
+  .gm-m-openbar .oact { width:24px; height:24px; color:var(--g-muted); }
+  .gm-m-openbar .sp { flex:1; }
+  .gm-open-scroll { flex:1; overflow-y:auto; }
+  .gm-open-subject { font-size:22px; line-height:1.3; font-weight:400; padding: 6px 20px 10px; }
+  .gm-open-label { display:inline-block; font-size:11px; background:var(--g-chip); color:var(--g-muted); padding:3px 10px; border-radius:6px; margin: 0 20px 12px; }
+  .gm-open-from { display:flex; align-items:center; gap:12px; padding: 4px 16px 14px; }
+  .gm-open-from .avatar { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:500; overflow:hidden; }
+  .gm-open-from .avatar img { width:100%; height:100%; object-fit:cover; }
+  .gm-open-from .meta { flex:1; min-width:0; }
+  .gm-open-from .nm { font-size:14px; font-weight:600; display:flex; gap:6px; align-items:baseline; }
+  .gm-open-from .nm .t { font-weight:400; color:var(--g-muted); font-size:12px; margin-left:auto; }
+  .gm-open-from .to { font-size:12px; color:var(--g-muted); display:flex; align-items:center; gap:3px; }
+  .gm-open-from .rgt { display:flex; gap:14px; color:var(--g-muted); }
+  .email-frame { width:100%; border:0; display:block; background:#fff; }
+  .gm-open-actions { flex:none; display:flex; gap:10px; padding: 10px 16px 14px; border-top:1px solid var(--g-line); }
+  .gm-open-actions button { flex:1; border:1px solid var(--g-line); background:var(--g-bg); color:var(--g-text); border-radius:20px; padding:9px 0; font-size:13px; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
+  .gm-open-actions svg { width:16px; height:16px; }
+
+  /* Desktop Gmail */
+  .gm-d { display:grid; grid-template-rows:auto 1fr; height: 720px; }
+  .gm-d-top { display:flex; align-items:center; gap:16px; padding:8px 16px; border-bottom:1px solid var(--g-line); }
+  .gm-d-logo { display:flex; align-items:center; gap:8px; width:210px; }
+  .gm-d-logo span { font-size:22px; color:var(--g-muted); font-weight:400; }
+  .gm-d-search { flex:1; max-width:720px; height:46px; background:var(--g-chip); border-radius:8px; display:flex; align-items:center; gap:14px; padding:0 16px; color:var(--g-muted); font-size:14px; }
+  .gm-d-search.focused { background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.18); }
+  .gm-d-top .spacer { flex:1; }
+  .gm-d-top .tavatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; }
+  .gm-d-main { display:grid; grid-template-columns: 240px 1fr; min-height:0; }
+  .gm-d-nav { padding:12px 8px; overflow-y:auto; }
+  .compose-btn { display:flex; align-items:center; gap:14px; background:#c2e7ff; color:#001d35; border-radius:16px; padding:14px 22px; font-size:14px; font-weight:600; margin: 4px 8px 14px; width:max-content; box-shadow:0 1px 3px rgba(0,0,0,.15); }
+  .gm.dark .compose-btn { background:#004a77; color:#c2e7ff; }
+  .nav-item { display:flex; align-items:center; gap:18px; padding:6px 18px; border-radius:0 16px 16px 0; font-size:14px; color:var(--g-text); margin: 1px 0; cursor:pointer; }
+  .nav-item .ni { width:20px; height:20px; color:var(--g-muted); flex:none; }
+  .nav-item.on { background:#d3e3fd; color:#041e49; font-weight:700; }
+  .gm.dark .nav-item.on { background:#004a77; color:#c2e7ff; }
+  .nav-item.on .ni { color:#041e49; }
+  .gm.dark .nav-item.on .ni { color:#c2e7ff; }
+  .nav-item .cnt { margin-left:auto; font-size:12px; color:var(--g-muted); }
+  .gm-d-content { border-left:1px solid var(--g-line); display:flex; flex-direction:column; min-width:0; }
+  .gm-d-toolbar { display:flex; align-items:center; gap:20px; padding:8px 20px; color:var(--g-muted); flex:none; }
+  .gm-d-toolbar .tb { width:20px; height:20px; }
+  .gm-d-toolbar .sp { flex:1; }
+  .gm-d-toolbar .pg { font-size:12px; }
+  .gm-d-tabs { display:flex; border-bottom:1px solid var(--g-line); flex:none; }
+  .gm-d-tab { flex:1; max-width:240px; padding:12px 16px 14px; font-size:14px; font-weight:500; color:var(--g-muted); display:flex; align-items:center; gap:12px; border-bottom:3px solid transparent; cursor:pointer; }
+  .gm-d-tab.on { color:var(--gm-blue); border-bottom-color:var(--gm-blue); }
+  .gm.dark .gm-d-tab.on { color:#8ab4f8; border-bottom-color:#8ab4f8; }
+  .gm-d-rows { flex:1; overflow-y:auto; }
+  .gm-d-row { display:flex; align-items:center; gap:14px; padding:0 16px; height:40px; border-bottom:1px solid var(--g-line); cursor:pointer; font-size:14px; }
+  .gm-d-row:hover { box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px rgba(60,64,67,.3); z-index:1; }
+  .gm-d-row .ck, .gm-d-row .st, .gm-d-row .im { width:18px; height:18px; color:var(--g-muted); flex:none; }
+  .gm-d-row .st.on { color:var(--gm-yellow); }
+  .gm-d-row.unread { background:var(--g-unread); }
+  .gm-d-row:not(.unread) { background:var(--g-read); }
+  .gm-d-row .dsender { width:180px; flex:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gm-d-row.unread .dsender, .gm-d-row.unread .dsub { font-weight:700; }
+  .gm-d-row .dmid { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gm-d-row .dsub { color:var(--g-text); }
+  .gm-d-row .dsnip { color:var(--g-muted); }
+  .gm-d-row .dtime { flex:none; font-size:12px; color:var(--g-muted); width:70px; text-align:right; }
+  .gm-d-row.unread .dtime { color:var(--g-text); font-weight:600; }
+  .gm-d-row .chipcat { font-size:11px; background:var(--g-chip); border:1px solid var(--g-line); border-radius:4px; padding:1px 6px; color:var(--g-muted); }
+
+  /* Desktop open */
+  .gm-d-open { flex:1; overflow-y:auto; padding: 8px 0 40px; }
+  .gm-d-open-sub { font-size:22px; font-weight:400; padding:16px 72px 10px; display:flex; align-items:center; gap:12px; }
+  .gm-d-open-sub .lb { font-size:12px; background:var(--g-chip); color:var(--g-muted); padding:2px 8px; border-radius:6px; font-weight:400; }
+  .gm-d-open-from { display:flex; align-items:center; gap:16px; padding: 6px 24px 10px 72px; }
+  .gm-d-open-from .avatar { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:500; overflow:hidden; }
+  .gm-d-open-from .avatar img { width:100%; height:100%; object-fit:cover; }
+  .gm-d-open-from .nm { font-size:14px; font-weight:700; }
+  .gm-d-open-from .em { font-size:12px; color:var(--g-muted); }
+  .gm-d-open-from .to { font-size:12px; color:var(--g-muted); }
+  .gm-d-open-from .rgt { margin-left:auto; display:flex; align-items:center; gap:20px; color:var(--g-muted); font-size:13px; }
+  .gm-d-open-body { padding: 8px 72px; }
+  .gm-d-reply { margin: 16px 72px; border:1px solid var(--g-line); border-radius:16px; padding:12px 18px; display:flex; gap:14px; color:var(--g-muted); font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .gm-d-reply button { border:1px solid var(--g-line); background:var(--g-bg); color:var(--g-text); border-radius:18px; padding:7px 20px; font-size:13px; display:flex; gap:8px; align-items:center; cursor:pointer; font-family:inherit; }
+
+  .empty-note { color:var(--g-muted); font-size:13px; padding:30px; text-align:center; }
+
+  /* Toast */
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(80px); background:#202124; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; box-shadow:0 6px 24px rgba(0,0,0,.3); opacity:0; transition:.3s; z-index:200; }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .editor { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ EDITOR ============ -->
+  <aside class="editor" id="editor">
+    <div class="brand">
+      <div class="dot">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 6l10 7L22 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><rect x="2" y="5" width="20" height="14" rx="2" stroke="#fff" stroke-width="2"/></svg>
+      </div>
+      <div>
+        <h1>Gmail Preview Studio</h1>
+        <small>Mock inbox &amp; email creatives for decks</small>
+      </div>
+    </div>
+
+    <!-- Sender -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Sender <span class="chev">▼</span></button>
+      <div class="group-body">
+        <label class="field"><span>Sender name</span><input type="text" id="senderName" value="Social Development Bank" /></label>
+        <label class="field"><span>Sender email</span><input type="email" id="senderEmail" value="training@socialdevbank.com" /></label>
+        <label class="field"><span>Sender logo / avatar (optional)</span>
+          <div class="drop" id="logoDrop"><span class="up-ic">🖼️</span>Drag &amp; drop image, or click to browse</div>
+          <input type="file" id="logoInput" accept="image/*" hidden />
+        </label>
+        <div class="logo-preview" id="logoPreview" style="display:none;">
+          <img id="logoImg" alt="logo" />
+          <button class="btn-mini" id="logoClear">Remove</button>
+        </div>
+        <div class="hint">No logo? A colored monogram avatar is generated from the sender name — exactly like Gmail.</div>
+      </div>
+    </section>
+
+    <!-- Message -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Message <span class="chev">▼</span></button>
+      <div class="group-body">
+        <label class="field"><span>Subject</span><input type="text" id="subject" value="🎓 Transform Your Career – Free Vocational Training Awaits!" /></label>
+        <label class="field"><span>Preview / snippet text</span><input type="text" id="snippet" value="Unlock your future with free vocational training programs. Limited seats available…" /></label>
+        <div class="row2">
+          <label class="field"><span>Timestamp</span><input type="text" id="timestamp" value="9:15 AM" /></label>
+          <label class="field"><span>"to" line</span><input type="text" id="toLine" value="to me" /></label>
+        </div>
+        <div class="toggle-row"><span>Unread (bold)</span><label class="switch"><input type="checkbox" id="unread" checked><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Starred</span><label class="switch"><input type="checkbox" id="starred"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Important marker</span><label class="switch"><input type="checkbox" id="important"><span class="slider"></span></label></div>
+        <label class="field" style="margin-top:12px;"><span>Inbox category tab</span>
+          <select id="category">
+            <option value="primary">Primary</option>
+            <option value="promotions" selected>Promotions</option>
+            <option value="social">Social</option>
+            <option value="updates">Updates</option>
+          </select>
+        </label>
+        <label class="field"><span>Open-email label chip</span><input type="text" id="labelChip" value="Inbox" /></label>
+      </div>
+    </section>
+
+    <!-- Body -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Email body <span class="chev">▼</span></button>
+      <div class="group-body">
+        <div class="segmented" id="bodyMode" style="margin-bottom:14px;">
+          <button data-mode="upload" class="on">Upload HTML</button>
+          <button data-mode="paste">Paste HTML</button>
+          <button data-mode="plain">Plain</button>
+        </div>
+
+        <div data-panel="upload">
+          <div class="drop" id="htmlDrop"><span class="up-ic">⬆️</span>Drag &amp; drop an <b>.html</b> email file, or click to browse</div>
+          <input type="file" id="htmlInput" accept=".html,.htm,text/html" hidden />
+          <div class="hint" id="uploadState">No file loaded — using the sample creative.</div>
+        </div>
+
+        <div data-panel="paste" style="display:none;">
+          <label class="field"><span>Paste full HTML (from MoEngage, an ESP, wherever)</span>
+            <textarea class="code" id="pasteHtml" placeholder="&lt;div&gt;...your email HTML...&lt;/div&gt;"></textarea>
+          </label>
+          <button class="btn ghost" id="applyPaste" style="width:100%; justify-content:center;">Apply HTML</button>
+        </div>
+
+        <div data-panel="plain" style="display:none;">
+          <label class="field"><span>Heading</span><input type="text" id="plainHeading" value="Unlock Your Future" /></label>
+          <label class="field"><span>Body text</span><textarea id="plainBody" placeholder="Write the email copy…">Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.</textarea></label>
+          <label class="field"><span>Button label</span><input type="text" id="plainBtn" value="Reserve My Seat" /></label>
+          <label class="field"><span>Accent color</span><input type="text" id="plainAccent" value="#5b3df5" /></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Promotions annotation -->
+    <section class="group collapsed" data-group>
+      <button class="group-head" data-head>Promotions annotation <span class="chev">▼</span></button>
+      <div class="group-body">
+        <div class="hint">Gmail shows a rich "deal" card under Promotions emails. Enable it and it appears in the inbox list view (Promotions tab).</div>
+        <div class="toggle-row"><span>Show annotation</span><label class="switch"><input type="checkbox" id="annotOn"><span class="slider"></span></label></div>
+        <label class="field"><span>Deal / offer text</span><input type="text" id="annotDeal" value="Free · Limited seats" /></label>
+        <label class="field"><span>Discount / promo code (optional)</span><input type="text" id="annotCode" value="" placeholder="e.g. SAVE20" /></label>
+        <label class="field"><span>Expiry note (optional)</span><input type="text" id="annotExpiry" value="Enrollment closes soon" /></label>
+        <label class="field"><span>Hero image URL(s), comma-separated</span><input type="text" id="annotImg" value="" placeholder="https://…/deal.jpg, https://…/deal2.jpg" /></label>
+      </div>
+    </section>
+
+    <!-- Inbox surroundings -->
+    <section class="group collapsed" data-group>
+      <button class="group-head" data-head>Inbox filler rows <span class="chev">▼</span></button>
+      <div class="group-body">
+        <div class="hint">Surround your email with realistic inbox rows so the list view looks like a real inbox.</div>
+        <div class="toggle-row"><span>Show filler emails</span><label class="switch"><input type="checkbox" id="fillerOn" checked><span class="slider"></span></label></div>
+        <label class="field"><span>Your email's position</span>
+          <select id="position"><option value="0">Top of inbox</option><option value="2">After 2 emails</option><option value="4">Middle</option></select>
+        </label>
+      </div>
+    </section>
+  </aside>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage-wrap">
+    <div class="topbar">
+      <div class="seg2" id="skinSeg">
+        <button data-skin="mobile" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>Mobile</button>
+        <button data-skin="desktop"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Desktop</button>
+      </div>
+      <div class="seg2" id="viewSeg">
+        <button data-view="inbox" class="on">Inbox list</button>
+        <button data-view="open">Open email</button>
+      </div>
+      <div class="seg2" id="themeSeg">
+        <button data-theme="light" class="on">☀️ Light</button>
+        <button data-theme="dark">🌙 Dark</button>
+      </div>
+      <div class="grow"></div>
+      <button class="btn ghost" id="btnCopy">⧉ Copy</button>
+      <button class="btn primary" id="btnExport">⬇ Export PNG</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ---------- State ----------
+  const state = {
+    skin: 'mobile', view: 'inbox', theme: 'light',
+    senderName: 'Social Development Bank',
+    senderEmail: 'training@socialdevbank.com',
+    logo: null,
+    subject: '🎓 Transform Your Career – Free Vocational Training Awaits!',
+    snippet: 'Unlock your future with free vocational training programs. Limited seats available…',
+    timestamp: '9:15 AM',
+    toLine: 'to me',
+    unread: true, starred: false, important: false,
+    category: 'promotions',
+    labelChip: 'Inbox',
+    bodyMode: 'upload',
+    htmlBody: '',           // active rendered HTML
+    pasteHtml: '',
+    plain: { heading:'Unlock Your Future', body:'Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.', btn:'Reserve My Seat', accent:'#5b3df5' },
+    annot: { on:false, deal:'Free · Limited seats', code:'', expiry:'Enrollment closes soon', img:'' },
+    filler: { on:true, position:0 },
+  };
+
+  const SAMPLE_HTML = `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:50px 30px;text-align:center;">
+      <h1 style="color:#fff;margin:0 0 15px;font-size:36px;font-weight:800;letter-spacing:-0.5px;line-height:1.1;">Unlock Your Future</h1>
+      <p style="color:#e9e5ff;margin:0 0 24px;font-size:18px;font-weight:600;">Free Vocational Training Programs Now Open!</p>
+      <div style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,.5);color:#fff;padding:10px 22px;border-radius:30px;font-size:14px;font-weight:600;">⏳ Limited Seats Available</div>
+    </div>
+    <div style="padding:36px 30px;">
+      <h2 style="margin:0 0 10px;font-size:24px;color:#1a1a2e;">Ready to Level Up?</h2>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#444;">Join thousands who transformed their careers with our fully-funded vocational training. Choose from 12 in-demand tracks and start learning today.</p>
+      <a href="#" style="display:inline-block;background:#5b3df5;color:#fff;text-decoration:none;padding:14px 34px;border-radius:10px;font-size:16px;font-weight:700;">Reserve My Seat →</a>
+    </div>
+  </div>`;
+  state.htmlBody = SAMPLE_HTML;
+
+  const $ = s => document.querySelector(s);
+  const stage = $('#stage');
+  const esc = s => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // Gmail avatar colors (hash of name)
+  const AV_COLORS = ['#5b6abf','#e57373','#4db6ac','#f06292','#7986cb','#9575cd','#4dd0e1','#81c784','#ffb74d','#a1887f','#90a4ae','#f4511e','#039be5','#0b8043','#c0ca33'];
+  function avatarColor(name){ let h=0; const s=(name||'?'); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return AV_COLORS[h%AV_COLORS.length]; }
+  function initial(name){ const t=(name||'?').trim(); return t? t[0].toUpperCase() : '?'; }
+
+  function avatarHTML(name, logo, cls){
+    if(logo) return `<div class="${cls}" style="background:#fff"><img src="${logo}" alt=""></div>`;
+    return `<div class="${cls}" style="background:${avatarColor(name)}">${esc(initial(name))}</div>`;
+  }
+
+  // ---------- SVG icon set ----------
+  const I = {
+    back:'<svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    archive:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    trash:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    unread:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="2"/></svg>',
+    more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+    star:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18l-5.9 3 1.2-6.5L2.5 9.9 9.1 9 12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    starOn:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18l-5.9 3 1.2-6.5L2.5 9.9 9.1 9 12 3z"/></svg>',
+    imp:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 5l7 7-7 7h14l4-7-4-7z"/></svg>',
+    reply:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 9V5l-7 7 7 7v-4c5 0 8 1.5 10 5-1-6-4-11-10-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    replyAll:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 9V5l-6 7 6 7v-4M13 9V5l7 7-7 7v-4c-3 0-5 .5-6 2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    forward:'<svg viewBox="0 0 24 24" fill="none"><path d="M14 9V5l7 7-7 7v-4c-5 0-8 1.5-10 5 1-6 4-11 10-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    search:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    menu:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    compose:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4zM14 6l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    inbox:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 13h4l2 3h4l2-3h4M4 13V6a2 2 0 012-2h12a2 2 0 012 2v7M4 13v5a2 2 0 002 2h12a2 2 0 002-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    dstar:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18l-5.9 3 1.2-6.5L2.5 9.9 9.1 9 12 3z" stroke="currentColor" stroke-width="1.6"/></svg>',
+    snooze:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l3 2M9 2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    sent:'<svg viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2-7-8-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    draft:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18 10l-4-4L4 16v4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    refresh:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8c3 0 5.5 1.6 7 4M20 4v4h-4M20 12a8 8 0 01-8 8c-3 0-5.5-1.6-7-4M4 20v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/></svg>',
+    wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
+    battery:'<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor"/><rect x="21" y="10" width="2" height="4" rx="1" fill="currentColor"/></svg>',
+    cell:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg>',
+  };
+
+  const gmailLogo = (h)=>`<svg width="${h*1.34}" height="${h}" viewBox="0 0 52 40" fill="none"><path d="M4 36h8V19L4 13v23z" fill="#4285F4"/><path d="M40 36h8V13l-8 6v17z" fill="#34A853"/><path d="M4 8l22 16L48 8v5L26 29 4 13V8z" fill="#EA4335"/><path d="M4 8v5l8 6V13L4 8z" fill="#C5221F"/><path d="M48 8v5l-8 6V13l8-5z" fill="#FBBC04"/><path d="M4 6a2 2 0 012-2h2l18 13L44 4h2a2 2 0 012 2v2L26 24 4 8V6z" fill="#EA4335"/></svg>`;
+
+  // ---------- Body HTML resolver ----------
+  function resolveBody(){
+    if(state.bodyMode==='plain'){
+      const p=state.plain;
+      return `<div style="font-family:-apple-system,Roboto,Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:${esc(p.accent)};padding:44px 30px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:30px;font-weight:800;">${esc(p.heading)}</h1>
+        </div>
+        <div style="padding:32px 30px;">
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;white-space:pre-wrap;">${esc(p.body)}</p>
+          ${p.btn?`<a href="#" style="display:inline-block;background:${esc(p.accent)};color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:15px;">${esc(p.btn)}</a>`:''}
+        </div></div>`;
+    }
+    return state.htmlBody || '<div style="padding:40px;text-align:center;color:#888;font-family:Arial">No email body loaded.</div>';
+  }
+  // Extract inner body for full documents
+  function bodyForFrame(){
+    let html = resolveBody();
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:0;} img{max-width:100%;}</style></head><body>${html}</body></html>`;
+  }
+
+  // ---------- Filler inbox data ----------
+  const FILLER = [
+    { name:'LinkedIn', email:'jobs@linkedin.com', subject:'5 new jobs for "Product Marketing"', snippet:'Based on your profile and searches, these roles may interest you…', time:'8:42 AM', unread:true, cat:'updates' },
+    { name:'Google', email:'no-reply@accounts.google.com', subject:'Security alert', snippet:'A new sign-in on Mac. If this was you, no action is needed.', time:'8:10 AM', unread:false, cat:'updates' },
+    { name:'Notion', email:'team@makenotion.com', subject:'Your workspace weekly digest', snippet:'Here is what happened across your teamspaces this week…', time:'Wed', unread:true, cat:'updates' },
+    { name:'Swiggy', email:'noreply@swiggy.in', subject:'Craving something? Flat 60% OFF today 🍔', snippet:'Order now and get free delivery on your next 3 orders.', time:'Tue', unread:false, cat:'promotions' },
+    { name:'Amazon.in', email:'offers@amazon.in', subject:'Deals of the Day — up to 70% off electronics', snippet:'Handpicked deals ending tonight. Shop before they are gone.', time:'Tue', unread:true, cat:'promotions' },
+    { name:'Medium Daily', email:'noreply@medium.com', subject:'Stories for you: The art of writing tight', snippet:'6 min read · Recommended based on your reading history.', time:'Mon', unread:false, cat:'updates' },
+    { name:'Figma', email:'updates@figma.com', subject:'Comment on "Q3 Campaign Mocks"', snippet:'Priya: Can we make the CTA a bit larger on mobile?', time:'Mon', unread:false, cat:'social' },
+  ];
+
+  function heroRow(){
+    return {
+      name: state.senderName, email: state.senderEmail, subject: state.subject,
+      snippet: state.snippet, time: state.timestamp, unread: state.unread,
+      starred: state.starred, important: state.important, logo: state.logo, hero:true, cat: state.category
+    };
+  }
+  function inboxRows(){
+    const hero = heroRow();
+    if(!state.filler.on) return [hero];
+    const list = FILLER.filter(f => f.cat===state.category || state.category==='primary' && false);
+    // for realism keep only same-category fillers if category chosen; else show general
+    let pool = FILLER.filter(f => state.category==='primary' ? f.cat!=='promotions' : true);
+    if(state.category!=='primary') pool = FILLER.filter(f=>f.cat===state.category || f.cat==='updates');
+    pool = pool.slice(0,6);
+    const pos = Math.min(state.filler.position, pool.length);
+    const rows = pool.slice();
+    rows.splice(pos, 0, hero);
+    return rows;
+  }
+
+  // ---------- Annotation card ----------
+  function annotHTML(){
+    if(!state.annot.on) return '';
+    const imgs = state.annot.img.split(',').map(s=>s.trim()).filter(Boolean).slice(0,3);
+    const logo = state.logo;
+    const cards = imgs.length ? imgs.map(u=>`<div class="annot-card"><img src="${esc(u)}" alt=""><div class="ac-t">${esc(state.annot.deal)}</div></div>`).join('')
+      : `<div class="annot-card" style="padding:14px 12px"><div class="ac-t" style="font-size:13px">${esc(state.annot.deal||'Special offer')}</div></div>`;
+    return `<div class="annot">
+      <div class="annot-head">
+        ${logo?`<img class="alogo" src="${logo}">`:`<div class="alogo" style="display:flex;align-items:center;justify-content:center;background:${avatarColor(state.senderName)};color:#fff;font-weight:600;font-size:13px">${esc(initial(state.senderName))}</div>`}
+        <div class="abrand">${esc(state.senderName)}</div>
+        <div class="adeal">${esc(state.annot.deal||'')}</div>
+      </div>
+      <div class="annot-body">${cards}</div>
+      ${(state.annot.code||state.annot.expiry)?`<div class="annot-code">${state.annot.code?`Code <b>${esc(state.annot.code)}</b>`:''} ${state.annot.expiry?`· ${esc(state.annot.expiry)}`:''}</div>`:''}
+    </div>`;
+  }
+
+  // ---------- Status bar (mobile) ----------
+  function statusBar(){
+    return `<div class="statusbar"><span>9:41</span><div class="icons">${I.cell}${I.wifi}${I.battery}</div></div>`;
+  }
+
+  // ================= MOBILE INBOX =================
+  function mobileInbox(){
+    const rows = inboxRows();
+    const tabs = state.category==='primary';
+    const catName = {primary:'Primary',promotions:'Promotions',social:'Social',updates:'Updates'}[state.category];
+    const rowsHTML = rows.map(r=>{
+      const isHero = r.hero;
+      const av = avatarHTML(r.name, isHero?r.logo:null, 'avatar');
+      const starIc = (isHero&&r.starred)? `<span class="star on">${I.starOn}</span>` : `<span class="star">${I.star}</span>`;
+      const imp = (isHero&&r.important)? `<span class="imp">${I.imp}</span>`:'';
+      return `<div class="gm-row ${r.unread?'unread':''}">
+        ${av}
+        <div class="rbody">
+          <div class="line1"><span class="sender">${esc(r.name)}</span>${imp}<span class="time">${esc(r.time)}</span></div>
+          <div class="subject">${esc(r.subject)}</div>
+          <div class="snippet">${esc(r.snippet)}</div>
+        </div>
+        ${starIc}
+      </div>${isHero?annotHTML():''}`;
+    }).join('');
+
+    return `<div class="gm ${state.theme==='dark'?'dark':''}">
+      <div class="gm-m-search">
+        <span class="hamb">${I.menu}</span>
+        <span class="q">Search in mail</span>
+        <div class="av" style="background:${avatarColor('You')}">Y</div>
+      </div>
+      <div class="gm-tabs mob">
+        <div class="gm-tab ${state.category==='primary'?'on':''}"><span class="tdot" style="background:#ea4335"></span>Primary</div>
+        <div class="gm-tab ${state.category==='promotions'?'on':''}"><span class="tdot" style="background:#34a853"></span>Promotions</div>
+        <div class="gm-tab ${state.category==='social'?'on':''}"><span class="tdot" style="background:#1a73e8"></span>Social</div>
+      </div>
+      <div class="gm-list">${rowsHTML}</div>
+      <div class="fab">${I.compose}Compose</div>
+    </div>`;
+  }
+
+  // ================= MOBILE OPEN =================
+  function mobileOpen(){
+    const av = avatarHTML(state.senderName, state.logo, 'avatar');
+    return `<div class="gm ${state.theme==='dark'?'dark':''}">
+      <div class="gm-m-openbar">
+        <span class="oact">${I.back}</span><span class="sp"></span>
+        <span class="oact">${I.archive}</span><span class="oact">${I.trash}</span><span class="oact">${I.unread}</span><span class="oact">${I.more}</span>
+      </div>
+      <div class="gm-open-scroll">
+        <div class="gm-open-subject">${esc(state.subject)}</div>
+        <div class="gm-open-label">${esc(state.labelChip||'Inbox')}</div>
+        <div class="gm-open-from">
+          ${av}
+          <div class="meta">
+            <div class="nm">${esc(state.senderName)} ${state.starred?`<span style="color:var(--gm-yellow)">${I.starOn}</span>`:''}<span class="t">${esc(state.timestamp)}</span></div>
+            <div class="to">${esc(state.toLine)} <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"/></svg></div>
+          </div>
+        </div>
+        <iframe class="email-frame" id="emailFrame" scrolling="no"></iframe>
+      </div>
+      <div class="gm-open-actions">
+        <button>${I.reply}Reply</button>
+        <button>${I.replyAll}Reply all</button>
+        <button>${I.forward}Forward</button>
+      </div>
+    </div>`;
+  }
+
+  // ================= DESKTOP INBOX =================
+  function desktopChromeTop(){
+    return `<div class="gm-d-top">
+      <div class="gm-d-logo">${I.menu.replace('width="22" height="22"','width="24" height="24" style="color:var(--g-muted)"')}${gmailLogo(22)}<span>Gmail</span></div>
+      <div class="gm-d-search">${I.search}<span>Search mail</span></div>
+      <div class="spacer"></div>
+      <div class="tavatar" style="background:${avatarColor('You')}">Y</div>
+    </div>`;
+  }
+  function desktopNav(){
+    const item=(ic,label,on,cnt)=>`<div class="nav-item ${on?'on':''}"><span class="ni">${ic}</span>${label}${cnt?`<span class="cnt">${cnt}</span>`:''}</div>`;
+    return `<div class="gm-d-nav">
+      <div class="compose-btn">${I.compose}Compose</div>
+      ${item(I.inbox,'Inbox',true,'1,248')}
+      ${item(I.dstar,'Starred',false,'')}
+      ${item(I.snooze,'Snoozed',false,'')}
+      ${item(I.sent,'Sent',false,'')}
+      ${item(I.draft,'Drafts',false,'23')}
+    </div>`;
+  }
+  function desktopInbox(){
+    const rows = inboxRows();
+    const rowsHTML = rows.map(r=>{
+      const isHero=r.hero;
+      const st = (isHero&&r.starred)?`<span class="st on">${I.starOn}</span>`:`<span class="st">${I.dstar}</span>`;
+      const im = (isHero&&r.important)?`<span class="im" style="color:var(--gm-yellow)">${I.imp}</span>`:`<span class="im">${I.imp.replace('fill="currentColor"','fill="none" stroke="currentColor" stroke-width="1.6"')}</span>`;
+      return `<div class="gm-d-row ${r.unread?'unread':''}">
+        <span class="ck">${I.check}</span>${st}${im}
+        <span class="dsender">${esc(r.name)}</span>
+        <span class="dmid"><span class="dsub">${esc(r.subject)}</span> <span class="dsnip">— ${esc(r.snippet)}</span></span>
+        <span class="dtime">${esc(r.time)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="gm ${state.theme==='dark'?'dark':''}">
+      <div class="gm-d">
+        ${desktopChromeTop()}
+        <div class="gm-d-main">
+          ${desktopNav()}
+          <div class="gm-d-content">
+            <div class="gm-d-toolbar"><span class="tb">${I.check}</span><span class="tb">${I.refresh}</span><span class="tb">${I.more}</span><span class="sp"></span><span class="pg">1–50 of 1,248</span></div>
+            <div class="gm-d-tabs">
+              <div class="gm-d-tab ${state.category==='primary'?'on':''}"><span class="ni" style="width:20px">${I.inbox}</span>Primary</div>
+              <div class="gm-d-tab ${state.category==='promotions'?'on':''}">🏷️ Promotions</div>
+              <div class="gm-d-tab ${state.category==='social'?'on':''}">👥 Social</div>
+            </div>
+            <div class="gm-d-rows">${rowsHTML}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ================= DESKTOP OPEN =================
+  function desktopOpen(){
+    const av = avatarHTML(state.senderName, state.logo, 'avatar');
+    return `<div class="gm ${state.theme==='dark'?'dark':''}">
+      <div class="gm-d">
+        ${desktopChromeTop()}
+        <div class="gm-d-main">
+          ${desktopNav()}
+          <div class="gm-d-content">
+            <div class="gm-d-toolbar"><span class="tb">${I.back}</span><span class="tb">${I.archive}</span><span class="tb">${I.trash}</span><span class="tb">${I.unread}</span><span class="tb">${I.snooze}</span><span class="sp"></span><span class="pg">1 of 1,248</span></div>
+            <div class="gm-d-open">
+              <div class="gm-d-open-sub">${esc(state.subject)} <span class="lb">${esc(state.labelChip||'Inbox')}</span></div>
+              <div class="gm-d-open-from">
+                ${av}
+                <div>
+                  <div class="nm">${esc(state.senderName)} <span class="em">&lt;${esc(state.senderEmail)}&gt;</span></div>
+                  <div class="to">${esc(state.toLine)} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"/></svg></div>
+                </div>
+                <div class="rgt"><span>${esc(state.timestamp)}</span>${state.starred?`<span style="color:var(--gm-yellow);width:20px">${I.starOn}</span>`:`<span style="width:20px">${I.dstar}</span>`}<span style="width:20px">${I.reply}</span><span style="width:20px">${I.more}</span></div>
+              </div>
+              <div class="gm-d-open-body"><iframe class="email-frame" id="emailFrame" scrolling="no"></iframe></div>
+              <div class="gm-d-reply">
+                <button>${I.reply.replace('<svg','<svg width=16 height=16')}Reply</button>
+                <button>${I.forward.replace('<svg','<svg width=16 height=16')}Forward</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ---------- Render dispatch ----------
+  function render(){
+    let inner='';
+    if(state.skin==='mobile'){
+      const screen = state.view==='inbox'? mobileInbox() : mobileOpen();
+      inner = `<div class="iphone capture-target" id="capture"><div class="notch"></div><div class="iphone-screen ${state.theme==='dark'?'dark':''}">${statusBar()}${screen}</div></div>`;
+    } else {
+      const screen = state.view==='inbox'? desktopInbox() : desktopOpen();
+      inner = `<div class="browser capture-target" id="capture"><div class="browser-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="url-pill">🔒 mail.google.com/mail/u/0/#inbox</div></div>${screen}</div>`;
+    }
+    stage.className = 'stage' + (state.theme==='dark'?' dark-stage':'');
+    stage.innerHTML = inner;
+    // Fill the email iframe (open view only)
+    if(state.view==='open'){
+      const f = document.getElementById('emailFrame');
+      if(f){
+        f.srcdoc = bodyForFrame();
+        f.onload = ()=>{ try{ const d=f.contentDocument; f.style.height = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight)+'px'; }catch(e){ f.style.height='700px'; } };
+      }
+    }
+  }
+
+  // ---------- Toast ----------
+  let toastT;
+  function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+
+  // ---------- Bindings ----------
+  function bindText(id, key, sub){
+    const el=$('#'+id); if(!el) return;
+    el.addEventListener('input', ()=>{ if(sub){ state[sub][key]=el.value; } else { state[key]=el.value; } render(); });
+  }
+  bindText('senderName','senderName'); bindText('senderEmail','senderEmail');
+  bindText('subject','subject'); bindText('snippet','snippet'); bindText('timestamp','timestamp'); bindText('toLine','toLine');
+  bindText('labelChip','labelChip');
+  bindText('plainHeading','heading','plain'); bindText('plainBody','body','plain'); bindText('plainBtn','btn','plain'); bindText('plainAccent','accent','plain');
+  bindText('annotDeal','deal','annot'); bindText('annotCode','code','annot'); bindText('annotExpiry','expiry','annot'); bindText('annotImg','img','annot');
+
+  $('#category').addEventListener('change',e=>{ state.category=e.target.value; render(); });
+  $('#position').addEventListener('change',e=>{ state.filler.position=+e.target.value; render(); });
+  ['unread','starred','important'].forEach(id=>$('#'+id).addEventListener('change',e=>{ state[id]=e.target.checked; render(); }));
+  $('#annotOn').addEventListener('change',e=>{ state.annot.on=e.target.checked; render(); });
+  $('#fillerOn').addEventListener('change',e=>{ state.filler.on=e.target.checked; render(); });
+
+  // Body mode segmented
+  document.querySelectorAll('#bodyMode button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#bodyMode button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); state.bodyMode=b.dataset.mode;
+    document.querySelectorAll('[data-panel]').forEach(p=>p.style.display = p.dataset.panel===state.bodyMode?'':'none');
+    render();
+  }));
+
+  // Paste apply
+  $('#pasteHtml').addEventListener('input',e=>{ state.pasteHtml=e.target.value; });
+  $('#applyPaste').addEventListener('click',()=>{
+    const v=$('#pasteHtml').value.trim();
+    if(!v){ toast('Paste some HTML first'); return; }
+    state.htmlBody=v; state.bodyMode='paste'; render(); toast('HTML applied');
+  });
+
+  // ---------- File helpers ----------
+  function readFile(file, cb, asDataURL){
+    const r=new FileReader(); r.onload=()=>cb(r.result); asDataURL?r.readAsDataURL(file):r.readAsText(file);
+  }
+  function setupDrop(dropEl, inputEl, onFile){
+    dropEl.addEventListener('click',()=>inputEl.click());
+    inputEl.addEventListener('change',()=>{ if(inputEl.files[0]) onFile(inputEl.files[0]); });
+    ['dragover','dragenter'].forEach(ev=>dropEl.addEventListener(ev,e=>{e.preventDefault();dropEl.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>dropEl.addEventListener(ev,e=>{e.preventDefault();dropEl.classList.remove('drag');}));
+    dropEl.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) onFile(f); });
+  }
+  // Logo
+  setupDrop($('#logoDrop'), $('#logoInput'), f=>{
+    if(!f.type.startsWith('image/')){ toast('Please choose an image'); return; }
+    readFile(f, data=>{ state.logo=data; $('#logoImg').src=data; $('#logoPreview').style.display='flex'; render(); }, true);
+  });
+  $('#logoClear').addEventListener('click',()=>{ state.logo=null; $('#logoPreview').style.display='none'; $('#logoInput').value=''; render(); });
+  // HTML
+  setupDrop($('#htmlDrop'), $('#htmlInput'), f=>{
+    readFile(f, data=>{ state.htmlBody=data; state.bodyMode='upload'; $('#uploadState').innerHTML=`Loaded <b>${esc(f.name)}</b> (${(f.size/1024).toFixed(1)} KB)`; render(); toast('Email HTML loaded'); });
+  });
+
+  // ---------- Segmented top controls ----------
+  function segBind(sel, key, cb){
+    document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{
+      document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); const v=b.dataset[key]; state[key]=v; if(cb)cb(v); render();
+    }));
+  }
+  segBind('#skinSeg','skin'); segBind('#viewSeg','view'); segBind('#themeSeg','theme');
+
+  // ---------- Collapsible groups ----------
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+
+  // ---------- Export ----------
+  async function capture(){
+    const node=document.getElementById('capture');
+    if(window.__noH2C || typeof html2canvas==='undefined'){
+      toast('Screenshot library offline — use your OS screenshot (Cmd/Win+Shift+S)');
+      return null;
+    }
+    const bodyHTML = bodyForFrame();
+    return await html2canvas(node,{
+      backgroundColor: state.theme==='dark'?'#20232a':'#eef1f5',
+      scale: 2, useCORS:true, allowTaint:false, logging:false,
+      onclone: (doc)=>{
+        // Replace live iframe with inline body so it captures reliably
+        const fr = doc.getElementById('emailFrame');
+        if(fr){
+          const w = fr.getBoundingClientRect ? fr.offsetWidth : 360;
+          const div = doc.createElement('div');
+          div.style.width = (fr.style.width||'100%');
+          div.innerHTML = resolveBody();
+          div.querySelectorAll('img').forEach(im=>im.setAttribute('crossorigin','anonymous'));
+          fr.replaceWith(div);
+        }
+      }
+    });
+  }
+  $('#btnExport').addEventListener('click', async ()=>{
+    toast('Rendering…');
+    try{
+      const canvas=await capture(); if(!canvas) return;
+      const a=document.createElement('a');
+      a.download=`gmail-${state.skin}-${state.view}.png`;
+      a.href=canvas.toDataURL('image/png'); a.click();
+      toast('PNG downloaded');
+    }catch(e){ console.error(e); toast('Export failed — try native screenshot. Remote images may block capture.'); }
+  });
+  $('#btnCopy').addEventListener('click', async ()=>{
+    toast('Rendering…');
+    try{
+      const canvas=await capture(); if(!canvas) return;
+      canvas.toBlob(async b=>{
+        try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }
+        catch(e){ toast('Clipboard blocked — use Export PNG instead'); }
+      });
+    }catch(e){ toast('Copy failed — try Export PNG'); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
