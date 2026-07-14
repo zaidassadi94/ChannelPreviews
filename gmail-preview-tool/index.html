@@ -474,10 +474,6 @@
         <button data-view="inbox" class="on">Inbox list</button>
         <button data-view="open">Open email</button>
       </div>
-      <div class="seg2" id="themeSeg">
-        <button data-theme="light" class="on">☀️ Light</button>
-        <button data-theme="dark">🌙 Dark</button>
-      </div>
       <div class="grow"></div>
       <button class="btn ghost" id="btnCopy">⧉ Copy</button>
       <button class="btn primary" id="btnExport">⬇ Export PNG</button>
@@ -540,7 +536,9 @@
     {id:'gaming', name:'Gaming', subs:[]},
     {id:'telecom', name:'Telecom', subs:[]},
   ];
-  const KW={fashion:'fashion,clothing',marketplace:'electronics,gadgets',d2c:'skincare,cosmetics',banking:'banking,finance',insurance:'insurance,family',fintech:'mobile,payment',ott:'cinema,movie',news:'newspaper,news',airlines:'airplane,travel',hotels:'hotel,resort',delivery:'food,restaurant',grocery:'grocery,vegetables',edtech:'education,study',gaming:'videogame,gaming',telecom:'smartphone,technology'};
+  const KW={fashion:'clothing',marketplace:'electronics',d2c:'cosmetics',banking:'money',insurance:'umbrella',fintech:'smartphone',ott:'cinema',news:'newspaper',airlines:'airplane',hotels:'hotel',delivery:'food',grocery:'vegetables',edtech:'classroom',gaming:'videogame',telecom:'smartphone'};
+  const IMGKW={'Oversized Tee':'tshirt','Cargo Pants':'trousers','Knit Hoodie':'hoodie','Wireless Earbuds':'earbuds','Smart Watch':'smartwatch','Power Bank':'battery','Vitamin C Serum':'serum','Night Cream':'cosmetics','SPF 50':'sunscreen','Savings+ Account':'savings','Gold Credit Card':'creditcard','Auto Loan':'car','Youth Account':'piggybank','Motor':'car','Health':'stethoscope','Travel':'suitcase','Pay bills':'invoice','Send money':'cash','Rewards':'gift','New Originals':'cinema','Blockbusters':'popcorn','Live Comedy':'microphone','Business':'stockmarket','Technology':'laptop','Sport':'stadium','Dubai':'dubai','Cairo':'pyramids','Amman':'mountains','Palm Grand':'hotel','City Suites':'hotelroom','Beach Villa':'beach','Burger Yard':'burger','Sushi Bar':'sushi','Pizza Co':'pizza','Fresh Milk':'milk','Free-range Eggs':'eggs','Sourdough':'bread','Data Analytics':'dashboard','UX Design':'wireframe','Cloud 101':'server','Legendary Crate':'treasure','Season Pass':'videogame','Hero Bundle':'gamepad','Unlimited':'smartphone','Family Plan':'family','Data Add-on':'wifi'};
+  function kwFor(name){ return IMGKW[name] || (name||'product').split(' ')[0].toLowerCase(); }
   const EPACKS={
     fashion:{brand:'Nova',from:'hello@nova.shop',accent:'#111111',offer:'40% off new arrivals',code:'NOVA10',url:'nova.shop',products:[['Oversized Tee','SAR 89'],['Cargo Pants','SAR 149'],['Knit Hoodie','SAR 199']],orderId:'10482',total:'SAR 437',otpUse:'sign-in'},
     marketplace:{brand:'Nova Market',from:'orders@novamarket.com',accent:'#ff6d00',offer:'Deals up to 70% off',code:'SAVE15',url:'novamarket.com',products:[['Wireless Earbuds','SAR 129'],['Smart Watch','SAR 299'],['Power Bank','SAR 79']],orderId:'88231',total:'SAR 507',otpUse:'sign-in'},
@@ -565,7 +563,7 @@
   function eBtn(p,l){ return `<a href="#" style="display:inline-block;background:${p.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${l}</a>`; }
   function eBrand(p){ return `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${p.accent};">${p.brand}</span></div>`; }
   function eHeroImg(p,kw,seed){ return `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(kw,seed)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div>`; }
-  function eGrid(p){ return `<div style="padding:14px 22px;">`+p.products.map((pr,i)=>`<div style="display:inline-block;width:46%;vertical-align:top;margin:1.5%;text-align:center;"><div style="height:120px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(pr[0].replace(/ /g,','),i+10)}" width="260" height="120" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div><div style="font-size:14px;font-weight:600;color:#111;margin-top:8px;">${pr[0]}</div><div style="font-size:14px;color:${p.accent};font-weight:700;">${pr[1]}</div></div>`).join('')+`</div>`; }
+  function eGrid(p){ return `<div style="padding:14px 22px;">`+p.products.map((pr,i)=>`<div style="display:inline-block;width:46%;vertical-align:top;margin:1.5%;text-align:center;"><div style="height:120px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(kwFor(pr[0]),i+10)}" width="260" height="120" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div><div style="font-size:14px;font-weight:600;color:#111;margin-top:8px;">${pr[0]}</div><div style="font-size:14px;color:${p.accent};font-weight:700;">${pr[1]}</div></div>`).join('')+`</div>`; }
   function eOrderTable(p){ const rows=p.products.map(pr=>`<tr><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;color:#333;font-size:14px;">${pr[0]}</td><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;text-align:right;color:#333;font-size:14px;">${pr[1]}</td></tr>`).join(''); return `<table style="width:100%;border-collapse:collapse;">${rows}<tr><td style="padding:13px 0;font-weight:800;color:#111;">Total</td><td style="padding:13px 0;text-align:right;font-weight:800;color:${p.accent};">${p.total}</td></tr></table>`; }
   function eWrap(inner){ return `<div style="background:#eef0f3;padding:20px 12px;font-family:Arial,Helvetica,sans-serif;"><div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">${inner}</div><div style="max-width:600px;margin:14px auto 0;text-align:center;color:#9aa0ac;font-size:12px;line-height:1.6;">You're receiving this because you subscribed.<br>Unsubscribe · Manage preferences</div></div>`; }
 
@@ -963,7 +961,7 @@
       b.classList.add('on'); const v=b.dataset[key]; state[key]=v; if(cb)cb(v); render();
     }));
   }
-  segBind('#skinSeg','skin'); segBind('#viewSeg','view'); segBind('#themeSeg','theme');
+  segBind('#skinSeg','skin'); segBind('#viewSeg','view');
 
   // ---------- Collapsible groups ----------
   document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
