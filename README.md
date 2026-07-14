@@ -23,7 +23,13 @@ Gmail — from the **Channel** dropdown inside the app.
 ## Real product photos (one-time setup)
 
 By default the tools render clean product **illustrations** (always relevant,
-self-contained). To use **real photos** instead, resolve them once from Pexels:
+self-contained). To use **real photos** instead:
+
+**Easiest (no terminal):** open `setup.html` on your deployed site (e.g.
+`https://your-site.vercel.app/setup.html`), paste your Pexels key, click the
+button, and copy the result — then commit it as `images.js` (or paste it to Claude).
+
+**Or via terminal:** resolve them once from Pexels:
 
 1. Get a free Pexels API key: https://www.pexels.com/api/  (free tier: 200/hr, 20k/mo).
 2. From the repo root, run once:

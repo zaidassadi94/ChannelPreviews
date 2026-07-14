@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Channel Studio — Photo Setup</title>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  :root{ --accent:#635bff; --accent-ink:#4b45d6; --ink:#0c0e14; --muted:#7a8194; --line:#e9eaf0; --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  body{ font-family:var(--font); background:#f4f5f8; color:var(--ink); -webkit-font-smoothing:antialiased; min-height:100vh; padding:32px 16px; }
+  .card{ max-width:640px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 40px rgba(16,18,30,.08); overflow:hidden; }
+  .head{ padding:26px 30px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:13px; }
+  .mark{ width:34px; height:34px; border-radius:10px; background:linear-gradient(140deg,#635bff,#8b5cf6 55%,#22c1c3); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(99,91,255,.35); }
+  .mark svg{ width:19px; height:19px; }
+  h1{ font-size:18px; font-weight:650; letter-spacing:-.3px; } .head small{ display:block; color:var(--muted); font-size:12px; font-weight:450; }
+  .body{ padding:26px 30px 30px; }
+  .step{ display:flex; gap:14px; margin-bottom:22px; }
+  .num{ width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; }
+  .step h3{ font-size:14.5px; font-weight:600; margin-bottom:4px; letter-spacing:-.1px; }
+  .step p{ font-size:13.5px; color:#5a6172; line-height:1.55; }
+  .step p a{ color:var(--accent-ink); font-weight:600; }
+  input[type=text]{ width:100%; margin-top:10px; padding:12px 14px; font-size:14px; font-family:inherit; border:1px solid var(--line); border-radius:10px; outline:none; background:#f7f8fb; }
+  input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,91,255,.16); background:#fff; }
+  .btn{ margin-top:14px; width:100%; border:0; border-radius:11px; padding:14px; font-size:15px; font-weight:650; font-family:inherit; cursor:pointer; background:var(--accent); color:#fff; box-shadow:0 3px 10px rgba(99,91,255,.3); transition:.15s; display:flex; align-items:center; justify-content:center; gap:9px; }
+  .btn:hover{ background:var(--accent-ink); } .btn:disabled{ opacity:.55; cursor:default; }
+  .btn.ghost{ background:#fff; color:var(--ink); border:1px solid var(--line); box-shadow:none; }
+  .prog{ margin-top:18px; display:none; }
+  .bar{ height:9px; background:#eceef4; border-radius:6px; overflow:hidden; } .bar > i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#635bff,#8b5cf6); transition:width .2s; }
+  .prog .lbl{ font-size:12.5px; color:var(--muted); margin-top:8px; text-align:center; }
+  .result{ margin-top:22px; display:none; }
+  .result .ok{ background:#e9fbf1; border:1px solid #b6ebcc; color:#0b7a43; font-size:13.5px; font-weight:600; padding:11px 14px; border-radius:10px; margin-bottom:14px; }
+  .result h3{ font-size:14px; font-weight:650; margin-bottom:8px; }
+  textarea{ width:100%; height:120px; padding:12px; font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace; font-size:11px; border:1px solid var(--line); border-radius:10px; background:#f7f8fb; color:#3a3f4c; resize:vertical; line-height:1.5; }
+  .row{ display:flex; gap:10px; margin-top:12px; }
+  .row .btn{ margin-top:0; }
+  .note{ font-size:12px; color:var(--muted); margin-top:14px; line-height:1.6; background:#f7f8fb; border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .err{ color:#c0392b; font-size:13px; margin-top:12px; display:none; background:#fdecea; border:1px solid #f5c6c0; border-radius:10px; padding:11px 14px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" opacity=".95"/><circle cx="9" cy="10.5" r="1.3" fill="#635bff"/><circle cx="13" cy="10.5" r="1.3" fill="#635bff"/><circle cx="17" cy="10.5" r="1.3" fill="#635bff"/></svg></div>
+    <div><h1>Turn on real product photos</h1><small>One-time · takes about a minute</small></div>
+  </div>
+  <div class="body">
+    <div class="step">
+      <div class="num">1</div>
+      <div style="flex:1">
+        <h3>Paste your Pexels API key</h3>
+        <p>If you don't have one yet, get a free key at <a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a> (click "Get Started", it's instant).</p>
+        <input type="text" id="key" placeholder="Paste your Pexels API key here" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div style="flex:1">
+        <h3>Click the button</h3>
+        <p>It fetches one clean product photo for each item — right here in your browser. Your key is only sent to Pexels and is never saved or shared.</p>
+        <button class="btn" id="go"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg>Fetch product photos</button>
+        <div class="prog" id="prog"><div class="bar"><i id="fill"></i></div><div class="lbl" id="plabel">Starting…</div></div>
+        <div class="err" id="err"></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div style="flex:1">
+        <h3>Send the result to Claude</h3>
+        <p>When it finishes, a box of text appears below. Hit <b>Copy</b> and paste it into your chat with Claude — that's it, I'll publish it and the photos go live for everyone.</p>
+        <div class="result" id="result">
+          <div class="ok" id="okmsg"></div>
+          <h3>Copy this and paste it to Claude:</h3>
+          <textarea id="out" readonly></textarea>
+          <div class="row">
+            <button class="btn" id="copy">📋 Copy</button>
+            <button class="btn ghost" id="dl">⬇ Or download images.js</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">Nothing here is saved on any server. The key stays in your browser for this one lookup. Anything a photo can't be found for simply keeps its clean illustration.</div>
+  </div>
+</div>
+
+<script>
+// Keyword -> Pexels query (kept in sync with resolve-images.js; product/object-focused)
+var QUERIES={
+  tshirt:'plain white t-shirt product', trousers:'folded chino pants', hoodie:'grey hoodie sweatshirt product', clothing:'folded clothes on shelf',
+  earbuds:'wireless earbuds', smartwatch:'smartwatch on white', battery:'power bank charger', electronics:'tech gadgets flatlay',
+  smartphone:'smartphone on white', laptop:'laptop computer desk', server:'server data center', wireframe:'ux design wireframe screen',
+  dashboard:'analytics dashboard screen', wifi:'wifi router',
+  serum:'skincare serum bottle', cosmetics:'cosmetics products flatlay', sunscreen:'sunscreen bottle',
+  savings:'coins in glass jar', creditcard:'credit card on table', car:'car exterior street', piggybank:'piggy bank',
+  invoice:'invoice paperwork desk', cash:'us dollar bills', money:'money finance desk', stethoscope:'stethoscope medical', umbrella:'open umbrella',
+  cinema:'movie theater seats', popcorn:'popcorn bucket', microphone:'stage microphone', newspaper:'newspaper on table', film:'film reel',
+  suitcase:'travel suitcase', airplane:'airplane in sky', miami:'miami beach skyline', newyork:'new york city skyline',
+  chicago:'chicago city skyline', hotel:'luxury hotel exterior', hotelroom:'hotel room interior', beach:'tropical beach resort',
+  burger:'gourmet burger', sushi:'sushi platter', pizza:'pizza', food:'gourmet meal plate', vegetables:'fresh vegetables',
+  milk:'milk bottle', eggs:'eggs in carton', bread:'artisan bread loaf', basket:'grocery basket',
+  classroom:'online learning laptop', videogame:'game controller', gamepad:'game controller', treasure:'treasure chest gold',
+  gift:'wrapped gift box', stadium:'sports stadium', family:'american family with phone', building:'modern city building'
+};
+
+var $=function(s){return document.getElementById(s);};
+var out={};
+
+async function one(key,kw,q){
+  try{
+    var r=await fetch('https://api.pexels.com/v1/search?per_page=1&orientation=landscape&query='+encodeURIComponent(q),{headers:{Authorization:key}});
+    if(r.status===401){ throw {code:401}; }
+    if(!r.ok) return null;
+    var j=await r.json();
+    var ph=j.photos&&j.photos[0];
+    return ph?ph.src.large:null;
+  }catch(e){ if(e&&e.code===401) throw e; return null; }
+}
+
+$('go').addEventListener('click',async function(){
+  var key=$('key').value.trim();
+  $('err').style.display='none';
+  if(!key){ $('err').textContent='Please paste your Pexels API key first.'; $('err').style.display='block'; return; }
+  $('go').disabled=true; $('prog').style.display='block'; $('result').style.display='none'; out={};
+  var keys=Object.keys(QUERIES), done=0, found=0;
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    try{
+      var u=await one(key,k,QUERIES[k]);
+      if(u){ out[k]=u; found++; }
+    }catch(e){
+      if(e&&e.code===401){ $('go').disabled=false; $('prog').style.display='none'; $('err').textContent='That key was rejected by Pexels (401). Double-check you copied the whole key.'; $('err').style.display='block'; return; }
+    }
+    done++;
+    $('fill').style.width=Math.round(done/keys.length*100)+'%';
+    $('plabel').textContent='Fetching photos… '+done+' / '+keys.length+'  ('+found+' found)';
+    await new Promise(function(r){ setTimeout(r,180); });
+  }
+  $('prog').style.display='none';
+  $('okmsg').textContent='✓ Done — found '+found+' photos.';
+  $('out').value='window.__PXIMG='+JSON.stringify(out)+';';
+  $('result').style.display='block';
+  $('go').disabled=false;
+});
+
+$('copy').addEventListener('click',function(){
+  $('out').select();
+  navigator.clipboard.writeText($('out').value).then(function(){ $('copy').textContent='✓ Copied!'; setTimeout(function(){ $('copy').textContent='📋 Copy'; },1800); },function(){ document.execCommand('copy'); });
+});
+$('dl').addEventListener('click',function(){
+  var blob=new Blob([$('out').value+'\n'],{type:'text/javascript'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='images.js'; a.click();
+});
+</script>
+</body>
+</html>
