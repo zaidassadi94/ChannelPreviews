@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Channel Previews — Gmail · SMS · RCS · WhatsApp</title>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:'Google Sans Text',Roboto,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; background:#0f1115; color:#e8eaed; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+  header{ flex:none; display:flex; align-items:center; gap:16px; padding:0 18px; height:60px; background:#171a21; border-bottom:1px solid #262a33; }
+  .brand{ display:flex; align-items:center; gap:11px; }
+  .brand .logo{ width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,#1a73e8,#25d366); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .brand h1{ font-size:16px; font-weight:600; letter-spacing:-.2px; } .brand small{ display:block; font-size:11px; color:#8a919e; font-weight:400; }
+  nav{ display:flex; gap:4px; background:#0f1115; border:1px solid #262a33; border-radius:11px; padding:4px; margin-left:8px; }
+  nav button{ border:0; background:none; color:#9aa0ac; font-family:inherit; font-size:13.5px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:.15s; }
+  nav button:hover{ color:#e8eaed; }
+  nav button.on{ background:#2a2f3a; color:#fff; }
+  nav button .ic{ font-size:15px; }
+  .spacer{ flex:1; }
+  .hostnote{ font-size:12px; color:#6b7280; }
+  .hostnote a{ color:#8ab4f8; text-decoration:none; }
+  main{ flex:1; min-height:0; position:relative; background:#20232a; }
+  iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#20232a; }
+  .loading{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#6b7280; font-size:13px; pointer-events:none; }
+  @media (max-width:720px){ .brand small,.hostnote{ display:none; } nav button{ padding:8px 11px; } header{ gap:8px; padding:0 10px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">📡</div>
+    <div><h1>Channel Previews</h1><small>Realistic inbox &amp; messaging mockups for decks</small></div>
+  </div>
+  <nav id="nav">
+    <button data-tool="gmail-preview-tool/index.html" class="on"><span class="ic">📧</span>Gmail</button>
+    <button data-tool="messaging-preview-tool/index.html?channel=sms"><span class="ic">💬</span>SMS</button>
+    <button data-tool="messaging-preview-tool/index.html?channel=rcs"><span class="ic">📱</span>RCS</button>
+    <button data-tool="messaging-preview-tool/index.html?channel=whatsapp"><span class="ic">🟢</span>WhatsApp</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="hostnote">Self-contained · host anywhere</div>
+</header>
+<main>
+  <div class="loading" id="loading">Loading…</div>
+  <iframe id="frame" title="channel preview" src="gmail-preview-tool/index.html"></iframe>
+</main>
+<script>
+  var frame=document.getElementById('frame'), loading=document.getElementById('loading');
+  frame.addEventListener('load',function(){ loading.style.display='none'; });
+  document.querySelectorAll('#nav button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#nav button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      loading.style.display='flex';
+      frame.src=b.dataset.tool;
+      // reflect channel in URL hash for shareable deep-links
+      var t=b.dataset.tool; var key=t.indexOf('gmail')>-1?'gmail':(t.split('channel=')[1]||'');
+      if(history.replaceState) history.replaceState(null,'','#'+key);
+    });
+  });
+  // deep-link: #sms / #rcs / #whatsapp / #gmail
+  (function(){
+    var h=(location.hash||'').replace('#','').toLowerCase();
+    var map={ gmail:0, sms:1, rcs:2, whatsapp:3 };
+    if(h in map){ document.querySelectorAll('#nav button')[map[h]].click(); }
+  })();
+</script>
+</body>
+</html>

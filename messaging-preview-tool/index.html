@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Messaging Preview Studio — SMS · RCS · WhatsApp</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#eef1f5; --panel:#fff; --panel-2:#f7f8fa; --border:#e2e5ea;
+    --text:#1f2328; --muted:#6b7280; --accent:#1a73e8; --accent-weak:#e8f0fe;
+  }
+  html,body{height:100%;}
+  body{ font-family:'Google Sans Text',Roboto,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+  .app{ display:grid; grid-template-columns:380px 1fr; height:100vh; overflow:hidden; }
+
+  /* Editor */
+  .editor{ background:var(--panel); border-right:1px solid var(--border); overflow-y:auto; padding-bottom:60px; }
+  .editor::-webkit-scrollbar{ width:10px; } .editor::-webkit-scrollbar-thumb{ background:#d6dae0; border-radius:8px; border:3px solid var(--panel); }
+  .brand{ position:sticky; top:0; z-index:5; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; gap:10px; }
+  .brand .dot{ width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,#25d366,#128C7E); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
+  .brand h1{ font-size:15px; font-weight:600; } .brand small{ display:block; color:var(--muted); font-size:11px; font-weight:400; }
+
+  .group{ border-bottom:8px solid var(--panel-2); }
+  .group>.group-head{ width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:14px 20px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  .group>.group-head:hover{ color:var(--text); }
+  .group-head .chev{ transition:transform .2s; font-size:10px; } .group.collapsed .chev{ transform:rotate(-90deg); }
+  .group.collapsed .group-body{ display:none; }
+  .group-body{ padding:4px 20px 20px; }
+
+  label.field{ display:block; margin-bottom:13px; }
+  label.field>span{ display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:6px; }
+  input[type=text],input[type=email],textarea,select{ width:100%; padding:9px 11px; font-size:13px; font-family:inherit; color:var(--text); background:var(--panel-2); border:1px solid var(--border); border-radius:8px; outline:none; transition:.15s; }
+  input:focus,textarea:focus,select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-weak); background:#fff; }
+  textarea{ resize:vertical; min-height:70px; line-height:1.5; }
+  textarea.mono{ font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace; font-size:12px; }
+  .hint{ font-size:11px; color:var(--muted); margin:-6px 0 12px; line-height:1.45; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:7px 0; }
+  .toggle-row span{ font-size:13px; }
+  .switch{ position:relative; width:38px; height:22px; flex:none; } .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; inset:0; background:#cbd2da; border-radius:999px; transition:.2s; cursor:pointer; }
+  .slider::before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.3); }
+  .switch input:checked + .slider{ background:var(--accent); } .switch input:checked + .slider::before{ transform:translateX(16px); }
+
+  .drop{ border:1.5px dashed var(--border); border-radius:10px; padding:16px; text-align:center; cursor:pointer; transition:.15s; background:var(--panel-2); color:var(--muted); font-size:12px; }
+  .drop:hover,.drop.drag{ border-color:var(--accent); background:var(--accent-weak); color:var(--accent); }
+  .logo-preview{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .logo-preview img{ width:40px; height:40px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#fff; }
+  .btn-mini{ font-size:11px; color:var(--accent); background:none; border:0; cursor:pointer; }
+
+  .btn{ border:0; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:7px; justify-content:center; }
+  .btn.primary{ background:var(--accent); color:#fff; } .btn.primary:hover{ background:#1665d8; }
+  .btn.ghost{ background:var(--panel-2); color:var(--text); border:1px solid var(--border); } .btn.ghost:hover{ background:#eceff3; }
+  .btn.block{ width:100%; }
+
+  /* message cards in editor */
+  .msg-card{ border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:12px; background:var(--panel-2); }
+  .msg-card .mc-top{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .msg-card .mc-top .lbl{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); flex:1; }
+  .msg-card .mc-top button{ background:none; border:0; cursor:pointer; color:var(--muted); font-size:14px; padding:2px 5px; border-radius:5px; }
+  .msg-card .mc-top button:hover{ background:#e6e9ee; color:var(--text); }
+  .msg-card select.typesel{ font-size:11px; padding:4px 6px; width:auto; }
+  .addmsg{ display:flex; gap:8px; flex-wrap:wrap; }
+  .addmsg button{ font-size:12px; padding:7px 12px; border:1px dashed var(--border); background:#fff; border-radius:8px; cursor:pointer; color:var(--accent); font-family:inherit; }
+  .addmsg button:hover{ background:var(--accent-weak); }
+  .seg-from{ display:flex; background:#fff; border:1px solid var(--border); border-radius:7px; padding:2px; margin-bottom:10px; }
+  .seg-from button{ flex:1; border:0; background:none; padding:6px; font-size:11px; font-weight:600; color:var(--muted); border-radius:5px; cursor:pointer; font-family:inherit; }
+  .seg-from button.on{ background:var(--accent-weak); color:var(--accent); }
+
+  .tpl-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .tpl{ border:1px solid var(--border); background:var(--panel-2); border-radius:9px; padding:10px; cursor:pointer; text-align:left; font-family:inherit; transition:.12s; }
+  .tpl:hover{ border-color:var(--accent); background:var(--accent-weak); }
+  .tpl .tt{ font-size:12px; font-weight:600; color:var(--text); display:block; margin-bottom:2px; }
+  .tpl .td{ font-size:10.5px; color:var(--muted); line-height:1.35; }
+
+  /* Stage */
+  .stage-wrap{ display:flex; flex-direction:column; min-width:0; }
+  .topbar{ height:56px; flex:none; background:var(--panel); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; padding:0 16px; }
+  .grow{ flex:1; }
+  .seg2{ display:flex; background:var(--panel-2); border:1px solid var(--border); border-radius:9px; padding:3px; gap:3px; }
+  .seg2 button{ border:0; background:none; padding:7px 13px; font-size:13px; font-weight:600; color:var(--muted); border-radius:6px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+  .seg2 button.on{ background:#fff; color:var(--text); box-shadow:0 1px 2px rgba(0,0,0,.12); }
+  .seg2.chan button.on[data-channel=sms]{ color:#1a73e8; } .seg2.chan button.on[data-channel=rcs]{ color:#1a73e8; } .seg2.chan button.on[data-channel=whatsapp]{ color:#128C7E; }
+
+  .stage{ flex:1; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:36px 24px; background:radial-gradient(circle at 20% 10%,#e9edf3 0,transparent 40%),radial-gradient(circle at 90% 80%,#e7ebf2 0,transparent 45%),#eef1f5; }
+  .stage.dark-stage{ background:#20232a; }
+
+  /* Phone frames */
+  .phone{ width:390px; background:#0d0d0f; border-radius:54px; padding:12px; box-shadow:0 30px 60px rgba(0,0,0,.35); position:relative; }
+  .phone.android{ border-radius:38px; padding:10px; background:#111; }
+  .screen{ border-radius:44px; overflow:hidden; background:#fff; position:relative; height:812px; display:flex; flex-direction:column; }
+  .phone.android .screen{ border-radius:30px; }
+  .notch{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px; background:#0d0d0f; border-radius:0 0 20px 20px; z-index:60; }
+  .punch{ position:absolute; top:14px; left:50%; transform:translateX(-50%); width:11px; height:11px; background:#0d0d0f; border-radius:50%; z-index:60; }
+  .statusbar{ height:46px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px 0 30px; font-size:15px; font-weight:600; z-index:50; color:#000; }
+  .statusbar.light-txt{ color:#fff; } .statusbar .icons{ display:flex; gap:6px; align-items:center; } .statusbar svg{ width:17px; height:17px; }
+  .phone.android .statusbar{ height:34px; font-size:13px; padding:0 18px; }
+
+  /* ============ WhatsApp ============ */
+  .wa{ flex:1; display:flex; flex-direction:column; background:#efeae2; min-height:0; }
+  .wa.dark{ background:#0b141a; }
+  .wa-header{ flex:none; background:#008069; color:#fff; display:flex; align-items:center; gap:10px; padding:8px 12px; }
+  .wa.dark .wa-header{ background:#1f2c34; }
+  .wa-header .wback{ width:22px; } .wa-header .wav{ width:38px; height:38px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#cfd8dc; color:#fff; font-weight:600; }
+  .wa-header .wav img{ width:100%; height:100%; object-fit:cover; }
+  .wa-header .wmeta{ flex:1; min-width:0; } .wa-header .wname{ font-size:16px; font-weight:600; display:flex; align-items:center; gap:5px; min-width:0; }
+  .wa-header .wname .nm{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wa-header .wsub{ font-size:12px; opacity:.85; } .wa-header .wicons{ display:flex; gap:18px; } .wa-header .wicons svg{ width:20px; }
+  .wa-verif{ display:inline-flex; width:15px; height:15px; }
+  .wa-body{ flex:1; overflow-y:auto; padding:12px 8px 6px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23000' fill-opacity='0.03'%3E%3Cpath d='M30 5c2 4 6 6 10 6-4 2-6 6-6 10-2-4-6-6-10-6 4-2 6-6 6-10z'/%3E%3C/g%3E%3C/svg%3E"); }
+  .wa.dark .wa-body{ background-image:none; }
+  .wa-date{ text-align:center; margin:6px 0 12px; } .wa-date span{ background:#fff; color:#54656f; font-size:12px; padding:5px 12px; border-radius:8px; box-shadow:0 1px 1px rgba(0,0,0,.1); }
+  .wa.dark .wa-date span{ background:#182229; color:#8696a0; }
+  .wa-enc{ text-align:center; margin:0 24px 14px; } .wa-enc span{ background:#fdf4c8; color:#54656f; font-size:11px; padding:6px 12px; border-radius:8px; line-height:1.5; display:inline-block; }
+  .wa.dark .wa-enc span{ background:#182229; color:#8696a0; }
+  .wa-msg{ display:flex; margin:3px 6px; } .wa-msg.out{ justify-content:flex-end; }
+  .wa-bubble{ max-width:80%; background:#fff; border-radius:8px 8px 8px 0; padding:6px 9px 8px; box-shadow:0 1px .5px rgba(0,0,0,.13); position:relative; font-size:14.2px; line-height:1.4; color:#111b21; }
+  .wa-msg.out .wa-bubble{ background:#d9fdd3; border-radius:8px 8px 0 8px; }
+  .wa.dark .wa-bubble{ background:#1f2c34; color:#e9edef; } .wa.dark .wa-msg.out .wa-bubble{ background:#005c4b; }
+  .wa-bubble .wtext{ white-space:pre-wrap; word-wrap:break-word; }
+  .wa-meta{ float:right; font-size:11px; color:#667781; margin:4px 0 -2px 8px; display:flex; align-items:center; gap:3px; }
+  .wa.dark .wa-meta{ color:#8696a0; } .wa-msg.out .wa-meta .tick{ color:#53bdeb; }
+  .wa-img{ border-radius:6px; overflow:hidden; margin:-2px -3px 4px; } .wa-img img{ width:100%; display:block; max-height:260px; object-fit:cover; }
+  .wa-hdrtext{ font-weight:700; margin-bottom:3px; }
+  .wa-footer{ font-size:12.5px; color:#8696a0; margin-top:4px; }
+  .wa-btns{ margin-top:4px; }
+  .wa-btn-in{ border-top:1px solid rgba(0,0,0,.08); margin:0 -9px; padding:9px 0; text-align:center; color:#00a5f4; font-size:14px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .wa.dark .wa-btn-in{ border-color:rgba(255,255,255,.1); color:#53bdeb; } .wa-btn-in svg{ width:16px; }
+  .wa-qr{ display:flex; flex-direction:column; gap:5px; margin:5px 6px 8px; align-items:flex-start; }
+  .wa-qr .q{ background:#fff; color:#00a5f4; border-radius:8px; padding:9px 16px; font-size:14px; font-weight:500; box-shadow:0 1px .5px rgba(0,0,0,.13); width:100%; text-align:center; }
+  .wa.dark .wa-qr .q{ background:#1f2c34; color:#53bdeb; }
+  .wa-carousel{ display:flex; gap:8px; overflow-x:auto; padding:2px 6px 8px; }
+  .wa-pcard{ flex:none; width:170px; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px .5px rgba(0,0,0,.13); }
+  .wa.dark .wa-pcard{ background:#1f2c34; color:#e9edef; }
+  .wa-pcard img{ width:100%; height:120px; object-fit:cover; } .wa-pcard .pc-b{ padding:8px; }
+  .wa-pcard .pc-t{ font-size:13px; font-weight:600; } .wa-pcard .pc-p{ font-size:13px; color:#008069; font-weight:700; margin-top:2px; } .wa.dark .wa-pcard .pc-p{ color:#25d366; }
+  .wa-pcard .pc-btn{ border-top:1px solid rgba(0,0,0,.08); padding:8px; text-align:center; color:#00a5f4; font-size:13px; font-weight:500; }
+  .wa-list-sheet{ margin:6px; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.15); }
+  .wa.dark .wa-list-sheet{ background:#1f2c34; color:#e9edef; }
+  .wa-list-sheet .lh{ padding:12px 14px; font-weight:600; font-size:14px; border-bottom:1px solid rgba(0,0,0,.06); }
+  .wa-list-item{ padding:11px 14px; border-bottom:1px solid rgba(0,0,0,.05); }
+  .wa-list-item .li-t{ font-size:14px; } .wa-list-item .li-d{ font-size:12px; color:#8696a0; margin-top:2px; }
+  .wa-doc{ display:flex; align-items:center; gap:10px; background:rgba(0,0,0,.04); border-radius:8px; padding:10px; margin-bottom:3px; }
+  .wa.dark .wa-doc{ background:rgba(255,255,255,.06); } .wa-doc .dic{ width:34px; height:40px; background:#fff; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#d32f2f; font-size:11px; font-weight:700; }
+  .wa-doc .dn{ font-size:13px; font-weight:500; } .wa-doc .dm{ font-size:11px; color:#8696a0; }
+  .wa-input{ flex:none; display:flex; align-items:center; gap:8px; padding:7px 10px; background:transparent; }
+  .wa-input .wf{ flex:1; background:#fff; border-radius:22px; padding:9px 14px; color:#8696a0; font-size:15px; display:flex; align-items:center; gap:10px; }
+  .wa.dark .wa-input .wf{ background:#1f2c34; } .wa-input .wsend{ width:44px; height:44px; border-radius:50%; background:#008069; display:flex; align-items:center; justify-content:center; color:#fff; }
+  .wa.dark .wa-input .wsend{ background:#00a884; }
+
+  /* ============ RCS / Android SMS (Google Messages) ============ */
+  .gm{ flex:1; display:flex; flex-direction:column; background:#fff; min-height:0; }
+  .gm.dark{ background:#131314; color:#e3e3e3; }
+  .gm-header{ flex:none; display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid #eee; }
+  .gm.dark .gm-header{ border-color:#2a2a2c; }
+  .gm-header .gback{ width:22px; color:#444; } .gm.dark .gm-header .gback{ color:#c7c7c7; }
+  .gm-header .gav{ width:38px; height:38px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; }
+  .gm-header .gav img{ width:100%; height:100%; object-fit:cover; }
+  .gm-header .gname{ font-size:16px; font-weight:500; display:flex; align-items:center; gap:5px; min-width:0; }
+  .gm-header .gname .nm{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gm-header .gcol{ min-width:0; flex:1; } .gm-header .gsub{ font-size:12px; color:#5f6368; } .gm.dark .gm-header .gsub{ color:#9aa0a6; }
+  .gm-header .gicons{ display:flex; gap:20px; margin-left:auto; color:#444; } .gm.dark .gm-header .gicons{ color:#c7c7c7; } .gm-header .gicons svg{ width:22px; }
+  .rcs-verif{ width:16px; height:16px; color:#1a73e8; } .gm.dark .rcs-verif{ color:#8ab4f8; }
+  .gm-body{ flex:1; overflow-y:auto; padding:14px 12px 6px; }
+  .gm-date{ text-align:center; font-size:12px; color:#5f6368; margin:4px 0 14px; font-weight:500; } .gm.dark .gm-date{ color:#9aa0a6; }
+  .gm-msg{ display:flex; margin:2px 0; } .gm-msg.out{ justify-content:flex-end; }
+  .gm-bubble{ max-width:78%; background:#e9eef6; color:#1f1f1f; border-radius:18px 18px 18px 4px; padding:9px 14px; font-size:14.5px; line-height:1.4; }
+  .gm-msg.out .gm-bubble{ background:#0b57d0; color:#fff; border-radius:18px 18px 4px 18px; }
+  .gm.dark .gm-bubble{ background:#2e2f33; color:#e3e3e3; } .gm.dark .gm-msg.out .gm-bubble{ background:#0842a0; }
+  .gm-bubble .gtext{ white-space:pre-wrap; }
+  .gm-stamp{ font-size:11px; color:#5f6368; text-align:right; margin:3px 8px 8px; } .gm.dark .gm-stamp{ color:#9aa0a6; }
+  .gm-msg.imgmsg .gm-bubble{ padding:3px; background:transparent; } .gm-imgwrap{ border-radius:16px; overflow:hidden; max-width:230px; } .gm-imgwrap img{ width:100%; display:block; }
+  /* RCS rich card */
+  .rcs-card{ max-width:280px; background:#fff; border:1px solid #e3e3e6; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .gm.dark .rcs-card{ background:#1e1f22; border-color:#37383b; }
+  .rcs-card img{ width:100%; height:150px; object-fit:cover; display:block; }
+  .rcs-card .rc-b{ padding:12px 14px; } .rcs-card .rc-t{ font-size:15px; font-weight:600; } .rcs-card .rc-d{ font-size:13px; color:#5f6368; margin-top:3px; line-height:1.4; }
+  .gm.dark .rcs-card .rc-d{ color:#9aa0a6; }
+  .rcs-card-btns .rc-btn{ border-top:1px solid #eee; padding:11px 14px; color:#1a73e8; font-size:14px; font-weight:600; display:flex; align-items:center; gap:9px; }
+  .gm.dark .rcs-card-btns .rc-btn{ border-color:#37383b; color:#8ab4f8; } .rcs-card-btns .rc-btn svg{ width:17px; }
+  .rcs-carousel{ display:flex; gap:10px; overflow-x:auto; padding:4px 2px 10px; } .rcs-carousel .rcs-card{ flex:none; width:230px; }
+  .rcs-chips{ display:flex; gap:8px; overflow-x:auto; padding:6px 12px 12px; }
+  .rcs-chip{ flex:none; border:1px solid #dadce0; color:#1a73e8; background:#fff; border-radius:18px; padding:8px 16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .gm.dark .rcs-chip{ background:#131314; border-color:#5f6368; color:#8ab4f8; } .rcs-chip svg{ width:15px; }
+  .gm-typing{ display:flex; margin:4px 0; } .gm-typing .dots{ background:#e9eef6; border-radius:18px; padding:12px 16px; display:flex; gap:4px; } .gm.dark .gm-typing .dots{ background:#2e2f33; }
+  .gm-typing .dots i{ width:7px; height:7px; border-radius:50%; background:#9aa0a6; display:block; }
+  .gm-input{ flex:none; display:flex; align-items:center; gap:10px; padding:8px 12px; } .gm-input .gf{ flex:1; background:#f1f3f4; border-radius:22px; padding:11px 16px; color:#5f6368; font-size:14px; }
+  .gm.dark .gm-input .gf{ background:#2a2a2c; color:#9aa0a6; } .gm-input .gsend{ color:#1a73e8; } .gm.dark .gm-input .gsend{ color:#8ab4f8; } .gm-input svg{ width:24px; }
+
+  /* ============ iOS SMS (Messages) ============ */
+  .ios{ flex:1; display:flex; flex-direction:column; background:#fff; min-height:0; }
+  .ios.dark{ background:#000; color:#fff; }
+  .ios-header{ flex:none; display:flex; flex-direction:column; align-items:center; padding:6px 0 10px; border-bottom:1px solid #e5e5ea; position:relative; }
+  .ios.dark .ios-header{ border-color:#38383a; }
+  .ios-header .iback{ position:absolute; left:14px; top:10px; color:#007aff; font-size:26px; line-height:1; }
+  .ios-header .iav{ width:50px; height:50px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:20px; margin-bottom:3px; }
+  .ios-header .iav img{ width:100%; height:100%; object-fit:cover; }
+  .ios-header .iname{ font-size:12px; display:flex; align-items:center; gap:3px; } .ios-header .ichev{ color:#8e8e93; font-size:11px; }
+  .ios-body{ flex:1; overflow-y:auto; padding:10px 14px; }
+  .ios-time{ text-align:center; font-size:11px; color:#8e8e93; margin:8px 0 14px; } .ios-time b{ color:#000; font-weight:600; } .ios.dark .ios-time b{ color:#fff; }
+  .ios-msg{ display:flex; margin:2px 0; } .ios-msg.out{ justify-content:flex-end; }
+  .ios-bubble{ max-width:72%; padding:8px 13px; border-radius:19px; font-size:15.5px; line-height:1.32; position:relative; background:#e9e9eb; color:#000; }
+  .ios.dark .ios-bubble{ background:#26262a; color:#fff; }
+  .ios-msg.out .ios-bubble{ background:#34c759; color:#fff; } /* SMS green */
+  .ios-msg.out.imsg .ios-bubble{ background:#007aff; }
+  .ios-bubble .itext{ white-space:pre-wrap; word-wrap:break-word; }
+  .ios-receipt{ text-align:right; font-size:11px; color:#8e8e93; margin:2px 4px 6px; font-weight:600; }
+  .ios-img{ max-width:60%; border-radius:16px; overflow:hidden; } .ios-msg.out .ios-img{ margin-left:auto; } .ios-img img{ width:100%; display:block; }
+  .ios-input{ flex:none; display:flex; align-items:center; gap:10px; padding:8px 12px 12px; }
+  .ios-input .plus{ color:#8e8e93; font-size:24px; } .ios-input .ifield{ flex:1; border:1px solid #d1d1d6; border-radius:20px; padding:8px 14px; color:#8e8e93; font-size:15px; } .ios.dark .ios-input .ifield{ border-color:#38383a; }
+
+  /* toast */
+  .toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(80px); background:#202124; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; box-shadow:0 6px 24px rgba(0,0,0,.3); opacity:0; transition:.3s; z-index:200; }
+  .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+  @media (max-width:900px){ .app{ grid-template-columns:1fr; } .editor{ display:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="editor" id="editor">
+    <div class="brand">
+      <div class="dot" id="brandDot">💬</div>
+      <div><h1>Messaging Preview Studio</h1><small id="brandSub">SMS · RCS · WhatsApp mockups</small></div>
+    </div>
+
+    <!-- Templates -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Start from a template <span class="chev">▼</span></button>
+      <div class="group-body">
+        <div class="hint">Pick a ready-made message for the selected channel, then tweak it. This is the fastest way to a realistic mock.</div>
+        <div class="tpl-grid" id="tplGrid"></div>
+        <button class="btn ghost block" id="clearMsgs" style="margin-top:10px;">Clear &amp; start blank</button>
+      </div>
+    </section>
+
+    <!-- Sender identity -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Sender / business <span class="chev">▼</span></button>
+      <div class="group-body">
+        <label class="field"><span>Business / contact name</span><input type="text" id="bizName" value="Social Development Bank"></label>
+        <label class="field" id="subField"><span>Status line (online / last seen / verified)</span><input type="text" id="bizSub" value="Verified business"></label>
+        <label class="field" id="phoneField"><span>Phone number / sender ID</span><input type="text" id="bizPhone" value="+966 800 123 456"></label>
+        <label class="field"><span>Logo / avatar</span>
+          <div class="drop" id="logoDrop">🖼️ Drag &amp; drop or click to add a logo</div>
+          <input type="file" id="logoInput" accept="image/*" hidden>
+        </label>
+        <div class="logo-preview" id="logoPreview" style="display:none;"><img id="logoImg"><button class="btn-mini" id="logoClear">Remove</button></div>
+        <div class="toggle-row" id="verifRow"><span>Verified business badge</span><label class="switch"><input type="checkbox" id="verified" checked><span class="slider"></span></label></div>
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <section class="group" data-group>
+      <button class="group-head" data-head>Conversation <span class="chev">▼</span></button>
+      <div class="group-body">
+        <div class="hint">Each bubble below is one message. Set who it’s from, its type, and content. Business = incoming (left), Customer = outgoing (right).</div>
+        <div id="msgList"></div>
+        <div class="addmsg" id="addMsg"></div>
+      </div>
+    </section>
+
+    <!-- Chat context -->
+    <section class="group collapsed" data-group>
+      <button class="group-head" data-head>Chat context <span class="chev">▼</span></button>
+      <div class="group-body">
+        <label class="field"><span>Date chip</span><input type="text" id="dateChip" value="TODAY"></label>
+        <div class="toggle-row" id="encRow"><span>WhatsApp encryption notice</span><label class="switch"><input type="checkbox" id="encNotice" checked><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Typing indicator (bottom)</span><label class="switch"><input type="checkbox" id="typing"><span class="slider"></span></label></div>
+        <div class="toggle-row" id="smsCharRow" style="display:none;"><span id="smsChars">SMS length —</span></div>
+      </div>
+    </section>
+  </aside>
+
+  <div class="stage-wrap">
+    <div class="topbar">
+      <div class="seg2 chan" id="chanSeg">
+        <button data-channel="sms" class="on">💬 SMS</button>
+        <button data-channel="rcs">📱 RCS</button>
+        <button data-channel="whatsapp">🟢 WhatsApp</button>
+      </div>
+      <div class="seg2" id="deviceSeg">
+        <button data-device="ios" class="on">iPhone</button>
+        <button data-device="android">Android</button>
+      </div>
+      <div class="seg2" id="themeSeg">
+        <button data-theme="light" class="on">☀️</button>
+        <button data-theme="dark">🌙</button>
+      </div>
+      <div class="grow"></div>
+      <button class="btn ghost" id="btnCopy">⧉ Copy</button>
+      <button class="btn primary" id="btnExport">⬇ Export PNG</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const nl2=s=>esc(s).replace(/\n/g,'<br>');
+
+  // linkify + basic WhatsApp markdown (*bold* _italic_)
+  function fmt(s){
+    let t=esc(s);
+    t=t.replace(/\*(.+?)\*/g,'<b>$1</b>').replace(/_(.+?)_/g,'<i>$1</i>');
+    t=t.replace(/(https?:\/\/[^\s]+|\b[a-z0-9.-]+\.(?:com|net|org|io|in|co|sa)\/[^\s]*)/gi,'<span style="color:#1a73e8;text-decoration:underline">$1</span>');
+    return t.replace(/\n/g,'<br>');
+  }
+
+  const AV=['#5b6abf','#e57373','#4db6ac','#f06292','#7986cb','#9575cd','#4dd0e1','#81c784','#ffb74d','#a1887f','#039be5','#0b8043','#f4511e'];
+  const avColor=n=>{ let h=0; const s=n||'?'; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return AV[h%AV.length]; };
+  const initial=n=>{ const t=(n||'?').trim(); return t?t[0].toUpperCase():'?'; };
+
+  // ---------- State ----------
+  let uid=1; const nid=()=>'m'+(uid++);
+  const state={
+    channel:'sms', device:'ios', theme:'light',
+    bizName:'Social Development Bank', bizSub:'Verified business', bizPhone:'+966 800 123 456',
+    logo:null, verified:true, dateChip:'TODAY', encNotice:true, typing:false,
+    messages:[],
+  };
+
+  // ---------- Icons ----------
+  const IC={
+    back:'<svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    video:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M15 10l6-3v10l-6-3" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    call:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 5c0 9 6 15 15 15l2-4-5-2-2 2c-3-1.5-5-3.5-6-6l2-2-2-5-4 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    menu:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+    link:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 14a4 4 0 006 0l2-2a4 4 0 00-6-6l-1 1M14 10a4 4 0 00-6 0l-2 2a4 4 0 006 6l1-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    phone:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 5c0 9 6 15 15 15l2-4-5-2-2 2c-3-1.5-5-3.5-6-6l2-2-2-5-4 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    map:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 21c5-5 8-8 8-12a8 8 0 10-16 0c0 4 3 7 8 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>',
+    cal:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    reply:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 9V5l-7 7 7 7v-4c5 0 8 1.5 10 5-1-6-4-11-10-11z" stroke="currentColor" stroke-width="1.6"/></svg>',
+    send:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2-7-8-3z"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    plus:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    verifWA:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.6-1 2.8 1 2.8-2.6 1.6-1 2.8-3-.2L12 22l-2.4-1.8-3 .2-1-2.8L3 14.2l1-2.8-1-2.8 2.6-1.6 1-2.8 3 .2z" fill="#25d366"/><path d="M8.5 12.5l2.2 2.2 4.8-4.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    verifRCS:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 1.7 2.8-.2.9 2.6 2.4 1.5-.9 2.6.9 2.6-2.4 1.5-.9 2.6-2.8-.2L12 22l-2.2-1.7-2.8.2-.9-2.6L3.7 16.4l.9-2.6-.9-2.6 2.4-1.5.9-2.6 2.8.2z"/><path d="M8.5 12.3l2.2 2.2 4.6-4.6" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    tick:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M2 13l4 4 8-9M9 17l2 0 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
+    batt:'<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor"/><rect x="21" y="10" width="2" height="4" rx="1" fill="currentColor"/></svg>',
+    cell:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg>',
+  };
+  const btnIcon=t=> t==='call'?IC.phone : t==='url'?IC.link : t==='map'?IC.map : t==='cal'?IC.cal : IC.reply;
+
+  // ---------- Parsers ----------
+  // buttons: "Label | type | value" per line. type: reply|url|call
+  function parseButtons(raw){
+    return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+      const p=l.split('|').map(x=>x.trim());
+      let type=(p[1]||'reply').toLowerCase();
+      if(!['reply','url','call','map','cal'].includes(type)) type='reply';
+      return {label:p[0]||'Button', type, value:p[2]||''};
+    });
+  }
+  // cards: "imageUrl | title | subtitle | buttonLabel | buttonValue" per line
+  function parseCards(raw){
+    return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+      const p=l.split('|').map(x=>x.trim());
+      return {img:p[0]||'', title:p[1]||'', sub:p[2]||'', btn:p[3]||'', btnVal:p[4]||''};
+    });
+  }
+  // list: "Title | description" per line
+  function parseList(raw){
+    return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+      const p=l.split('|').map(x=>x.trim()); return {t:p[0]||'', d:p[1]||''};
+    });
+  }
+
+  // ---------- Message factory ----------
+  const DEF={
+    text:{type:'text', from:'business', text:'Hello! 👋', buttons:'', chips:''},
+    image:{type:'image', from:'business', img:'', caption:'', buttons:''},
+    card:{type:'card', from:'business', img:'', title:'Card title', desc:'Card description goes here.', buttons:'Learn more | url | https://example.com', chips:''},
+    carousel:{type:'carousel', from:'business', cards:'https://picsum.photos/seed/1/300/200 | Product One | $19.99 | Buy now | https://ex.com/1\nhttps://picsum.photos/seed/2/300/200 | Product Two | $24.99 | Buy now | https://ex.com/2', chips:''},
+    template:{type:'template', from:'business', img:'', hdr:'', body:'Your order *#10482* is confirmed ✅\nEstimated delivery: Fri, 18 Jul.', footer:'Social Development Bank', buttons:'Track order | url | https://ex.com/track\nContact us | call | +966800123456'},
+    list:{type:'list', from:'business', body:'Choose a service to continue:', btnText:'View services', header:'Our services', items:'Open an account | Savings & current\nApply for a loan | Personal & business\nTalk to an agent | 9am–6pm', footer:''},
+    document:{type:'document', from:'business', file:'Statement_Jul2026.pdf', meta:'2 pages · 480 KB · PDF', caption:''},
+  };
+  function makeMsg(type){ return Object.assign({id:nid()}, JSON.parse(JSON.stringify(DEF[type]))); }
+
+  const CHANNEL_TYPES={
+    sms:[['text','Text'],['image','MMS image']],
+    rcs:[['text','Text'],['image','Image'],['card','Rich card'],['carousel','Carousel']],
+    whatsapp:[['text','Text'],['image','Image'],['template','Template + buttons'],['carousel','Product carousel'],['list','List menu'],['document','Document']],
+  };
+
+  // ---------- Templates ----------
+  const TEMPLATES={
+    sms:[
+      {name:'OTP / verification', desc:'One-time passcode', build:()=>({biz:'SDB-OTP', sub:'', msgs:[m('text',{text:'Your Social Development Bank verification code is 458213. Valid for 10 minutes. Do not share this code with anyone.'})]})},
+      {name:'Promotional', desc:'Offer + short link', build:()=>({biz:'SDBANK', msgs:[m('text',{text:'🎉 Flat 40% OFF all training programs this week! Enrol now: sdb.sa/offer\n\nReply STOP to opt out.'})]})},
+      {name:'Delivery update', desc:'Order status', build:()=>({biz:'SDB', msgs:[m('text',{text:'Your order #10482 is out for delivery and will arrive today by 6 PM. Track: sdb.sa/track/10482'})]})},
+      {name:'Appointment', desc:'Reminder + confirm', build:()=>({biz:'SDB', msgs:[m('text',{from:'business',text:'Reminder: appointment with Dr. Rao tomorrow at 4:30 PM. Reply C to confirm or R to reschedule.'}), m('text',{from:'customer', text:'C'})]})},
+      {name:'MMS with image', desc:'Picture message', build:()=>({biz:'Social Development Bank', msgs:[m('image',{img:'https://picsum.photos/seed/mms/500/300', caption:'Your new debit card is on its way! 💳'})]})},
+    ],
+    rcs:[
+      {name:'Product carousel', desc:'Swipeable cards + chips', build:()=>({biz:'Social Development Bank', sub:'Verified business', msgs:[ m('text',{text:'Here are this week’s top picks for you 👇'}), m('carousel',{cards:'https://picsum.photos/seed/p1/300/200 | Starter Loan | From 4.5% APR | Apply | https://ex.com/1\nhttps://picsum.photos/seed/p2/300/200 | Home Finance | Up to SAR 2M | Apply | https://ex.com/2\nhttps://picsum.photos/seed/p3/300/200 | Business Line | Flexible limits | Apply | https://ex.com/3', chips:'View all, Talk to an agent'}) ]})},
+      {name:'Rich card + actions', desc:'Hero card with buttons', build:()=>({biz:'Social Development Bank', sub:'Verified business', msgs:[ m('card',{img:'https://picsum.photos/seed/hero/400/240', title:'Free Vocational Training', desc:'12 in-demand tracks, fully funded. Limited seats for the July intake.', buttons:'Reserve a seat | url | https://ex.com/reserve\nCall us | call | +966800123456', chips:'When does it start?, See all tracks'}) ]})},
+      {name:'Appointment', desc:'Suggested replies', build:()=>({biz:'Social Development Bank', sub:'Verified business', msgs:[ m('text',{text:'Your appointment is booked for *Fri, 18 Jul at 4:30 PM* at our Riyadh branch. See you there!', chips:'Confirm, Reschedule, Cancel, Get directions'}) ]})},
+      {name:'Feedback request', desc:'Rating chips', build:()=>({biz:'Social Development Bank', sub:'Verified business', msgs:[ m('text',{text:'Thanks for visiting us today 🙌 How was your experience?', chips:'😍 Great, 🙂 Okay, 😞 Poor'}) ]})},
+    ],
+    whatsapp:[
+      {name:'Order confirmation', desc:'Header image + buttons', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('template',{img:'https://picsum.photos/seed/order/500/260', body:'Hi Zaid, your order *#10482* is confirmed ✅\n\nItems: 2\nTotal: *SAR 349*\nEstimated delivery: *Fri, 18 Jul*', footer:'Social Development Bank', buttons:'Track order | url | https://sdb.sa/track\nContact support | call | +966800123456'}) ]})},
+      {name:'Shipping update', desc:'Text + photo', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('text',{text:'📦 Good news! Your package is out for delivery and will arrive today between *2–6 PM*.'}), m('image',{img:'https://picsum.photos/seed/ship/500/320', caption:'Driver: Ahmed · Van SDB-204'}) ]})},
+      {name:'Product catalog', desc:'Swipeable products', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('text',{text:'Browse our latest financial products 👇'}), m('carousel',{cards:'https://picsum.photos/seed/w1/300/200 | Savings+ | 3.2% p.a. | View | https://ex.com/1\nhttps://picsum.photos/seed/w2/300/200 | Youth Account | Zero fees | View | https://ex.com/2\nhttps://picsum.photos/seed/w3/300/200 | Gold Card | Rewards | View | https://ex.com/3'}) ]})},
+      {name:'Appointment reminder', desc:'Quick-reply buttons', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('template',{body:'Reminder: your appointment is *tomorrow at 4:30 PM* at our Riyadh branch. Would you like to confirm?', footer:'Reply to manage your booking', buttons:'✅ Confirm | reply\n🔁 Reschedule | reply\n❌ Cancel | reply'}) ]})},
+      {name:'List menu', desc:'Interactive list', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('list',{body:'👋 Welcome to Social Development Bank! How can we help you today?', btnText:'View services', header:'Our services', items:'Open an account | Savings & current\nApply for a loan | Personal & business\nCard services | Block, replace, limits\nTalk to an agent | 9am–6pm', footer:'Powered by SDB'}) ]})},
+      {name:'OTP (authentication)', desc:'Code + copy button', build:()=>({biz:'Social Development Bank', sub:'online', msgs:[ m('template',{body:'*458213* is your verification code.\n\nFor your security, do not share this code.', footer:'This code expires in 10 minutes', buttons:'Copy code | reply'}) ]})},
+    ],
+  };
+  function m(type, over){ return Object.assign(makeMsg(type), over||{}); }
+
+  // ---------- Rendering: shared ----------
+  function avHTML(cls){ if(state.logo) return `<div class="${cls}" style="background:#fff"><img src="${state.logo}"></div>`; return `<div class="${cls}" style="background:${avColor(state.bizName)}">${esc(initial(state.bizName))}</div>`; }
+  function statusBar(light){
+    if(state.device==='android') return `<div class="statusbar ${light?'light-txt':''}"><span>9:41</span><div class="icons">${IC.wifi}${IC.cell}${IC.batt}</div></div>`;
+    return `<div class="statusbar ${light?'light-txt':''}"><span>9:41</span><div class="icons">${IC.cell}${IC.wifi}${IC.batt}</div></div>`;
+  }
+
+  // ===== WhatsApp =====
+  function waButtons(btns){
+    if(!btns.length) return '';
+    const inBubble=btns.filter(b=>b.type==='url'||b.type==='call'||b.type==='map');
+    const replies=btns.filter(b=>b.type==='reply'||b.type==='cal');
+    let html='';
+    if(inBubble.length) html+='<div class="wa-btns">'+inBubble.map(b=>`<div class="wa-btn-in">${btnIcon(b.type)}${esc(b.label)}</div>`).join('')+'</div>';
+    return {inBubble:html, replies};
+  }
+  function waMsg(msg){
+    const out=msg.from!=='business';
+    const meta=`<span class="wa-meta">9:41 AM ${out?`<span class="tick">${IC.tick}</span>`:''}</span>`;
+    let inner='', repliesHTML='';
+    if(msg.type==='text'){
+      const b=waButtons(parseButtons(msg.buttons)); repliesHTML=qrHTML(b.replies);
+      inner=`<div class="wtext">${fmt(msg.text)}</div>${b.inBubble}${meta}`;
+    } else if(msg.type==='image'){
+      inner=`<div class="wa-img"><img src="${esc(msg.img||'https://picsum.photos/seed/wa/500/300')}"></div>${msg.caption?`<div class="wtext">${fmt(msg.caption)}</div>`:''}${meta}`;
+    } else if(msg.type==='template'){
+      const b=waButtons(parseButtons(msg.buttons)); repliesHTML=qrHTML(b.replies);
+      inner=`${msg.img?`<div class="wa-img"><img src="${esc(msg.img)}"></div>`:''}${msg.hdr?`<div class="wa-hdrtext">${fmt(msg.hdr)}</div>`:''}<div class="wtext">${fmt(msg.body)}</div>${msg.footer?`<div class="wa-footer">${esc(msg.footer)}</div>`:''}${b.inBubble}${meta}`;
+    } else if(msg.type==='document'){
+      inner=`<div class="wa-doc"><div class="dic">PDF</div><div><div class="dn">${esc(msg.file)}</div><div class="dm">${esc(msg.meta)}</div></div></div>${msg.caption?`<div class="wtext">${fmt(msg.caption)}</div>`:''}${meta}`;
+    } else if(msg.type==='carousel'){
+      const cards=parseCards(msg.cards).map(c=>`<div class="wa-pcard">${c.img?`<img src="${esc(c.img)}">`:''}<div class="pc-b"><div class="pc-t">${esc(c.title)}</div>${c.sub?`<div class="pc-p">${esc(c.sub)}</div>`:''}</div>${c.btn?`<div class="pc-btn">${esc(c.btn)}</div>`:''}</div>`).join('');
+      return `<div class="wa-carousel">${cards}</div>`;
+    } else if(msg.type==='list'){
+      const items=parseList(msg.items).map(it=>`<div class="wa-list-item"><div class="li-t">${esc(it.t)}</div>${it.d?`<div class="li-d">${esc(it.d)}</div>`:''}</div>`).join('');
+      return `<div class="wa-msg in"><div class="wa-bubble" style="max-width:82%"><div class="wtext">${fmt(msg.body)}</div>${msg.footer?`<div class="wa-footer">${esc(msg.footer)}</div>`:''}${meta}<div class="wa-btns"><div class="wa-btn-in">☰ ${esc(msg.btnText)}</div></div></div></div>`
+        +`<div class="wa-list-sheet">${msg.header?`<div class="lh">${esc(msg.header)}</div>`:''}${items}</div>`;
+    }
+    return `<div class="wa-msg ${out?'out':'in'}"><div class="wa-bubble">${inner}</div></div>${repliesHTML}`;
+  }
+  function qrHTML(replies){ if(!replies||!replies.length) return ''; return `<div class="wa-qr">${replies.map(r=>`<div class="q">${esc(r.label)}</div>`).join('')}</div>`; }
+  function renderWA(){
+    const msgs=state.messages.map(waMsg).join('');
+    return `<div class="wa ${state.theme==='dark'?'dark':''}">
+      <div class="wa-header">
+        <span class="wback">${IC.back}</span>
+        <div class="wav">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="wmeta"><div class="wname"><span class="nm">${esc(state.bizName)}</span>${state.verified?`<span class="wa-verif" style="flex:none">${IC.verifWA}</span>`:''}</div><div class="wsub">${esc(state.bizSub||'online')}</div></div>
+        <div class="wicons">${IC.video}${IC.call}${IC.menu}</div>
+      </div>
+      <div class="wa-body">
+        <div class="wa-date"><span>${esc(state.dateChip)}</span></div>
+        ${state.encNotice?`<div class="wa-enc"><span>🔒 Messages are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read them.</span></div>`:''}
+        ${msgs}
+        ${state.typing?`<div class="wa-msg in"><div class="wa-bubble"><span style="color:#8696a0">typing…</span></div></div>`:''}
+      </div>
+      <div class="wa-input"><div class="wf">😊 <span style="flex:1">Message</span> 📎 📷</div><div class="wsend">${IC.send}</div></div>
+    </div>`;
+  }
+
+  // ===== RCS / Android SMS (Google Messages) =====
+  function rcsButtons(btns){ return btns.map(b=>`<div class="rc-btn">${btnIcon(b.type)}${esc(b.label)}</div>`).join(''); }
+  function rcsCard(c, single){
+    const btns=[]; if(c.btn) btns.push({label:c.btn,type:c.btnVal&&c.btnVal.match(/^\+?\d[\d ]+$/)?'call':'url'});
+    return `<div class="rcs-card">${c.img?`<img src="${esc(c.img)}">`:''}<div class="rc-b"><div class="rc-t">${esc(c.title)}</div>${c.sub?`<div class="rc-d">${esc(c.sub)}</div>`:''}</div>${c.desc?`<div class="rc-b" style="padding-top:0"><div class="rc-d">${esc(c.desc)}</div></div>`:''}${btns.length?`<div class="rcs-card-btns">${rcsButtons(btns)}</div>`:''}</div>`;
+  }
+  function gmMsg(msg){
+    const out=msg.from!=='business';
+    if(msg.type==='text'){
+      return `<div class="gm-msg ${out?'out':''}"><div class="gm-bubble"><div class="gtext">${fmt(msg.text)}</div></div></div><div class="gm-stamp" style="text-align:${out?'right':'left'}">${out?'Read':state.bizName.slice(0,18)} · 9:41 AM</div>`;
+    }
+    if(msg.type==='image'){
+      return `<div class="gm-msg imgmsg ${out?'out':''}"><div class="gm-bubble"><div class="gm-imgwrap"><img src="${esc(msg.img||'https://picsum.photos/seed/g/400/300')}"></div></div></div>${msg.caption?`<div class="gm-stamp" style="text-align:left">${esc(msg.caption)}</div>`:''}`;
+    }
+    if(msg.type==='card'){
+      const btns=parseButtons(msg.buttons);
+      const card=`<div class="rcs-card">${msg.img?`<img src="${esc(msg.img)}">`:''}<div class="rc-b"><div class="rc-t">${esc(msg.title)}</div>${msg.desc?`<div class="rc-d">${esc(msg.desc)}</div>`:''}</div>${btns.length?`<div class="rcs-card-btns">${rcsButtons(btns)}</div>`:''}</div>`;
+      return `<div class="gm-msg"><div class="gm-bubble" style="background:transparent;padding:0">${card}</div></div>`;
+    }
+    if(msg.type==='carousel'){
+      const cards=parseCards(msg.cards).map(c=>rcsCard(c)).join('');
+      return `<div class="rcs-carousel">${cards}</div>`;
+    }
+    return '';
+  }
+  function renderRCS(isSms){
+    const msgs=state.messages.map(gmMsg).join('');
+    // suggestion chips from last business message
+    let chips='';
+    const last=[...state.messages].reverse().find(x=>x.from==='business'&&x.chips);
+    if(!isSms && last && last.chips){
+      const list=last.chips.split(',').map(s=>s.trim()).filter(Boolean);
+      chips=`<div class="rcs-chips">${list.map(c=>{ const action=/call/i.test(c)?IC.phone:/direction|map/i.test(c)?IC.map:/reschedul|confirm|cancel/i.test(c)?'':''; return `<div class="rcs-chip">${action}${esc(c)}</div>`;}).join('')}</div>`;
+    }
+    const verified=!isSms&&state.verified;
+    return `<div class="gm ${state.theme==='dark'?'dark':''}">
+      <div class="gm-header">
+        <span class="gback">${IC.back}</span>
+        <div class="gav" style="background:${state.logo?'#fff':avColor(state.bizName)}">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="gcol"><div class="gname"><span class="nm">${esc(state.bizName)}</span>${verified?`<span class="rcs-verif" style="flex:none">${IC.verifRCS}</span>`:''}</div><div class="gsub">${isSms?esc(state.bizPhone):esc(state.bizSub||'Verified business')}</div></div>
+        <div class="gicons">${IC.video}${IC.call}</div>
+      </div>
+      <div class="gm-body">
+        <div class="gm-date">${esc(state.dateChip)} · 9:41 AM</div>
+        ${msgs}
+        ${state.typing?`<div class="gm-typing"><div class="dots"><i></i><i></i><i></i></div></div>`:''}
+      </div>
+      ${chips}
+      <div class="gm-input"><div class="gf">${isSms?'Text message':'RCS message'}</div><span class="gsend">${IC.send}</span></div>
+    </div>`;
+  }
+
+  // ===== iOS SMS =====
+  function iosMsg(msg){
+    const out=msg.from!=='business';
+    if(msg.type==='image'){
+      return `<div class="ios-msg ${out?'out':''}"><div class="ios-img"><img src="${esc(msg.img||'https://picsum.photos/seed/i/400/300')}"></div></div>${msg.caption?`<div class="ios-msg ${out?'out':''}"><div class="ios-bubble"><div class="itext">${esc(msg.caption)}</div></div></div>`:''}`;
+    }
+    return `<div class="ios-msg ${out?'out':''}"><div class="ios-bubble"><div class="itext">${fmt(msg.text||msg.caption||'')}</div></div></div>`;
+  }
+  function renderIOS(){
+    const msgs=state.messages.map(iosMsg).join('');
+    const lastOut=[...state.messages].reverse().find(x=>x.from!=='business');
+    return `<div class="ios ${state.theme==='dark'?'dark':''}">
+      <div class="ios-header">
+        <span class="iback">‹</span>
+        <div class="iav" style="background:${state.logo?'#fff':avColor(state.bizName)}">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="iname">${esc(state.bizName)} <span class="ichev">›</span></div>
+      </div>
+      <div class="ios-body">
+        <div class="ios-time"><b>${esc(state.dateChip)}</b> 9:41 AM</div>
+        ${msgs}
+        ${lastOut?`<div class="ios-receipt">Delivered</div>`:''}
+      </div>
+      <div class="ios-input"><span class="plus">⊕</span><div class="ifield">Text Message</div></div>
+    </div>`;
+  }
+
+  // ---------- Dispatch ----------
+  const stage=$('#stage');
+  function render(){
+    let screen='', light=false;
+    if(state.channel==='whatsapp'){ screen=renderWA(); }
+    else if(state.channel==='rcs'){ screen=renderRCS(false); }
+    else { screen = state.device==='ios' ? renderIOS() : renderRCS(true); }
+    const android = state.device==='android';
+    const frameHead = android ? `<div class="punch"></div>` : `<div class="notch"></div>`;
+    // status bar text color: WA header is colored (green) so use dark text on white status area; keep black
+    stage.className='stage'+(state.theme==='dark'?' dark-stage':'');
+    const sbLight = state.theme==='dark';
+    stage.innerHTML=`<div class="phone ${android?'android':''}" id="capture">${frameHead}<div class="screen" style="${state.theme==='dark'?'background:#000':''}">${statusBar(sbLight)}${screen}</div></div>`;
+  }
+
+  // ---------- Editor: templates ----------
+  function renderTemplates(){
+    const list=TEMPLATES[state.channel]||[];
+    $('#tplGrid').innerHTML=list.map((t,i)=>`<button class="tpl" data-tpl="${i}"><span class="tt">${esc(t.name)}</span><span class="td">${esc(t.desc)}</span></button>`).join('');
+    document.querySelectorAll('#tplGrid .tpl').forEach(b=>b.addEventListener('click',()=>{
+      const t=list[+b.dataset.tpl]; const r=t.build();
+      if(r.biz!==undefined){ state.bizName=r.biz; $('#bizName').value=r.biz; }
+      if(r.sub!==undefined){ state.bizSub=r.sub; $('#bizSub').value=r.sub; }
+      state.messages=r.msgs.map(x=>Object.assign({id:nid()},x));
+      renderMsgList(); render(); toast('Template applied');
+    }));
+  }
+
+  // ---------- Editor: message list ----------
+  const FIELDS={
+    text:[['text','Message text','textarea'],['buttons','Buttons — one per line: Label | reply/url/call | value','textarea','wa,rcs'],['chips','Suggested replies (RCS) — comma separated','text','rcs']],
+    image:[['img','Image URL','img'],['caption','Caption','textarea'],['buttons','Buttons — Label | url/call | value','textarea','wa']],
+    card:[['img','Image URL','img'],['title','Title','text'],['desc','Description','textarea'],['buttons','Buttons — Label | url/call | value','textarea'],['chips','Suggested replies — comma separated','text','rcs']],
+    carousel:[['cards','Cards — one per line: imageURL | title | subtitle | buttonLabel | buttonValue','textarea'],['chips','Suggested replies (RCS) — comma separated','text','rcs']],
+    template:[['img','Header image URL (optional)','img'],['body','Body text (*bold* _italic_)','textarea'],['footer','Footer (small print)','text'],['buttons','Buttons — Label | reply/url/call | value','textarea']],
+    list:[['body','Body text','textarea'],['btnText','List button label','text'],['header','List header','text'],['items','List items — one per line: Title | description','textarea'],['footer','Footer','text']],
+    document:[['file','File name','text'],['meta','Meta (pages · size · type)','text'],['caption','Caption','textarea']],
+  };
+  function fieldVisible(scope){ if(!scope) return true; return scope.split(',').includes(state.channel); }
+
+  function renderMsgList(){
+    const wrap=$('#msgList'); wrap.innerHTML='';
+    state.messages.forEach((msg,idx)=>{
+      const card=document.createElement('div'); card.className='msg-card';
+      const types=CHANNEL_TYPES[state.channel];
+      const typeOpts=types.map(([v,l])=>`<option value="${v}" ${msg.type===v?'selected':''}>${l}</option>`).join('');
+      let fieldsHTML='';
+      (FIELDS[msg.type]||[]).forEach(([key,label,kind,scope])=>{
+        if(!fieldVisible(scope)) return;
+        if(kind==='textarea') fieldsHTML+=`<label class="field"><span>${esc(label)}</span><textarea data-k="${key}" class="${key==='buttons'||key==='cards'||key==='items'?'mono':''}">${esc(msg[key]||'')}</textarea></label>`;
+        else if(kind==='img') fieldsHTML+=`<label class="field"><span>${esc(label)}</span><input type="text" data-k="${key}" value="${esc(msg[key]||'')}" placeholder="https://…"><div class="btn-mini" data-up="${key}" style="margin-top:4px">⬆ or upload an image</div></label>`;
+        else fieldsHTML+=`<label class="field"><span>${esc(label)}</span><input type="text" data-k="${key}" value="${esc(msg[key]||'')}"></label>`;
+      });
+      card.innerHTML=`<div class="mc-top">
+          <span class="lbl">#${idx+1}</span>
+          <select class="typesel" data-type>${typeOpts}</select>
+          <button data-up-btn title="Move up">↑</button><button data-down-btn title="Move down">↓</button><button data-del title="Delete">✕</button>
+        </div>
+        <div class="seg-from">
+          <button data-from="business" class="${msg.from==='business'?'on':''}">Business (in)</button>
+          <button data-from="customer" class="${msg.from!=='business'?'on':''}">Customer (out)</button>
+        </div>${fieldsHTML}`;
+      // bindings
+      card.querySelector('[data-type]').addEventListener('change',e=>{ const keep={id:msg.id,from:msg.from}; state.messages[idx]=Object.assign(makeMsg(e.target.value),keep); renderMsgList(); render(); });
+      card.querySelectorAll('[data-from]').forEach(b=>b.addEventListener('click',()=>{ msg.from=b.dataset.from; renderMsgList(); render(); }));
+      card.querySelector('[data-del]').addEventListener('click',()=>{ state.messages.splice(idx,1); renderMsgList(); render(); });
+      card.querySelector('[data-up-btn]').addEventListener('click',()=>{ if(idx>0){ [state.messages[idx-1],state.messages[idx]]=[state.messages[idx],state.messages[idx-1]]; renderMsgList(); render(); } });
+      card.querySelector('[data-down-btn]').addEventListener('click',()=>{ if(idx<state.messages.length-1){ [state.messages[idx+1],state.messages[idx]]=[state.messages[idx],state.messages[idx+1]]; renderMsgList(); render(); } });
+      card.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('input',()=>{ msg[inp.dataset.k]=inp.value; render(); updateSmsCount(); }));
+      card.querySelectorAll('[data-up]').forEach(el=>el.addEventListener('click',()=>{ const key=el.dataset.up; pickImage(data=>{ msg[key]=data; renderMsgList(); render(); }); }));
+      wrap.appendChild(card);
+    });
+    // add buttons
+    const add=$('#addMsg'); add.innerHTML='';
+    CHANNEL_TYPES[state.channel].forEach(([v,l])=>{ const b=document.createElement('button'); b.textContent='+ '+l; b.addEventListener('click',()=>{ state.messages.push(makeMsg(v)); renderMsgList(); render(); }); add.appendChild(b); });
+    updateSmsCount();
+  }
+
+  function updateSmsCount(){
+    if(state.channel!=='sms'){ $('#smsCharRow').style.display='none'; return; }
+    $('#smsCharRow').style.display='flex';
+    const txt=state.messages.filter(x=>x.from==='business').map(x=>x.text||x.caption||'').join(' ');
+    const len=txt.length; const unicode=/[^\x00-\x7f]/.test(txt);
+    const per=unicode?70:160; const seg=Math.max(1,Math.ceil(len/ (len>per?(unicode?67:153):per)));
+    $('#smsChars').textContent=`SMS length — ${len} chars · ${seg} segment${seg>1?'s':''} ${unicode?'(Unicode)':'(GSM-7)'}`;
+  }
+
+  // ---------- Image picker ----------
+  function pickImage(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
+
+  // ---------- Bindings ----------
+  function bindText(id,key){ const el=$('#'+id); el.addEventListener('input',()=>{ state[key]=el.value; render(); }); }
+  bindText('bizName','bizName'); bindText('bizSub','bizSub'); bindText('bizPhone','bizPhone'); bindText('dateChip','dateChip');
+  $('#verified').addEventListener('change',e=>{ state.verified=e.target.checked; render(); });
+  $('#encNotice').addEventListener('change',e=>{ state.encNotice=e.target.checked; render(); });
+  $('#typing').addEventListener('change',e=>{ state.typing=e.target.checked; render(); });
+
+  // logo
+  (function(){ const drop=$('#logoDrop'),inp=$('#logoInput');
+    drop.addEventListener('click',()=>inp.click());
+    inp.addEventListener('change',()=>{ const f=inp.files[0]; if(f){ const r=new FileReader(); r.onload=()=>{ state.logo=r.result; $('#logoImg').src=r.result; $('#logoPreview').style.display='flex'; render(); }; r.readAsDataURL(f);} });
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f){ const r=new FileReader(); r.onload=()=>{ state.logo=r.result; $('#logoImg').src=r.result; $('#logoPreview').style.display='flex'; render(); }; r.readAsDataURL(f);} });
+    $('#logoClear').addEventListener('click',()=>{ state.logo=null; $('#logoPreview').style.display='none'; inp.value=''; render(); });
+  })();
+
+  // channel / device / theme segments
+  function seg(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
+  seg('#chanSeg','channel',()=>{ onChannelChange(); });
+  seg('#deviceSeg','device');
+  seg('#themeSeg','theme');
+
+  function onChannelChange(){
+    // adjust device availability & defaults
+    const dev=$('#deviceSeg');
+    if(state.channel==='rcs'){ state.device='android'; dev.style.opacity=.5; dev.style.pointerEvents='none'; setDeviceBtn('android'); }
+    else if(state.channel==='whatsapp'){ dev.style.opacity=1; dev.style.pointerEvents='auto'; }
+    else { dev.style.opacity=1; dev.style.pointerEvents='auto'; }
+    // brand accent
+    $('#brandDot').textContent = state.channel==='whatsapp'?'🟢':state.channel==='rcs'?'📱':'💬';
+    $('#brandDot').style.background = state.channel==='whatsapp'?'linear-gradient(135deg,#25d366,#128C7E)':state.channel==='rcs'?'linear-gradient(135deg,#1a73e8,#34a853)':'linear-gradient(135deg,#34c759,#30b0c7)';
+    // field relevance
+    $('#verifRow').style.display = state.channel==='sms'?'none':'flex';
+    $('#encRow').style.display = state.channel==='whatsapp'?'flex':'none';
+    $('#subField').querySelector('span').textContent = state.channel==='sms'?'(sender ID shown as name)':(state.channel==='whatsapp'?'Status line (online / last seen)':'Subtitle (Verified business)');
+    $('#phoneField').style.display = state.channel==='sms'?'block':'none';
+    // if no messages or switching, load first template for the channel to keep it useful
+    renderTemplates();
+    if(!state.messages.length || !messagesValidFor(state.channel)){
+      const t=(TEMPLATES[state.channel]||[])[0]; if(t){ const r=t.build(); if(r.biz!==undefined){state.bizName=r.biz;$('#bizName').value=r.biz;} if(r.sub!==undefined){state.bizSub=r.sub;$('#bizSub').value=r.sub;} state.messages=r.msgs.map(x=>Object.assign({id:nid()},x)); }
+    }
+    renderMsgList();
+  }
+  function messagesValidFor(ch){ const allowed=CHANNEL_TYPES[ch].map(x=>x[0]); return state.messages.every(m=>allowed.includes(m.type)); }
+  function setDeviceBtn(dev){ document.querySelectorAll('#deviceSeg button').forEach(x=>x.classList.toggle('on',x.dataset.device===dev)); }
+
+  $('#clearMsgs').addEventListener('click',()=>{ state.messages=[makeMsg('text')]; renderMsgList(); render(); });
+
+  // collapsibles
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+
+  // ---------- Toast + export ----------
+  let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
+  async function capture(){
+    const node=$('#capture');
+    if(window.__noH2C||typeof html2canvas==='undefined'){ toast('Screenshot library offline — use OS screenshot (Cmd/Win+Shift+S)'); return null; }
+    return await html2canvas(node,{ backgroundColor: state.theme==='dark'?'#20232a':'#eef1f5', scale:2, useCORS:true, allowTaint:false, logging:false });
+  }
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`${state.channel}-${state.device}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — remote images may block capture; try OS screenshot'); } });
+  $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export PNG'); } }); }catch(e){ toast('Copy failed — use Export PNG'); } });
+
+  // ---------- Init (respect ?channel=) ----------
+  const qp=new URLSearchParams(location.search); const qc=(qp.get('channel')||'').toLowerCase();
+  if(['sms','rcs','whatsapp'].includes(qc)){ state.channel=qc; document.querySelectorAll('#chanSeg button').forEach(x=>x.classList.toggle('on',x.dataset.channel===qc)); }
+  onChannelChange();
+  render();
+})();
+</script>
+</body>
+</html>
