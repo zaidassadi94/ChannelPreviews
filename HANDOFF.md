@@ -29,7 +29,7 @@ resolve-images.js               # Node CLI resolver (alt to setup.html; user is 
 images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
-notify-preview-tool/index.html      # Push (+ In-App, in progress)  (notifications tool)
+notify-preview-tool/index.html      # Push + In-App  (notifications tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -103,8 +103,19 @@ headless Chromium via the global Playwright at
   `state.push={appName,title,body,image,actions,time}` + `state.expanded/surface/wallpaper/appLogo`.
   Templates = `PUSH_ARCH` (6: 2 Promo / 2 Txn / 2 Flow) × `PACKS`. Simulate makes the
   action buttons tappable (toast feedback) — push has no branching conversation.
-- **In-App (in progress):** Modal / Banner / Full-screen / Bottom-sheet / Image-only
-  over the dimmed `appBackdrop()`, with a type selector.
+- **In-App (done):** MoEngage-style messages over the dimmed `appBackdrop()` (scrim
+  `.abd-scrim`). Topbar **type seg** (`#inappSeg`, `IATYPES`): **Modal / Banner / Full /
+  Sheet / Image**. Editor fields adapt per type (`applyInappFieldVis()`): image (hidden
+  for banner), headline + body (hidden for image-only), 1–2 **CTAs** via a block builder
+  (`buildCtas`, label + style primary/secondary/text), a close-button toggle, and a
+  banner **position** (top/bottom, shown only for banner). CTAs are brand-coloured via a
+  `--brand` CSS var = `avColor(appName())`. `state.inapp={type,image,headline,body,ctas,
+  close,bannerPos}`; app identity (`appName`/`appLogo`) is **shared with Push** via
+  `state.push.appName` + `state.appLogo`. Templates = `INAPP_ARCH` (6: 3 Promo / 1 Txn /
+  2 Flow) × `PACKS`. Full-screen + image-only use real `<img>` layers (not CSS
+  backgrounds) so the img-error fallback works; image-only has `aspect-ratio:3/4` so it
+  never collapses while a photo loads. Channel groups toggle via `.chan-push` /
+  `.chan-inapp` classes + `setChannelGroups()`.
 - **Gotcha learned here:** don't reuse the root layout class names for in-preview
   elements — a notification `class="app"` inherited the root `.app{height:100vh}` rule
   and blew up the card height. Card app-name is `.appn`. Also give notification images a
@@ -227,14 +238,11 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
-**Done:** SMS/RCS/WhatsApp + Gmail + **Push** (5 of 6 channels), Channel Studio design
-across all three tools, 6 templates × channel × (sub)industry, DIY block builders,
-Simulate, US locale, digital-aware confirmations, dark mode removed, real Pexels photos
-live (56) with illustration fallback, no-terminal `setup.html` resolver, unified
-6-channel dropdown wired across all tools.
-
-**In progress:** **In-App** channel in `notify-preview-tool` (Modal / Banner /
-Full-screen / Bottom-sheet / Image-only over the dimmed `appBackdrop()`).
+**Done:** **all 6 channels** — SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App
+(notify). Channel Studio design across all three tools, 6 templates × channel ×
+(sub)industry, DIY block builders, Simulate, US locale, digital-aware confirmations,
+dark mode removed, real Pexels photos live (56) with illustration fallback, no-terminal
+`setup.html` resolver, unified 6-channel dropdown wired across all tools.
 
 **Open / possible next (not started):**
 - **Screen recording** (asked about 2026-07-14): record just the device view. Recommended

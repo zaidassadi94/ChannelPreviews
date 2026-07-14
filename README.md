@@ -19,6 +19,7 @@ Gmail — from the **Channel** dropdown inside the app.
 | **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
 | **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents |
 | **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
+| **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | MoEngage-style in-app messages over a dimmed app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · 6 templates per vertical |
 
 
 ## Real product photos (one-time setup)
@@ -65,6 +66,8 @@ any specific image. Anything not resolved falls back to the illustration.
   product carousel, list menu, document
 - **Push** — iOS lock-screen & banner, Android heads-up & notification shade;
   collapsed or expanded (big-picture) with a large image; up to 3 action buttons
+- **In-App** — modal, slim banner (top/bottom), full-screen takeover, bottom sheet,
+  image-only; headline/body/image, 1–2 CTAs (primary/secondary/text), close button
 
 Buttons use a simple one-per-line format: `Label | reply|url|call | value`.
 Carousel cards: `imageURL | title | subtitle | buttonLabel | buttonValue` per line.

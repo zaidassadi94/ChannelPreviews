@@ -228,6 +228,56 @@
   .shade-clear span{ display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.18); color:#fff; }
   .shade-clear svg{ width:16px; height:16px; }
 
+  /* small in-sidebar segmented control */
+  .seg-in{ display:flex; background:#fff; border:1px solid var(--line); border-radius:8px; padding:3px; gap:3px; }
+  .seg-in button{ flex:1; border:0; background:none; padding:7px; font-size:12px; font-weight:600; color:var(--muted); border-radius:5px; cursor:pointer; font-family:inherit; }
+  .seg-in button.on{ background:var(--accent-weak); color:var(--accent-ink); }
+
+  /* ===================== In-App messages ===================== */
+  .ia-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:22px; z-index:45; }
+  .ia-cta{ display:block; width:100%; text-align:center; padding:12px 14px; border-radius:12px; font-size:14.5px; font-weight:650; letter-spacing:-.1px; cursor:default; border:0; }
+  .ia-cta.primary{ background:var(--brand,#635bff); color:#fff; }
+  .ia-cta.secondary{ background:#fff; color:var(--brand,#635bff); box-shadow:inset 0 0 0 1.5px var(--brand,#635bff); }
+  .ia-cta.text{ background:none; color:#6b7180; font-weight:600; padding:9px; }
+  .ia-cta-col{ display:flex; flex-direction:column; gap:9px; margin-top:16px; }
+  .ia-x{ position:absolute; top:11px; right:11px; width:28px; height:28px; border-radius:50%; background:rgba(20,22,28,.42); backdrop-filter:blur(6px); color:#fff; display:flex; align-items:center; justify-content:center; z-index:3; cursor:default; }
+  .ia-x svg{ width:14px; height:14px; }
+  .ia-x.dark{ background:#eef0f4; color:#5b6070; }
+
+  .ia-modal{ width:100%; max-width:300px; background:#fff; border-radius:22px; overflow:hidden; box-shadow:0 22px 55px rgba(8,10,20,.4); position:relative; }
+  .ia-modal .img{ width:100%; height:150px; object-fit:cover; display:block; background:#e7e9ee; }
+  .ia-modal .bd{ padding:19px 20px 21px; text-align:center; }
+  .ia-modal .hl{ font-size:19px; font-weight:750; letter-spacing:-.4px; color:#14151a; line-height:1.2; }
+  .ia-modal .tx{ font-size:13.5px; color:#5b6070; line-height:1.5; margin-top:8px; }
+
+  .ia-banner{ position:absolute; left:0; right:0; padding:0 10px; z-index:45; }
+  .ia-banner.top{ top:52px; } .ia-banner.bottom{ bottom:26px; }
+  .ia-bnr{ background:#fff; border-radius:15px; box-shadow:0 10px 28px rgba(8,10,20,.2); display:flex; align-items:center; gap:11px; padding:11px 12px; position:relative; }
+  .ia-bnr .ic{ width:38px; height:38px; border-radius:10px; flex:none; object-fit:cover; }
+  .ia-bnr .ic.mono{ display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:15px; }
+  .ia-bnr .tx{ flex:1; min-width:0; } .ia-bnr .hl{ font-size:13.5px; font-weight:700; color:#14151a; letter-spacing:-.1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ia-bnr .sb{ font-size:12px; color:#6b7180; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ia-bnr .cta{ flex:none; background:var(--brand,#635bff); color:#fff; font-size:12.5px; font-weight:650; padding:8px 13px; border-radius:9px; }
+  .ia-bnr .xs{ flex:none; color:#adb2bf; font-size:15px; padding:2px; }
+
+  .ia-sheetwrap{ position:absolute; inset:0; display:flex; align-items:flex-end; z-index:45; }
+  .ia-sheet{ width:100%; background:#fff; border-radius:26px 26px 0 0; padding:9px 22px 26px; box-shadow:0 -10px 34px rgba(8,10,20,.24); position:relative; }
+  .ia-grab{ width:38px; height:5px; border-radius:3px; background:#d7d9e3; margin:2px auto 15px; }
+  .ia-sheet .img{ width:100%; height:132px; object-fit:cover; display:block; border-radius:14px; background:#e7e9ee; margin-bottom:15px; }
+  .ia-sheet .hl{ font-size:19px; font-weight:750; letter-spacing:-.4px; color:#14151a; text-align:center; line-height:1.2; }
+  .ia-sheet .tx{ font-size:13.5px; color:#5b6070; line-height:1.5; margin-top:8px; text-align:center; }
+
+  .ia-full{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; background-size:cover; background-position:center; background-color:#2a2d38; z-index:45; }
+  .ia-full-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  .ia-full .bd{ position:relative; z-index:1; padding:26px 24px 34px; color:#fff; background:linear-gradient(transparent, rgba(8,10,18,.42) 30%, rgba(8,10,18,.86)); }
+  .ia-full .hl{ font-size:27px; font-weight:800; letter-spacing:-.6px; line-height:1.12; text-shadow:0 1px 14px rgba(0,0,0,.3); }
+  .ia-full .tx{ font-size:14.5px; color:rgba(255,255,255,.92); line-height:1.5; margin-top:9px; text-shadow:0 1px 10px rgba(0,0,0,.3); }
+  .ia-full .ia-cta-col{ margin-top:20px; }
+  .ia-full .ia-cta.text{ color:rgba(255,255,255,.9); }
+
+  .ia-imgonly{ position:relative; width:100%; max-width:300px; }
+  .ia-imgonly img{ width:100%; display:block; aspect-ratio:3/4; object-fit:cover; border-radius:20px; box-shadow:0 22px 55px rgba(8,10,20,.4); background:#e7e9ee; }
+
   /* toast */
   .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(80px); background:#14151a; color:#fff; padding:11px 18px; border-radius:10px; font-size:12.5px; box-shadow:0 10px 30px rgba(0,0,0,.3); opacity:0; transition:.3s cubic-bezier(.2,.8,.2,1); z-index:200; font-weight:500; max-width:80%; text-align:center; }
   .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
@@ -251,6 +301,7 @@
           <option value="rcs">RCS</option>
           <option value="sms">SMS</option>
           <option value="push">Push</option>
+          <option value="inapp">In-App</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
@@ -261,7 +312,7 @@
     <div class="group" data-group>
       <button class="ghead" data-head>Templates <span class="chev">▾</span></button>
       <div class="gbody">
-        <div class="hint">Ready-made push notifications per industry. <span style="color:var(--accent-ink);font-weight:600">FLOW</span> ones have tappable action buttons — hit <b>Simulate</b> and tap them.</div>
+        <div class="hint">Ready-made, industry-specific messages. <span style="color:var(--accent-ink);font-weight:600">FLOW</span> ones are interactive — hit <b>Simulate</b> and tap the buttons.</div>
         <div class="tpl-grid" id="tplGrid"></div>
         <button class="btn ghost block" id="clearMsgs" style="margin-top:11px;">Clear &amp; start blank</button>
       </div>
@@ -279,7 +330,7 @@
       </div>
     </div>
 
-    <div class="group" data-group>
+    <div class="group chan-push" data-group>
       <button class="ghead" data-head>Notification <span class="chev">▾</span></button>
       <div class="gbody">
         <label class="f"><span>Title (bold line)</span><input type="text" id="pnTitle"></label>
@@ -292,7 +343,7 @@
       </div>
     </div>
 
-    <div class="group" data-group>
+    <div class="group chan-push" data-group>
       <button class="ghead" data-head>Action buttons <span class="chev">▾</span></button>
       <div class="gbody">
         <div class="hint">Up to 3 buttons. They show when the notification is <b>expanded</b>.</div>
@@ -300,12 +351,40 @@
       </div>
     </div>
 
-    <div class="group" data-group id="grpAppearance">
+    <div class="group chan-push" data-group id="grpAppearance">
       <button class="ghead" data-head>Wallpaper <span class="chev">▾</span></button>
       <div class="gbody">
         <div class="hint">Shows behind the notification on the <b>Lock Screen</b> and <b>Shade</b>.</div>
         <div class="wp-grid" id="wpGrid"></div>
         <input type="file" id="wpInput" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <div class="group chan-inapp" data-group style="display:none;">
+      <button class="ghead" data-head>Content <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="f" id="iaImgWrap"><span>Image</span><div class="imgz" id="iaImg"></div></div>
+        <label class="f" id="iaHlWrap"><span>Headline</span><input type="text" id="iaHl"></label>
+        <label class="f" id="iaBdWrap"><span>Body</span><textarea id="iaBd"></textarea></label>
+        <div class="toggle-row" id="iaCloseRow"><span>Close (✕) button</span><label class="switch"><input type="checkbox" id="iaClose" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <div class="group chan-inapp" data-group id="grpCtas" style="display:none;">
+      <button class="ghead" data-head>Buttons (CTAs) <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="hint">Up to 2 CTAs. Set each one's style — <b>primary</b> (filled), <b>secondary</b> (outline) or <b>text</b>.</div>
+        <div class="blkz" id="iaCtas"></div>
+      </div>
+    </div>
+
+    <div class="group chan-inapp" data-group id="grpLayout" style="display:none;">
+      <button class="ghead" data-head>Layout <span class="chev">▾</span></button>
+      <div class="gbody">
+        <div class="f" id="iaPosWrap"><span>Banner position</span>
+          <div class="seg-in" id="iaPosSeg"><button data-pos="top" class="on">Top</button><button data-pos="bottom">Bottom</button></div>
+        </div>
+        <div class="hint">The message shows over a generic app screen (dimmed). The app name above sets the backdrop's title.</div>
       </div>
     </div>
   </aside>
@@ -318,6 +397,7 @@
         <button data-device="android"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Android</button>
       </div>
       <div class="seg" id="surfaceSeg"></div>
+      <div class="seg" id="inappSeg" style="display:none;"></div>
       <span class="topcap" id="chanCap"></span>
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
@@ -453,7 +533,9 @@
     industry:'ecom', sub:'fashion',
     appLogo:null, expanded:true, wallpaper:'aurora',
     push:{ appName:'Nova', title:'', body:'', image:'', actions:'', time:'now' },
+    inapp:{ type:'modal', image:'', headline:'', body:'', ctas:'', close:true, bannerPos:'top' },
   };
+  const appName=()=>state.push.appName;
 
   const IC={
     wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
@@ -566,6 +648,26 @@
     </div>`;
   }
 
+  // ---------- In-App ----------
+  function iaCtaList(){ return (state.inapp.ctas||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.split('|').map(x=>x.trim()); let st=(p[1]||'primary').toLowerCase(); if(!['primary','secondary','text'].includes(st)) st='primary'; return {label:p[0]||'', style:st}; }).filter(c=>c.label).slice(0,2); }
+  function iaCtasHTML(){ const c=iaCtaList(); if(!c.length) return ''; return `<div class="ia-cta-col">${c.map(b=>`<button class="ia-cta ${b.style}${ck(true)}"${optAttr({reply:b.label})}>${esc(b.label)}</button>`).join('')}</div>`; }
+  function iaX(dark){ if(!state.inapp.close) return ''; return `<div class="ia-x ${dark?'dark':''}${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.clear}</div>`; }
+  function iaModal(){ const a=state.inapp; const img=a.image?`<img class="img" src="${esc(a.image)}" alt="${esc(kwFor(a.headline))}">`:''; return `<div class="ia-modal">${iaX(!a.image)}${img}<div class="bd">${a.headline?`<div class="hl">${esc(a.headline)}</div>`:''}${a.body?`<div class="tx">${fmtLite(a.body)}</div>`:''}${iaCtasHTML()}</div></div>`; }
+  function iaBanner(){ const a=state.inapp; const c=iaCtaList()[0]; return `<div class="ia-bnr">${appIcon('ic')}<div class="tx"><div class="hl">${esc(a.headline||'')}</div>${a.body?`<div class="sb">${esc(oneLine(a.body))}</div>`:''}</div>${c?`<div class="cta${ck(true)}"${optAttr({reply:c.label})}>${esc(c.label)}</div>`:''}${a.close?`<div class="xs${ck(true)}"${optAttr({reply:'Dismiss'})}>✕</div>`:''}</div>`; }
+  function iaSheet(){ const a=state.inapp; const img=a.image?`<img class="img" src="${esc(a.image)}" alt="${esc(kwFor(a.headline))}">`:''; return `<div class="ia-sheet">${iaX(true)}<div class="ia-grab"></div>${img}${a.headline?`<div class="hl">${esc(a.headline)}</div>`:''}${a.body?`<div class="tx">${fmtLite(a.body)}</div>`:''}${iaCtasHTML()}</div>`; }
+  function iaFull(){ const a=state.inapp; const src=a.image||photo(KW[ctxId()]||'product',700,900); return `<div class="ia-full"><img class="ia-full-img" src="${esc(src)}" alt="${esc(kwFor(a.headline)||KW[ctxId()]||'promo')}">${iaX(false)}<div class="bd">${a.headline?`<div class="hl">${esc(a.headline)}</div>`:''}${a.body?`<div class="tx">${fmtLite(a.body)}</div>`:''}${iaCtasHTML()}</div></div>`; }
+  function iaImage(){ const a=state.inapp; const src=a.image||photo(KW[ctxId()]||'product',600,760); return `<div class="ia-imgonly">${iaX(false)}<img src="${esc(src)}" alt="${esc(KW[ctxId()]||'product')}"></div>`; }
+  function renderInApp(){
+    const t=state.inapp.type; const brand=avColor(appName());
+    let body;
+    if(t==='full') body=iaFull();
+    else if(t==='banner') body=appBackdrop()+`<div class="ia-banner ${state.inapp.bannerPos}">${iaBanner()}</div>`;
+    else if(t==='sheet') body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-sheetwrap">${iaSheet()}</div>`;
+    else if(t==='image') body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-center">${iaImage()}</div>`;
+    else body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-center">${iaModal()}</div>`;
+    return `<div style="position:absolute;inset:0;--brand:${brand}">${body}</div>`;
+  }
+
   const stage=$('#stage');
   stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
 
@@ -578,7 +680,7 @@
     const head=android?`<div class="punch"></div>`:`<div class="notch"></div>`;
     stage.className='stage'+(state.play?' sim-on':'');
     const badge=state.play?`<div class="sim-badge">● Simulate — tap the buttons</div>`:'';
-    const inner=renderPush();
+    const inner=state.channel==='inapp'?renderInApp():renderPush();
     stage.innerHTML=`<div class="phone ${android?'android':''}" id="capture">${head}${badge}<div class="screen">${inner}</div></div>`;
     bindOpts(); fitDevice();
   }
@@ -599,11 +701,25 @@
     {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + image',build:p=>({title:`⏰ Last chance — ${p.offer}`,body:`Ends at midnight. Don't miss out on ${p.brand}.`,image:photo(p.kw,600,340,5),actions:'Shop now',expanded:true})},
     {name:'Feedback',kind:'Flow',icon:'⭐',desc:'Rating buttons',build:p=>({title:'How did we do?',body:p.feedbackQ||`Tell us how ${p.brand} did — it takes 10 seconds.`,image:'',actions:'😍 Great\n🙂 Okay\n😞 Poor',expanded:true})},
   ];
-  function templatesFor(){
+  const INAPP_ARCH=[
+    {name:'Welcome modal',kind:'Promotional',icon:'👋',desc:'Center modal + image',build:p=>({type:'modal',image:photo(p.kw,600,340,2),headline:`Welcome to ${p.brand} 🎉`,body:`Here's ${p.offer} to get you started. Jump in and take a look.`,ctas:'Get started | primary\nMaybe later | text',close:true})},
+    {name:'Offer full-screen',kind:'Promotional',icon:'🖼️',desc:'Hero image takeover',build:p=>({type:'full',image:photo(p.kw,700,900,3),headline:p.offer,body:`Only at ${p.brand} — for a limited time.`,ctas:'Shop now | primary\nNo thanks | text',close:true})},
+    {name:'Rate us',kind:'Flow',icon:'⭐',desc:'Modal, no image',build:p=>({type:'modal',image:'',headline:`Enjoying ${p.brand}?`,body:p.feedbackQ||'Your feedback helps us make things better.',ctas:'Rate us ★ | primary\nNot now | text',close:true})},
+    {name:'Feature banner',kind:'Transactional',icon:'📣',desc:'Slim top banner',build:p=>({type:'banner',bannerPos:'top',image:'',headline:cap(p.reminder),body:`Tap to open ${p.brand}.`,ctas:'View | primary',close:true})},
+    {name:'Cart bottom-sheet',kind:'Flow',icon:'🛒',desc:'Bottom sheet + image',build:p=>({type:'sheet',image:photo(p.kw,600,340,7),headline:'You left something behind',body:oneLine(p.flow.intro),ctas:'Checkout | primary\nKeep browsing | secondary',close:true})},
+    {name:'Promo image-only',kind:'Promotional',icon:'✨',desc:'Full creative, tap to act',build:p=>({type:'image',image:photo(p.kw,600,760,5),headline:'',body:'',ctas:'',close:true})},
+  ];
+  function templatesPush(){
     const base=PACKS[ctxId()]; if(!base) return [];
     const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
     return PUSH_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>Object.assign({appName:p.brand}, a.build(p)) }));
   }
+  function templatesInApp(){
+    const base=PACKS[ctxId()]; if(!base) return [];
+    const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
+    return INAPP_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>Object.assign({appName:p.brand}, a.build(p)) }));
+  }
+  function templatesFor(){ return state.channel==='inapp'?templatesInApp():templatesPush(); }
   function renderTemplates(){
     const list=templatesFor(); const g=$('#tplGrid');
     if(!list.length){ g.innerHTML=`<div class="tpl-empty">No preset for this combo — start blank below.</div>`; return; }
@@ -612,7 +728,14 @@
   }
   function applyTemplate(t){
     const f=t.build();
-    state.push.appName=f.appName!=null?f.appName:state.push.appName;
+    if(f.appName!=null) state.push.appName=f.appName; // shared app identity
+    if(state.channel==='inapp'){
+      const a=state.inapp;
+      a.type=f.type||'modal'; a.image=f.image||''; a.headline=f.headline||''; a.body=f.body||'';
+      a.ctas=f.ctas||''; a.close=f.close!=null?f.close:true; if(f.bannerPos) a.bannerPos=f.bannerPos;
+      fillInappSeg(); syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to tap CTAs':''));
+      return;
+    }
     state.push.title=f.title||''; state.push.body=f.body||''; state.push.image=f.image||'';
     state.push.actions=f.actions||''; if(f.time!=null) state.push.time=f.time;
     if(f.expanded!=null) state.expanded=f.expanded;
@@ -642,6 +765,31 @@
     draw();
   }
 
+  // ---------- DIY block builder (in-app CTAs) ----------
+  function serCtas(rows){ return rows.map(r=>`${r.label||''} | ${r.style||'primary'}`).join('\n'); }
+  function parseCtas(val){ return (val||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.split('|').map(x=>x.trim()); let st=(p[1]||'primary').toLowerCase(); if(!['primary','secondary','text'].includes(st)) st='primary'; return {label:p[0]||'', style:st}; }); }
+  function buildCtas(host){
+    let rows=parseCtas(state.inapp.ctas);
+    const commit=()=>{ state.inapp.ctas=serCtas(rows); render(); };
+    function draw(){
+      host.innerHTML='';
+      rows.forEach((row,ri)=>{
+        const blk=document.createElement('div'); blk.className='blk';
+        const head=document.createElement('div'); head.className='blk-h';
+        const t=document.createElement('span'); t.className='t'; t.textContent='CTA '+(ri+1); head.appendChild(t);
+        const x=document.createElement('button'); x.className='x'; x.type='button'; x.textContent='✕'; x.onclick=()=>{ rows.splice(ri,1); commit(); draw(); }; head.appendChild(x);
+        blk.appendChild(head);
+        const l=document.createElement('label'); l.className='mini'; l.textContent='Label'; blk.appendChild(l);
+        const inp=document.createElement('input'); inp.type='text'; inp.value=row.label||''; inp.placeholder='e.g. Get started'; inp.addEventListener('input',()=>{ row.label=inp.value; commit(); }); blk.appendChild(inp);
+        const l2=document.createElement('label'); l2.className='mini'; l2.textContent='Style'; blk.appendChild(l2);
+        const sel=document.createElement('select'); [['primary','Primary (filled)'],['secondary','Secondary (outline)'],['text','Text (plain)']].forEach(o=>{ const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if((row.style||'primary')===o[0]) op.selected=true; sel.appendChild(op); }); sel.addEventListener('change',()=>{ row.style=sel.value; commit(); }); blk.appendChild(sel);
+        host.appendChild(blk);
+      });
+      if(rows.length<2){ const add=document.createElement('button'); add.type='button'; add.className='blk-add'; add.textContent='+ Add CTA'; add.onclick=()=>{ rows.push({label:'Button',style:rows.length?'text':'primary'}); commit(); draw(); }; host.appendChild(add); }
+    }
+    draw();
+  }
+
   // ---------- image field ----------
   function pickImage(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
   function imageField(get,set){
@@ -660,13 +808,32 @@
 
   // ---------- editor sync ----------
   function syncEditor(){
-    $('#appName').value=state.push.appName||'';
+    $('#appName').value=appName()||'';
+    if(state.channel==='inapp'){ syncInApp(); return; }
     $('#pnTitle').value=state.push.title||'';
     $('#pnBody').value=state.push.body||'';
     $('#pnTime').value=state.push.time||'now';
     $('#pnExpanded').checked=!!state.expanded;
     const pi=$('#pnImg'); pi.innerHTML=''; pi.appendChild(imageField(()=>state.push.image, v=>{ state.push.image=v; render(); }));
     buildActions($('#pnActs'));
+  }
+  function syncInApp(){
+    $('#iaHl').value=state.inapp.headline||'';
+    $('#iaBd').value=state.inapp.body||'';
+    $('#iaClose').checked=!!state.inapp.close;
+    const im=$('#iaImg'); im.innerHTML=''; im.appendChild(imageField(()=>state.inapp.image, v=>{ state.inapp.image=v; render(); }));
+    buildCtas($('#iaCtas'));
+    document.querySelectorAll('#iaPosSeg button').forEach(b=>b.classList.toggle('on', b.dataset.pos===state.inapp.bannerPos));
+    applyInappFieldVis();
+  }
+  function applyInappFieldVis(){
+    const t=state.inapp.type, ia=state.channel==='inapp';
+    $('#iaImgWrap').style.display = (t!=='banner')?'':'none';
+    $('#iaHlWrap').style.display = (t!=='image')?'':'none';
+    $('#iaBdWrap').style.display = (t!=='image')?'':'none';
+    $('#grpCtas').style.display = (ia&&t!=='image')?'':'none';
+    $('#grpLayout').style.display = ia?'':'none';
+    $('#iaPosWrap').style.display = (t==='banner')?'':'none';
   }
 
   // ---------- industries ----------
@@ -685,7 +852,17 @@
     seg.innerHTML=opts.map(o=>`<button data-surface="${o[0]}" class="${state.surface===o[0]?'on':''}">${o[1]}</button>`).join('');
     seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.surface=b.dataset.surface; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); syncAppearance(); render(); }));
   }
-  function syncAppearance(){ const wp=(state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade'); $('#grpAppearance').classList.toggle('hide', !wp); }
+  function syncAppearance(){ const wp = state.channel!=='inapp' && ((state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade')); $('#grpAppearance').style.display = wp?'':'none'; }
+  const IATYPES=[['modal','Modal'],['banner','Banner'],['full','Full'],['sheet','Sheet'],['image','Image']];
+  function fillInappSeg(){ const seg=$('#inappSeg'); seg.innerHTML=IATYPES.map(o=>`<button data-iatype="${o[0]}" class="${state.inapp.type===o[0]?'on':''}">${o[1]}</button>`).join(''); seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.type=b.dataset.iatype; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); applyInappFieldVis(); render(); })); }
+  function setChannelGroups(){
+    const ia=state.channel==='inapp';
+    document.querySelectorAll('.chan-push').forEach(g=>{ g.style.display = ia?'none':''; });
+    document.querySelectorAll('.chan-inapp').forEach(g=>{ g.style.display = ia?'':'none'; });
+    $('#surfaceSeg').style.display = ia?'none':'flex';
+    $('#inappSeg').style.display = ia?'flex':'none';
+    syncAppearance();
+  }
 
   // ---------- wallpaper picker ----------
   function fillWallpapers(){
@@ -702,6 +879,10 @@
   $('#pnBody').addEventListener('input',e=>{ state.push.body=e.target.value; render(); });
   $('#pnTime').addEventListener('input',e=>{ state.push.time=e.target.value; render(); });
   $('#pnExpanded').addEventListener('change',e=>{ state.expanded=e.target.checked; render(); });
+  $('#iaHl').addEventListener('input',e=>{ state.inapp.headline=e.target.value; render(); });
+  $('#iaBd').addEventListener('input',e=>{ state.inapp.body=e.target.value; render(); });
+  $('#iaClose').addEventListener('change',e=>{ state.inapp.close=e.target.checked; render(); });
+  document.querySelectorAll('#iaPosSeg button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.bannerPos=b.dataset.pos; document.querySelectorAll('#iaPosSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); render(); }));
 
   (function(){ const drop=$('#iconDrop'),inp=$('#iconInput');
     const set=d=>{ state.appLogo=d; $('#iconImg').src=d; $('#iconPrev').style.display='flex'; render(); };
@@ -727,9 +908,19 @@
 
   function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.push.appName=ind.biz; } }
   function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
-  function onChannelChange(){ $('#chanCap').textContent='Push notifications'; renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { syncEditor(); render(); } }
+  function onChannelChange(){
+    const ia=state.channel==='inapp';
+    $('#chanCap').textContent = ia?'In-App messages':'Push notifications';
+    setChannelGroups(); if(ia) fillInappSeg();
+    renderTemplates(); const list=templatesFor();
+    if(list.length){ applyTemplate(list[0]); } else { syncEditor(); render(); }
+  }
 
-  $('#clearMsgs').addEventListener('click',()=>{ state.push={ appName:state.push.appName, title:'New notification', body:'Your message here.', image:'', actions:'', time:'now' }; syncEditor(); render(); });
+  $('#clearMsgs').addEventListener('click',()=>{
+    if(state.channel==='inapp'){ state.inapp={ type:state.inapp.type, image:'', headline:'New message', body:'Your text here.', ctas:'Got it | primary', close:true, bannerPos:state.inapp.bannerPos }; fillInappSeg(); }
+    else { state.push={ appName:state.push.appName, title:'New notification', body:'Your message here.', image:'', actions:'', time:'now' }; }
+    syncEditor(); render();
+  });
   document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the action buttons':'Back to editing'); });
@@ -742,7 +933,7 @@
     try{ return await html2canvas(node,{ backgroundColor:'#eef0f5', scale:2, useCORS:true, allowTaint:false, logging:false }); }
     finally{ node.style.transform=t; node.style.marginBottom=m; if(wasSim) stage.classList.add('sim-on'); if(badge) badge.style.display=''; }
   }
-  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`push-${state.industry}-${state.device}-${state.surface}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); const nm=state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}`; a.download=`${nm}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
 
   // ---------- Init ----------
