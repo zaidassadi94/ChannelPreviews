@@ -46,6 +46,91 @@ const ILLUS={
 };
 const ILMAP={tshirt:'shirt',clothing:'shirt',trousers:'pants',hoodie:'hoodie',earbuds:'headphones',electronics:'headphones',smartwatch:'watch',battery:'battery',serum:'bottle',cosmetics:'bottle',sunscreen:'bottle',milk:'bottle',savings:'coins',cash:'coins',money:'coins',piggybank:'piggy',creditcard:'card',invoice:'card',car:'car',stethoscope:'stethoscope',suitcase:'suitcase',umbrella:'umbrella',gift:'gift',treasure:'gift',cinema:'film',popcorn:'film',microphone:'mic',newspaper:'news',laptop:'laptop',wireframe:'laptop',classroom:'laptop',dashboard:'chart',stockmarket:'chart',plane:'plane',airplane:'plane',hotel:'bed',hotelroom:'bed',beach:'sun',burger:'burger',food:'burger',sushi:'burger',pizza:'pizza',vegetables:'basket',groceries:'basket',eggs:'box',bread:'box',product:'box',server:'server',controller:'controller',videogame:'controller',gamepad:'controller',smartphone:'phone',wifi:'phone',family:'family',stadium:'trophy',sport:'trophy',building:'building',city:'building',miami:'building',newyork:'building',chicago:'building',dubai:'building',pyramids:'building',mountains:'building'};
 function illusFor(kw){ kw=(kw||'').toLowerCase(); return ILMAP[kw] || (ILLUS[kw]?kw:'box'); }
+// ---- keyword normalisation: map common AI subjects onto a resolvable keyword ----
+// The pre-resolved library + illustrations only know ~56 keys; an AI (or a brief)
+// naming "moisturizer"/"jeans"/"headphones" should still land on the closest real
+// photo instead of the vertical default. Left side = synonym, right = known key.
+const KWSYN={
+  // beauty / skincare
+  facecream:'cosmetics',moisturizer:'cosmetics',moisturiser:'cosmetics',lotion:'cosmetics',cream:'cosmetics',skincare:'cosmetics',skin:'cosmetics',makeup:'cosmetics',lipstick:'cosmetics',foundation:'cosmetics',mascara:'cosmetics',beauty:'cosmetics',cleanser:'cosmetics',toner:'cosmetics',nightcream:'cosmetics',daycream:'cosmetics',
+  vitaminc:'serum',retinol:'serum',
+  spf:'sunscreen',sunblock:'sunscreen',suncream:'sunscreen',
+  // apparel
+  shirt:'tshirt',tee:'tshirt',top:'tshirt',blouse:'tshirt',
+  jeans:'trousers',pants:'trousers',trouser:'trousers',chinos:'trousers',leggings:'trousers',denim:'trousers',
+  sweatshirt:'hoodie',sweater:'hoodie',jumper:'hoodie',
+  dress:'clothing',apparel:'clothing',outfit:'clothing',fashion:'clothing',clothes:'clothing',jacket:'clothing',coat:'clothing',sneakers:'clothing',sneaker:'clothing',shoes:'clothing',footwear:'clothing',
+  // electronics
+  headphones:'earbuds',airpods:'earbuds',earphones:'earbuds',earbud:'earbuds',headphone:'earbuds',
+  watch:'smartwatch',
+  phone:'smartphone',mobile:'smartphone',iphone:'smartphone',cellphone:'smartphone',handset:'smartphone',
+  powerbank:'battery',charger:'battery',
+  computer:'laptop',notebook:'laptop',macbook:'laptop',
+  gadget:'electronics',gadgets:'electronics',tech:'electronics',device:'electronics',
+  router:'wifi',broadband:'wifi',internet:'wifi',
+  console:'gamepad',controller:'gamepad',gaming:'gamepad',
+  // finance
+  coin:'savings',coins:'savings',deposit:'savings',
+  dollars:'cash',dollar:'cash',banknote:'cash',bills:'cash',
+  card:'creditcard',debitcard:'creditcard',
+  bill:'invoice',receipt:'invoice',
+  piggy:'piggybank',
+  chart:'dashboard',graph:'dashboard',analytics:'dashboard',stocks:'dashboard',market:'dashboard',trading:'dashboard',
+  // food
+  cheeseburger:'burger',
+  meal:'food',dinner:'food',lunch:'food',restaurant:'food',dish:'food',plate:'food',
+  dairy:'milk',
+  egg:'eggs',
+  loaf:'bread',bakery:'bread',sourdough:'bread',
+  veg:'vegetables',vegetable:'vegetables',produce:'vegetables',groceries:'vegetables',grocery:'vegetables',
+  cart:'basket',
+  // travel
+  flight:'airplane',plane:'airplane',
+  resort:'hotel',stay:'hotel',
+  room:'hotelroom',suite:'hotelroom',
+  tropical:'beach',vacation:'beach',holiday:'beach',
+  luggage:'suitcase',baggage:'suitcase',
+  vehicle:'car',auto:'car',
+  // media
+  movie:'cinema',movies:'cinema',theatre:'cinema',theater:'cinema',
+  news:'newspaper',article:'newspaper',
+  mic:'microphone',podcast:'microphone',comedy:'microphone',
+  // edu / other
+  course:'classroom',classes:'classroom',learning:'classroom',lesson:'classroom',study:'classroom',
+  game:'videogame',
+  present:'gift',reward:'gift',
+  chest:'treasure',crate:'treasure',
+  sport:'stadium',match:'stadium',football:'stadium',
+  city:'building',office:'building',
+  cloud:'server',datacenter:'server',
+  ux:'wireframe',
+  doctor:'stethoscope',medical:'stethoscope',health:'stethoscope',clinic:'stethoscope',
+};
+function knownKw(k){ return !!(k && ((window.__PXIMG&&window.__PXIMG[k])||ILLUS[k]||ILMAP[k])); }
+// normalise one token to a resolvable keyword (synonym → known key, else itself)
+function normKw(kw){ kw=(kw||'').toLowerCase().replace(/[^a-z0-9]/g,''); return KWSYN[kw]||kw; }
+// Marketing "process" words that map to a photo but are almost never the actual
+// subject ("abandoned CART", "GIFT card", "TOP picks", "STAY tuned"). Only used
+// as a keyword if nothing more concrete is in the text.
+const KWWEAK=new Set(['cart','basket','gift','reward','present','offer','deal','sale','save','win','claim','free','bonus','prize','spin','order','checkout','purchase','buy','shop','top','stay','match','card','points','point','stock','stocks','market','trading','box','crate','chest','treasure','coin','coins','deposit','bill','bills','room']);
+// scan free text (a query, a brief, the generated copy) for the first word — or
+// adjacent-word pair — that maps onto a keyword we can actually show a photo for.
+// Two passes: first ignore the weak/process words above (so the real product noun
+// wins), then allow them only if nothing concrete was found.
+function kwFromText(text){
+  if(!text) return '';
+  const w=String(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  for(const skipWeak of [true,false]){
+    for(let i=0;i<w.length;i++){
+      const raws=[]; if(i+1<w.length) raws.push(w[i]+w[i+1]); raws.push(w[i]);
+      for(const raw of raws){
+        if(skipWeak && KWWEAK.has(raw)) continue;
+        const nk=normKw(raw); if(knownKw(nk)) return nk;
+      }
+    }
+  }
+  return '';
+}
 function tile(kw,hue,w,h){ w=w||600; h=h||360; if(hue==null) hue=hueOf(kw); const h2=(hue+34)%360;
   const d=ILLUS[illusFor(kw)]||ILLUS.box; const S=(Math.min(w,h)*0.4/24), cx=w/2, cy=h/2, r=Math.min(w,h)*0.31;
   const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'>"
@@ -55,7 +140,7 @@ function tile(kw,hue,w,h){ w=w||600; h=h||360; if(hue==null) hue=hueOf(kw); cons
     +"<g transform='translate("+cx.toFixed(1)+","+cy.toFixed(1)+") scale("+S.toFixed(3)+") translate(-12,-12)' fill='none' stroke='#fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'><path d='"+d+"'/></g>"
     +"</svg>";
   return 'data:image/svg+xml,'+encodeURIComponent(svg); }
-function photo(kw,w,h){ const m=(window.__PXIMG||{}); return m[kw] || tile(kw,null,w,h); }
+function photo(kw,w,h){ const m=(window.__PXIMG||{}); kw=(kw||'').toLowerCase(); const nk=normKw(kw); return m[kw] || m[nk] || tile(nk||kw,null,w,h); }
 function phGrad(seed){ const hue=((seed||0)%360+360)%360, h2=(hue+40)%360; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",52%,62%)'/><stop offset='1' stop-color='hsl("+h2+",48%,46%)'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><circle cx='330' cy='60' r='130' fill='rgba(255,255,255,0.10)'/><circle cx='60' cy='230' r='90' fill='rgba(0,0,0,0.06)'/></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
 const KW={fashion:'clothing',marketplace:'electronics',d2c:'cosmetics',banking:'money',insurance:'umbrella',fintech:'smartphone',ott:'cinema',news:'newspaper',airlines:'airplane',hotels:'hotel',delivery:'food',grocery:'vegetables',edtech:'classroom',gaming:'videogame',telecom:'smartphone'};
 const IMGKW={'Oversized Tee':'tshirt','Cargo Pants':'trousers','Knit Hoodie':'hoodie','Wireless Earbuds':'earbuds','Smart Watch':'smartwatch','Power Bank':'battery','Vitamin C Serum':'serum','Night Cream':'cosmetics','SPF 50':'sunscreen','Savings+ Account':'savings','Savings+':'savings','Gold Credit Card':'creditcard','Gold Card':'creditcard','Auto Loan':'car','Youth Account':'piggybank','Motor':'car','Health':'stethoscope','Travel':'suitcase','Pay bills':'invoice','Send money':'cash','Rewards':'gift','New Originals':'cinema','Blockbusters':'popcorn','Live Comedy':'microphone','Originals':'cinema','Business':'stockmarket','Technology':'laptop','Sport':'stadium','Miami':'miami','New York':'newyork','Chicago':'chicago','Palm Grand':'hotel','City Suites':'hotelroom','Beach Villa':'beach','Burger Yard':'burger','Sushi Bar':'sushi','Pizza Co':'pizza','Fresh Milk':'milk','Free-range Eggs':'eggs','Sourdough':'bread','Data Analytics':'dashboard','UX Design':'wireframe','Cloud 101':'server','Legendary Crate':'treasure','Season Pass':'videogame','Hero Bundle':'gamepad','Unlimited':'smartphone','Family Plan':'family','Data Add-on':'wifi','Live comedy':'microphone','Tech':'laptop','Item one':'product','Item two':'product','Product one':'product','Product two':'product'};

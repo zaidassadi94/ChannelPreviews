@@ -648,19 +648,22 @@
   if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=>`${state.channel}-${state.industry}-${state.device}` });
 
   // ---------- AI generate: map one schema-locked message into a message bubble ----------
-  async function applyAI(m){
+  async function applyAI(m, opt){
+    const brief=(opt&&opt.brief)||'';
     const types=['text','image','card','carousel','template','list'];
     const type=types.includes(m.type)?m.type:'text';
     const o={from:'business'};
     ['text','caption','title','desc','body','footer','btnText','header','file','meta'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; });
-    const dkw=()=>m.imageKeyword||KW[ctxId()]||'product';  // short keyword -> illustration / pre-resolved fallback
+    const copyText=[m.title,m.body,m.text,m.caption,m.desc].filter(Boolean).join(' ');
+    // image keyword: AI's own -> derived from its query/copy/the brief -> vertical only as a last resort
+    const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
     if(['image','card','template'].includes(type)) o.img = await ChannelStudioAI.photoFor(dkw(),600,340,m.imageQuery);
     if(Array.isArray(m.buttons)) o.buttons=serRows('buttons', m.buttons.map(b=>({label:b.label||'',type:(['reply','url','call','copy'].includes(b.type)?b.type:'reply'),value:b.value||'',reply:b.reply||''})));
     if(Array.isArray(m.chips)) o.chips=serRows('chips', m.chips.map(c=>({label:c.label||'',reply:c.reply||''})));
     if(Array.isArray(m.items)) o.items=serRows('items', m.items.map(i=>({t:i.t||'',d:i.d||'',reply:i.reply||''})));
     if(Array.isArray(m.cards)){
       const cards=[];
-      for(const c of m.cards){ cards.push({img:await ChannelStudioAI.photoFor(c.imageKeyword||kwFor(c.name||'')||KW[ctxId()]||'product',320,240,c.imageQuery||c.name),title:c.name||'',sub:c.price||'',btn:'Shop',val:''}); }
+      for(const c of m.cards){ cards.push({img:await ChannelStudioAI.photoFor(c.imageKeyword||kwFromText(c.imageQuery||c.name)||kwFor(c.name||'')||KW[ctxId()]||'product',320,240,c.imageQuery||c.name),title:c.name||'',sub:c.price||'',btn:'Shop',val:''}); }
       o.cards=serRows('cards', cards);
     }
     applyTemplate({ build:()=>({ msgs:[ mk(type,o) ] }), flow:false });

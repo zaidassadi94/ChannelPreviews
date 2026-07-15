@@ -290,6 +290,19 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
+**Done 2026-07-15 (AI image relevance fix):** The AI often omits `imageKeyword`/`imageQuery`
+on copy-focused briefs, and the old fallback then used `KW[ctxId()]` — the **sub-industry**
+keyword — so a "face cream" brief on the Fashion vertical showed the `clothing` photo. Fixed:
+(1) prompt now makes the image **mandatory** and ties `imageQuery` to the **copy's subject**,
+explicitly forbidding the brand-category fallback and blanks; (2) new `KWSYN`/`normKw`/`kwFromText`
+in `image-system.js` map common subjects onto the ~56 library keys (moisturizer→cosmetics,
+jeans→trousers, headphones→earbuds…), with a **two-pass** scan that skips marketing "process"
+words (cart, gift, top, stay, sale…) so the real product noun wins; (3) every `applyAI` now
+derives the fallback keyword from `imageQuery`→copy→brief (via `kwFromText`) and only uses the
+vertical as a last resort — `ai.js` passes the brief through as `apply(msg,{brief})`. Verified
+E2E: an AI message with NO image fields + "face cream" copy on the Fashion vertical now resolves
+to `cosmetics`, not `clothing`. NOTE: sharp *live* photos still require `PEXELS_KEY` in Vercel.
+
 **Done 2026-07-15 (later session — copy + images + gamification):**
 - **In-App Gamification — a new channel** (`game`, owned by the notify tool). Premium dark
   "reward moment" takeovers in a CRED / Cult-UI aesthetic: **Scratch card, Spin the wheel,

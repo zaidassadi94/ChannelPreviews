@@ -42,8 +42,11 @@
   async function resolvePhoto(kw, orientation) {
     kw = (kw || '').toLowerCase().trim();
     if (!kw) return null;
-    if (window.__PXIMG && window.__PXIMG[kw]) return window.__PXIMG[kw];
-    return livePhoto(kw, orientation);
+    const M = window.__PXIMG || {};
+    if (M[kw]) return M[kw];
+    const nk = (typeof normKw === 'function') ? normKw(kw) : kw;   // moisturizer -> cosmetics
+    if (nk && M[nk]) return M[nk];
+    return livePhoto(nk || kw, orientation);
   }
   function orientFor(w, h) { w = +w || 0; h = +h || 0; if (h > w * 1.15) return 'portrait'; if (w > h * 1.15) return 'landscape'; return 'square'; }
   // Best image URL for an AI subject. A rich, literal `query` (from the model)
@@ -157,8 +160,10 @@
           setStatus('err', msg + hint);
           return;
         }
-        // the adapter owns image resolution (via ChannelStudioAI.photoFor)
-        await apply(data.message || {});
+        // the adapter owns image resolution (via ChannelStudioAI.photoFor).
+        // Pass the brief so the adapter can fall back to the message's own subject
+        // (not the industry vertical) when the model omits imageQuery/imageKeyword.
+        await apply(data.message || {}, { brief });
         toast('✨ AI message generated');
         setStatus('ok', 'Done — edit any field on the left, or generate again.');
       } catch (e) {

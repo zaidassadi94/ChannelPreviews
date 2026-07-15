@@ -987,9 +987,12 @@
   if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:exportName });
 
   // ---------- AI generate: map one schema-locked message into push / in-app ----------
-  async function applyAI(m){
-    const dkw=fallback=>m.imageKeyword||KW[ctxId()]||fallback||'product';  // short keyword -> illustration / pre-resolved fallback
+  async function applyAI(m, opt){
     if(state.channel==='game'){ await applyGameAI(m); return; }
+    const brief=(opt&&opt.brief)||'';
+    const copyText=[m.title,m.headline,m.body].filter(Boolean).join(' ');
+    // image keyword: AI's own -> derived from its query/copy/the brief -> vertical only as a last resort
+    const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
     if(state.channel==='inapp'){
       const types=['modal','banner','full','sheet','image'];
       const t=types.includes(m.type)?m.type:'modal';
@@ -997,11 +1000,11 @@
       const wantsImg=['modal','full','sheet','image'].includes(t);
       const portrait=(t==='full'||t==='image');  // these fill the screen -> want a portrait photo
       const dw=portrait?700:600, dh=portrait?900:340;
-      const iaImg=wantsImg?await ChannelStudioAI.photoFor(dkw(m.headline),dw,dh,m.imageQuery):'';
+      const iaImg=wantsImg?await ChannelStudioAI.photoFor(dkw(),dw,dh,m.imageQuery):'';
       applyTemplate({ build:()=>({ type:t, image:iaImg, headline:m.headline||'', body:m.body||'', ctas, close:m.close!=null?m.close:true }), flow:false });
     } else {
       const actions=Array.isArray(m.actions)?m.actions.filter(Boolean).join('\n'):'';
-      const pnImg=await ChannelStudioAI.photoFor(dkw(m.title),600,340,m.imageQuery);
+      const pnImg=await ChannelStudioAI.photoFor(dkw(),600,340,m.imageQuery);
       applyTemplate({ build:()=>({ title:m.title||'', body:m.body||'', image:pnImg, actions, expanded:pnImg?true:(m.expanded!=null?m.expanded:true) }), flow:false });
     }
   }
