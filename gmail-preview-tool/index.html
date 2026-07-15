@@ -870,15 +870,16 @@
   if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=>`gmail-${state.industry}-${state.skin}` });
 
   // ---------- AI generate: build an email from one schema-locked message ----------
-  function applyAI(m){
+  async function applyAI(m){
     const p=Object.assign({}, EPACKS[ctxId()]||{}, { brand:state.senderName, from:state.senderEmail });
     if(!p.accent) p.accent='#635bff';
     const head=esc(m.heading||'');
     const bodyHtml='<p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">'
       + esc(m.bodyText||'').replace(/\n+/g,'</p><p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">') + '</p>';
-    const hero = m.imageUrl
-      ? `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${esc(m.imageUrl)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div>`
-      : (m.imageKeyword?eHeroImg(p,m.imageKeyword,7):'');
+    const heroUrl = m.imageUrl || await ChannelStudioAI.photoFor(m.imageKeyword||KW[ctxId()]||'product',600,360);  // always a real pre-resolved photo by default
+    const hero = heroUrl
+      ? `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${esc(heroUrl)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div>`
+      : '';
     const inner = eBrand(p)
       + hero
       + '<div style="padding:30px 34px;text-align:center;">'

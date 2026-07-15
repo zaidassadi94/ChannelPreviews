@@ -331,7 +331,12 @@ image system, block builder, device frame + export, dropdown nav). The owner app
   no `PEXELS_KEY` set it degrades to illustrations (nothing breaks). Verified end-to-end
   with mocked `/api/generate` + `/api/photo` across all 4 channel families (panel opens →
   generate → message renders in `#capture`, live photo used for an unresolved keyword,
-  graceful illustration fallback when the key is absent); real Gemini/Pexels calls only run
+  graceful illustration fallback when the key is absent). **Images always appear:** each
+  `applyAI` is async and resolves via `ChannelStudioAI.photoFor(kw)` (pre-resolved → live
+  Pexels → illustration); when the model omits `imageKeyword` it defaults to the vertical
+  keyword `KW[ctxId()]`, which IS pre-resolved → a real photo even with no `PEXELS_KEY`
+  set. The prompt also nudges the model to always set `imageKeyword` and prefer image-
+  bearing message types for visual campaigns. Real Gemini/Pexels calls only run
   on the live site (hosts firewalled in-sandbox). Setup is 1–2 env vars in Vercel (README
   "Generate with AI" + "AI photos"). `#capture`/editor unchanged vs pre-AI (only the topbar
   gains the ✨ button; the panel is hidden until opened).

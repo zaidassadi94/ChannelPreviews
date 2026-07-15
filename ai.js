@@ -38,6 +38,13 @@
       return url;
     } catch (e) { return (photoMem[kw] = null); }
   }
+  // Best image URL for a keyword: pre-resolved (images.js) → live Pexels → illustration.
+  // Adapters call this so an image slot is never empty.
+  async function photoFor(kw, w, h) {
+    const url = await resolvePhoto(kw);
+    if (url) return url;
+    return (typeof photo === 'function') ? photo(kw, w, h) : '';
+  }
 
   const EXAMPLES = [
     'Flash sale, 40% off, ends tonight — urgent tone',
@@ -137,13 +144,8 @@
           setStatus('err', msg + hint);
           return;
         }
-        const message = data.message || {};
-        // fill a live Pexels photo when the keyword isn't in the pre-resolved set
-        if (message.imageKeyword && !(window.__PXIMG && window.__PXIMG[message.imageKeyword])) {
-          const url = await resolvePhoto(message.imageKeyword);
-          if (url) message.imageUrl = url;
-        }
-        await apply(message);
+        // the adapter owns image resolution (via ChannelStudioAI.photoFor)
+        await apply(data.message || {});
         toast('✨ AI message generated');
         setStatus('ok', 'Done — edit any field on the left, or generate again.');
       } catch (e) {
@@ -156,5 +158,5 @@
     ta.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate(); });
   }
 
-  window.ChannelStudioAI = { init, API, resolvePhoto };
+  window.ChannelStudioAI = { init, API, resolvePhoto, photoFor };
 })();
