@@ -133,6 +133,11 @@ headless Chromium via the global Playwright at
   .init({button, getEl, filename, toast})`; the button self-manages idle/recording state
   and a live timer. Self-contained, no libraries; sandbox can't run the real tab-share so
   it's verified by mocking `getDisplayMedia` with a canvas stream.
+- **Clean-capture extras** (all gated by a `body.cs-rec-live` class the recorder toggles
+  on start/stop): hides `.sim-badge` + `.toast` (tool-only overlays that Region Capture
+  would otherwise bake in), sets `cursor:none` on `#capture`, and shows a **touch-orb
+  cursor** (`.cs-orb`, follows the mouse, visible only over the device) plus a **click
+  ripple** (`.cs-ripple`) — so recordings look like a fingertip tapping, not an OS arrow.
 - **Critical dependency:** each tool's `render()` now **reuses a persistent `#capture`
   element** (updates its `className` + `innerHTML`) instead of replacing the node. This is
   what keeps a mid-recording crop alive across re-renders (template switch, Simulate tap,
