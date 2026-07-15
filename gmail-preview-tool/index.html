@@ -269,7 +269,7 @@
   .gm-d-search.focused { background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.18); }
   .gm-d-top .spacer { flex:1; }
   .gm-d-top .tavatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; }
-  .gm-d-main { display:grid; grid-template-columns: 240px 1fr; min-height:0; }
+  .gm-d-main { display:grid; grid-template-columns: 240px 1fr; grid-template-rows: minmax(0,1fr); min-height:0; }
   .gm-d-nav { padding:12px 8px; overflow-y:auto; }
   .compose-btn { display:flex; align-items:center; gap:14px; background:#c2e7ff; color:#001d35; border-radius:16px; padding:14px 22px; font-size:14px; font-weight:600; margin: 4px 8px 14px; width:max-content; box-shadow:0 1px 3px rgba(0,0,0,.15); }
   .gm.dark .compose-btn { background:#004a77; color:#c2e7ff; }
@@ -280,7 +280,7 @@
   .nav-item.on .ni { color:#041e49; }
   .gm.dark .nav-item.on .ni { color:#c2e7ff; }
   .nav-item .cnt { margin-left:auto; font-size:12px; color:var(--g-muted); }
-  .gm-d-content { border-left:1px solid var(--g-line); display:flex; flex-direction:column; min-width:0; }
+  .gm-d-content { border-left:1px solid var(--g-line); display:flex; flex-direction:column; min-width:0; min-height:0; }
   .gm-d-toolbar { display:flex; align-items:center; gap:20px; padding:8px 20px; color:var(--g-muted); flex:none; }
   .gm-d-toolbar .tb { width:20px; height:20px; }
   .gm-d-toolbar .sp { flex:1; }
@@ -935,7 +935,14 @@
       const f = document.getElementById('emailFrame');
       if(f){
         f.srcdoc = bodyForFrame();
-        f.onload = ()=>{ try{ const d=f.contentDocument; f.style.height = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight)+'px'; }catch(e){ f.style.height='700px'; } };
+        f.onload = ()=>{ try{
+          const d=f.contentDocument;
+          f.style.height = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight)+'px';
+          // The email body is a content-sized iframe, so it swallows wheel events and the
+          // reading pane won't scroll while the pointer is over the email. Forward them.
+          const scroller = f.closest('.gm-d-open, .gm-open-scroll');
+          if(scroller){ d.addEventListener('wheel', (ev)=>{ scroller.scrollTop += ev.deltaY; ev.preventDefault(); }, {passive:false}); }
+        }catch(e){ f.style.height='700px'; } };
       }
     }
     fitDevice();

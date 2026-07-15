@@ -39,8 +39,9 @@
   function onMove(e){ if(!active) return; if(!orb){ orb=document.createElement('div'); orb.className='cs-orb'; document.body.appendChild(orb); } orb.style.left=e.clientX+'px'; orb.style.top=e.clientY+'px'; if(overCap(e.clientX,e.clientY)) orb.classList.add('cs-show'); else orb.classList.remove('cs-show'); }
   function onDown(e){ if(!active) return; if(orb) orb.classList.add('cs-press'); if(overCap(e.clientX,e.clientY)){ var r=document.createElement('div'); r.className='cs-ripple'; r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px'; document.body.appendChild(r); setTimeout(function(){ if(r&&r.parentNode) r.parentNode.removeChild(r); },560); } }
   function onUp(){ if(orb) orb.classList.remove('cs-press'); }
-  function cursorOn(){ document.addEventListener('mousemove',onMove,true); document.addEventListener('mousedown',onDown,true); document.addEventListener('mouseup',onUp,true); }
-  function cursorOff(){ document.removeEventListener('mousemove',onMove,true); document.removeEventListener('mousedown',onDown,true); document.removeEventListener('mouseup',onUp,true); if(orb&&orb.parentNode) orb.parentNode.removeChild(orb); orb=null; }
+  function hideIfrCursor(on){ try{ var el=cfg&&cfg.getEl&&cfg.getEl(); if(!el) return; var fr=el.querySelectorAll('iframe'); for(var i=0;i<fr.length;i++){ try{ var d=fr[i].contentDocument; if(!d||!d.head) continue; var ex=d.getElementById('cs-nocur'); if(on){ if(!ex){ var s=d.createElement('style'); s.id='cs-nocur'; s.textContent='*{cursor:none!important}'; d.head.appendChild(s); } } else if(ex&&ex.parentNode){ ex.parentNode.removeChild(ex); } }catch(e){} } }catch(e){} }
+  function cursorOn(){ document.addEventListener('mousemove',onMove,true); document.addEventListener('mousedown',onDown,true); document.addEventListener('mouseup',onUp,true); hideIfrCursor(true); }
+  function cursorOff(){ document.removeEventListener('mousemove',onMove,true); document.removeEventListener('mousedown',onDown,true); document.removeEventListener('mouseup',onUp,true); hideIfrCursor(false); if(orb&&orb.parentNode) orb.parentNode.removeChild(orb); orb=null; }
 
   async function start(){
     if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){ toast('Screen recording needs a desktop browser (Chrome or Edge).'); return; }
