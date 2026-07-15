@@ -4,146 +4,26 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Gmail Preview Studio</title>
+<link rel="stylesheet" href="../channel-studio.css">
 <style>
-  /* ---------- Reset / base ---------- */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:#f4f5f8; --panel:#ffffff; --panel-2:#f7f8fb; --border:#e9eaf0; --line:#e9eaf0; --line-2:#eef0f4;
-    --text:#0c0e14; --ink-2:#3a3f4c; --muted:#7a8194; --muted-2:#9aa0b0;
-    --accent:#635bff; --accent-ink:#4b45d6; --accent-weak:#eeecff; --ring:rgba(99,91,255,.16);
-    --radius:12px;
-    --shadow:0 4px 14px rgba(16,18,30,.07), 0 1px 3px rgba(16,18,30,.05);
-    --shadow-sm:0 1px 2px rgba(16,18,30,.05);
-    --font:'Inter',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-    /* Gmail palette (preview only) */
-    --gm-red:#ea4335; --gm-blue:#1a73e8; --gm-green:#34a853; --gm-yellow:#fbbc04;
-  }
-  html, body { height: 100%; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-  .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; grid-template-rows: 100vh; overflow: hidden; }
+  /* Gmail palette (preview only) */
+  :root{ --gm-red:#ea4335; --gm-blue:#1a73e8; --gm-green:#34a853; --gm-yellow:#fbbc04; }
 
-  /* ---------- Editor panel ---------- */
-  .editor {
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    padding: 0 0 60px;
-  }
-  .editor::-webkit-scrollbar { width: 10px; }
-  .editor::-webkit-scrollbar-thumb { background: #d6dae0; border-radius: 8px; border: 3px solid var(--panel); }
-  .brand {
-    position: sticky; top: 0; z-index: 5;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px; display: flex; align-items: center; gap: 10px;
-  }
-  .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -.2px; }
-  .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg,#635bff,#8b5cf6 55%,#22c1c3); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(99,91,255,.35); }
-  .brand .mark svg{ width:17px; height:17px; }
-  .brand small { display:block; font-weight: 400; color: var(--muted); font-size: 11px; }
-  .ctx{ padding:16px 20px 6px; display:grid; gap:11px; }
-  .sel-wrap{ position:relative; } .sel-wrap.hide{ display:none; }
-  .sel-wrap > label{ display:block; font-size:10.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin:0 0 6px 2px; }
-  select.sel{ -webkit-appearance:none; appearance:none; width:100%; padding:11px 34px 11px 13px; font-family:inherit; font-size:13.5px; font-weight:550; color:var(--text); background:var(--panel-2); border:1px solid var(--border); border-radius:9px; cursor:pointer; outline:none; transition:.15s; letter-spacing:-.1px; }
-  select.sel:hover{ border-color:#d7d9e3; } select.sel:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
-  .sel-wrap::after{ content:""; position:absolute; right:14px; bottom:15px; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none; }
-  .divider{ height:1px; background:var(--border); }
-  .tpl-grid{ display:grid; gap:8px; }
-  .tpl{ border:1px solid var(--border); background:var(--panel); border-radius:9px; padding:11px 12px; cursor:pointer; text-align:left; font-family:inherit; transition:.14s; display:flex; align-items:flex-start; gap:10px; }
-  .tpl:hover{ border-color:#cfd2df; box-shadow:var(--shadow-sm); transform:translateY(-1px); }
-  .tpl .ti{ width:30px; height:30px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--accent-weak); }
-  .tpl .tc{ flex:1; min-width:0; }
-  .tpl .tt{ font-size:12.5px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; letter-spacing:-.1px; }
+  /* template badge kinds (gmail tags PROMO / TXN) */
   .tpl .tt .kind{ font-size:9px; font-weight:700; padding:1.5px 5px; border-radius:5px; letter-spacing:.02em; }
   .tpl .tt .Promotional{ color:#a15c00; background:#fff2d6; } .tpl .tt .Transactional{ color:#0b62c4; background:#e3f0ff; }
-  .tpl .td{ font-size:11px; color:var(--muted); line-height:1.4; margin-top:2px; }
 
-  .group { border-bottom: 8px solid var(--panel-2); }
-  .group > .group-head {
-    width: 100%; text-align: left; background: none; border: 0; cursor: pointer;
-    padding: 14px 20px; font-size: 12px; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between;
-  }
-  .group > .group-head:hover { color: var(--text); }
-  .group-head .chev { transition: transform .2s; font-size: 11.5px; }
-  .group.collapsed .chev { transform: rotate(-90deg); }
-  .group.collapsed .group-body { display: none; }
-  .group-body { padding: 4px 20px 20px; }
-
-  label.field { display: block; margin-bottom: 14px; }
-  label.field > span { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
-  input[type=text], input[type=email], textarea, select {
-    width: 100%; padding: 9px 11px; font-size: 13px; font-family: inherit; color: var(--text);
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; outline: none;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-weak); background: #fff; }
-  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  /* editor bits specific to this tool */
   textarea.code { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 12px; min-height: 150px; white-space: pre; }
-
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
-    padding: 6px 12px; border-radius: 999px; font-size: 12px; cursor: pointer; user-select: none;
-  }
-  .chip.on { background: var(--accent-weak); border-color: #c6dafc; color: var(--accent); font-weight: 500; }
-
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; }
-  .toggle-row span { font-size: 13px; }
-  .switch { position: relative; width: 38px; height: 22px; flex: none; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; inset: 0; background: #cbd2da; border-radius: 999px; transition: .2s; cursor: pointer; }
-  .slider::before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
-  .switch input:checked + .slider { background: var(--accent); }
-  .switch input:checked + .slider::before { transform: translateX(16px); }
-
-  .segmented { display: flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
+  .gbody select:not(.sel){ width:100%; padding:9px 11px; font-size:13px; font-family:inherit; color:var(--ink); background:var(--panel-2); border:1px solid var(--line); border-radius:8px; outline:none; transition:border-color .15s, box-shadow .15s; }
+  .gbody select:not(.sel):focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; }
+  .segmented { display: flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 3px; }
   .segmented button { flex: 1; border: 0; background: none; padding: 7px 6px; font-size: 12px; font-weight: 500; color: var(--muted); border-radius: 6px; cursor: pointer; font-family: inherit; }
   .segmented button.on { background: #fff; color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-
-  .drop {
-    border: 1.5px dashed var(--border); border-radius: 10px; padding: 20px; text-align: center;
-    cursor: pointer; transition: .15s; background: var(--panel-2); color: var(--muted); font-size: 12px;
-  }
-  .drop:hover, .drop.drag { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
   .drop .up-ic { font-size: 20px; display:block; margin-bottom: 6px; }
-  .logo-preview { display:flex; align-items:center; gap:10px; margin-top:10px; }
-  .logo-preview img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border:1px solid var(--border); background:#fff; }
-  .btn-mini { font-size:11px; color:var(--accent); background:none; border:0; cursor:pointer; padding:4px; }
-  .hint { font-size: 11px; color: var(--muted); margin-top: -8px; margin-bottom: 12px; line-height:1.4; }
 
-  /* ---------- Preview stage ---------- */
-  .stage-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  .topbar {
-    height: 56px; flex: none; background: var(--panel); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px; padding: 0 18px;
-  }
-  .topbar .grow { flex: 1; }
-  .seg2 { display:flex; background: var(--panel-2); border:1px solid var(--border); border-radius: 9px; padding: 3px; gap:3px; }
-  .seg2 button { border:0; background:none; padding: 7px 14px; font-size: 13px; font-weight:500; color: var(--muted); border-radius:6px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
-  .seg2 button.on { background:#14151a; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28); }
-  .seg2 button svg { width:15px; height:15px; }
-  .chan-sel { -webkit-appearance:none; appearance:none; padding:9px 30px 9px 13px; font-family:inherit; font-size:13px; font-weight:600; color:var(--text); background:var(--panel-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath d='M1 3l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 11px center; border:1px solid var(--border); border-radius:9px; cursor:pointer; outline:none; }
-  .chan-sel:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-weak); }
-  .btn {
-    border:0; border-radius:8px; padding: 9px 16px; font-size:13px; font-weight:600; cursor:pointer;
-    font-family:inherit; display:flex; align-items:center; gap:7px;
-  }
-  .btn svg { width:15px; height:15px; flex:none; }
-  .btn.primary { background: var(--accent); color:#fff; }
-  .btn.primary:hover { background:#1665d8; }
-  .btn.ghost { background: var(--panel-2); color: var(--text); border:1px solid var(--border); }
-  .btn.ghost:hover { background:#eceff3; }
-  .btn.reset { background:#fff4f2; color:#d1495b; border:1px solid #f7d6d0; }
-  .btn.reset:hover { background:#ffe9e5; border-color:#f2c2ba; color:#c0392b; }
-
+  /* stage kept local: its gradient differs subtly from the shared one and shows
+     through the device frame's rounded corners - keeping it preserves pixel-identical exports */
   .stage {
     flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: center;
     padding: 40px 24px; background:
@@ -155,6 +35,8 @@
 
   /* Device frames */
   .capture-target { transition: none; }
+  /* the Gmail preview must not inherit the design system's Inter feature set */
+  #capture{ font-feature-settings:normal; }
 
   /* --- iPhone frame --- */
   .iphone {
@@ -169,7 +51,7 @@
   .home-ind::after{ content:""; width:134px; height:5px; border-radius:3px; background:#0d0d0f; opacity:.85; }
   .home-ind.dk::after{ background:#e8eaed; opacity:.6; }
   .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px; background:#0d0d0f; border-radius:0 0 20px 20px; z-index:40; }
-  .statusbar { height: 50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding: 0 28px 0 30px; font-size:15px; font-weight:600; z-index:30; }
+  .statusbar { color:var(--ink); height: 50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding: 0 28px 0 30px; font-size:15px; font-weight:600; z-index:30; }
   .statusbar .icons { display:flex; align-items:center; gap:6px; }
   .statusbar svg { width: 17px; height:17px; }
 
@@ -324,15 +206,6 @@
   .gm-d-reply button { border:1px solid var(--g-line); background:var(--g-bg); color:var(--g-text); border-radius:18px; padding:7px 20px; font-size:13px; display:flex; gap:8px; align-items:center; cursor:pointer; font-family:inherit; }
 
   .empty-note { color:var(--g-muted); font-size:13px; padding:30px; text-align:center; }
-
-  /* Toast */
-  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(80px); background:#202124; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; box-shadow:0 6px 24px rgba(0,0,0,.3); opacity:0; transition:.3s; z-index:200; }
-  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
-
-  @media (max-width: 900px) {
-    .app { grid-template-columns: 1fr; }
-    .editor { display:none; }
-  }
 </style>
 </head>
 <body>
@@ -360,8 +233,8 @@
     </div>
     <div class="divider"></div>
     <section class="group" data-group>
-      <button class="group-head" data-head>Templates <span class="chev">▼</span></button>
-      <div class="group-body">
+      <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
+      <div class="gbody">
         <div class="hint">Ready-made, industry-specific email mockups — promotional &amp; transactional. Pick one, then tweak.</div>
         <div class="tpl-grid" id="tplGrid"></div>
         <button class="btn reset" id="gClearBtn" style="width:100%;margin-top:11px;justify-content:center;"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear &amp; start blank</button>
@@ -370,17 +243,17 @@
 
     <!-- Sender -->
     <section class="group" data-group>
-      <button class="group-head" data-head>Sender <span class="chev">▼</span></button>
-      <div class="group-body">
-        <label class="field"><span>Sender name</span><input type="text" id="senderName" value="Social Development Bank" /></label>
-        <label class="field"><span>Sender email</span><input type="email" id="senderEmail" value="training@socialdevbank.com" /></label>
-        <label class="field"><span>Sender logo / avatar (optional)</span>
+      <button class="ghead" data-head>Sender <span class="chev">▼</span></button>
+      <div class="gbody">
+        <label class="f"><span>Sender name</span><input type="text" id="senderName" value="Social Development Bank" /></label>
+        <label class="f"><span>Sender email</span><input type="email" id="senderEmail" value="training@socialdevbank.com" /></label>
+        <label class="f"><span>Sender logo / avatar (optional)</span>
           <div class="drop" id="logoDrop"><span class="up-ic">🖼️</span>Drag &amp; drop image, or click to browse</div>
           <input type="file" id="logoInput" accept="image/*" hidden />
         </label>
-        <div class="logo-preview" id="logoPreview" style="display:none;">
+        <div class="logo-prev" id="logoPreview" style="display:none;">
           <img id="logoImg" alt="logo" />
-          <button class="btn-mini" id="logoClear">Remove</button>
+          <button class="link-btn" id="logoClear">Remove</button>
         </div>
         <div class="hint">No logo? A colored monogram avatar is generated from the sender name — exactly like Gmail.</div>
       </div>
@@ -388,18 +261,18 @@
 
     <!-- Message -->
     <section class="group" data-group>
-      <button class="group-head" data-head>Message <span class="chev">▼</span></button>
-      <div class="group-body">
-        <label class="field"><span>Subject</span><input type="text" id="subject" value="🎓 Transform Your Career – Free Vocational Training Awaits!" /></label>
-        <label class="field"><span>Preview / snippet text</span><input type="text" id="snippet" value="Unlock your future with free vocational training programs. Limited seats available…" /></label>
+      <button class="ghead" data-head>Message <span class="chev">▼</span></button>
+      <div class="gbody">
+        <label class="f"><span>Subject</span><input type="text" id="subject" value="🎓 Transform Your Career – Free Vocational Training Awaits!" /></label>
+        <label class="f"><span>Preview / snippet text</span><input type="text" id="snippet" value="Unlock your future with free vocational training programs. Limited seats available…" /></label>
         <div class="row2">
-          <label class="field"><span>Timestamp</span><input type="text" id="timestamp" value="9:15 AM" /></label>
-          <label class="field"><span>"to" line</span><input type="text" id="toLine" value="to me" /></label>
+          <label class="f"><span>Timestamp</span><input type="text" id="timestamp" value="9:15 AM" /></label>
+          <label class="f"><span>"to" line</span><input type="text" id="toLine" value="to me" /></label>
         </div>
         <div class="toggle-row"><span>Unread (bold)</span><label class="switch"><input type="checkbox" id="unread" checked><span class="slider"></span></label></div>
         <div class="toggle-row"><span>Starred</span><label class="switch"><input type="checkbox" id="starred"><span class="slider"></span></label></div>
         <div class="toggle-row"><span>Important marker</span><label class="switch"><input type="checkbox" id="important"><span class="slider"></span></label></div>
-        <label class="field" style="margin-top:12px;"><span>Inbox category tab</span>
+        <label class="f" style="margin-top:12px;"><span>Inbox category tab</span>
           <select id="category">
             <option value="primary">Primary</option>
             <option value="promotions" selected>Promotions</option>
@@ -407,14 +280,14 @@
             <option value="updates">Updates</option>
           </select>
         </label>
-        <label class="field"><span>Open-email label chip</span><input type="text" id="labelChip" value="Inbox" /></label>
+        <label class="f"><span>Open-email label chip</span><input type="text" id="labelChip" value="Inbox" /></label>
       </div>
     </section>
 
     <!-- Body -->
     <section class="group" data-group>
-      <button class="group-head" data-head>Email body <span class="chev">▼</span></button>
-      <div class="group-body">
+      <button class="ghead" data-head>Email body <span class="chev">▼</span></button>
+      <div class="gbody">
         <div class="segmented" id="bodyMode" style="margin-bottom:14px;">
           <button data-mode="upload" class="on">Upload HTML</button>
           <button data-mode="paste">Paste HTML</button>
@@ -422,47 +295,47 @@
         </div>
 
         <div data-panel="upload">
-          <div class="drop" id="htmlDrop"><span class="up-ic">⬆️</span>Drag &amp; drop an <b>.html</b> email file, or click to browse</div>
+          <div class="drop" id="htmlDrop"><span class="up-ic">⬆️</span><span>Drag &amp; drop an <b>.html</b> email file, or click to browse</span></div>
           <input type="file" id="htmlInput" accept=".html,.htm,text/html" hidden />
           <div class="hint" id="uploadState">No file loaded — using the sample creative.</div>
         </div>
 
         <div data-panel="paste" style="display:none;">
-          <label class="field"><span>Paste full HTML (from MoEngage, an ESP, wherever)</span>
+          <label class="f"><span>Paste full HTML (from MoEngage, an ESP, wherever)</span>
             <textarea class="code" id="pasteHtml" placeholder="&lt;div&gt;...your email HTML...&lt;/div&gt;"></textarea>
           </label>
           <button class="btn ghost" id="applyPaste" style="width:100%; justify-content:center;">Apply HTML</button>
         </div>
 
         <div data-panel="plain" style="display:none;">
-          <label class="field"><span>Heading</span><input type="text" id="plainHeading" value="Unlock Your Future" /></label>
-          <label class="field"><span>Body text</span><textarea id="plainBody" placeholder="Write the email copy…">Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.</textarea></label>
-          <label class="field"><span>Button label</span><input type="text" id="plainBtn" value="Reserve My Seat" /></label>
-          <label class="field"><span>Accent color</span><input type="text" id="plainAccent" value="#5b3df5" /></label>
+          <label class="f"><span>Heading</span><input type="text" id="plainHeading" value="Unlock Your Future" /></label>
+          <label class="f"><span>Body text</span><textarea id="plainBody" placeholder="Write the email copy…">Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.</textarea></label>
+          <label class="f"><span>Button label</span><input type="text" id="plainBtn" value="Reserve My Seat" /></label>
+          <label class="f"><span>Accent color</span><input type="text" id="plainAccent" value="#5b3df5" /></label>
         </div>
       </div>
     </section>
 
     <!-- Promotions annotation -->
     <section class="group" data-group>
-      <button class="group-head" data-head>Promotions annotation <span class="chev">▼</span></button>
-      <div class="group-body">
+      <button class="ghead" data-head>Promotions annotation <span class="chev">▼</span></button>
+      <div class="gbody">
         <div class="hint">Gmail shows a rich "deal" card under Promotions emails. Enable it and it appears in the inbox list view (Promotions tab).</div>
         <div class="toggle-row"><span>Show annotation</span><label class="switch"><input type="checkbox" id="annotOn"><span class="slider"></span></label></div>
-        <label class="field"><span>Deal / offer text</span><input type="text" id="annotDeal" value="Free · Limited seats" /></label>
-        <label class="field"><span>Discount / promo code (optional)</span><input type="text" id="annotCode" value="" placeholder="e.g. SAVE20" /></label>
-        <label class="field"><span>Expiry note (optional)</span><input type="text" id="annotExpiry" value="Enrollment closes soon" /></label>
-        <label class="field"><span>Hero image URL(s), comma-separated</span><input type="text" id="annotImg" value="" placeholder="https://…/deal.jpg, https://…/deal2.jpg" /></label>
+        <label class="f"><span>Deal / offer text</span><input type="text" id="annotDeal" value="Free · Limited seats" /></label>
+        <label class="f"><span>Discount / promo code (optional)</span><input type="text" id="annotCode" value="" placeholder="e.g. SAVE20" /></label>
+        <label class="f"><span>Expiry note (optional)</span><input type="text" id="annotExpiry" value="Enrollment closes soon" /></label>
+        <label class="f"><span>Hero image URL(s), comma-separated</span><input type="text" id="annotImg" value="" placeholder="https://…/deal.jpg, https://…/deal2.jpg" /></label>
       </div>
     </section>
 
     <!-- Inbox surroundings -->
     <section class="group" data-group>
-      <button class="group-head" data-head>Inbox filler rows <span class="chev">▼</span></button>
-      <div class="group-body">
+      <button class="ghead" data-head>Inbox filler rows <span class="chev">▼</span></button>
+      <div class="gbody">
         <div class="hint">Surround your email with realistic inbox rows so the list view looks like a real inbox.</div>
         <div class="toggle-row"><span>Show filler emails</span><label class="switch"><input type="checkbox" id="fillerOn" checked><span class="slider"></span></label></div>
-        <label class="field"><span>Your email's position</span>
+        <label class="f"><span>Your email's position</span>
           <select id="position"><option value="0">Top of inbox</option><option value="2">After 2 emails</option><option value="4">Middle</option></select>
         </label>
       </div>
@@ -472,11 +345,11 @@
   <!-- ============ STAGE ============ -->
   <div class="stage-wrap">
     <div class="topbar">
-      <div class="seg2" id="skinSeg">
+      <div class="seg" id="skinSeg">
         <button data-skin="mobile" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>Mobile</button>
         <button data-skin="desktop"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Desktop</button>
       </div>
-      <div class="seg2" id="viewSeg">
+      <div class="seg" id="viewSeg">
         <button data-view="inbox" class="on">Inbox list</button>
         <button data-view="open">Open email</button>
       </div>
