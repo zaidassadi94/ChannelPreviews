@@ -295,9 +295,13 @@ dark mode removed, real Pexels photos live (56) with illustration fallback, no-t
 studio** (filmstrip trim + WebM/GIF export) in all three tools, touch-orb recording
 cursor, and the Gmail desktop reading-pane scroll fix.
 
-**UI conventions (keep consistent):** collapse chevrons are the solid `▼` at 11.5px
-(rotate −90° when `.collapsed`); groups default **expanded** (no initial `collapsed`
-class); the "Clear & start blank" reset button uses `.btn.reset` (soft-red) in every tool.
+**UI conventions (keep consistent):** collapse chevrons are the solid `▼` (rotate −90°
+when `.collapsed`; accent-coloured when a group is open); sidebar groups now default
+**collapsed** (every `[data-group]` carries an initial `collapsed` class in all 3 tools)
+so the sidebar reads as a clean menu of all sections — expand on click; the "Clear &
+start blank" reset button uses `.btn.reset` (soft-red) in every tool. Brand mark + tab
+favicon = `favicon.svg` (speech-bubble + AI sparkle on an indigo→violet→purple squircle);
+the `.brand .mark` inline SVG is the white glyph, the gradient tile comes from CSS.
 
 **DONE (2026-07-15): the §11 refactor — all 3 phases shipped.** The three tools duplicate
 ~1,000 lines each of the same foundations (design-system CSS, `INDUSTRIES`/`PACKS`,

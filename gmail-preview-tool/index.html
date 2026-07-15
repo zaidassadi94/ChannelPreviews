@@ -207,13 +207,14 @@
 
   .empty-note { color:var(--g-muted); font-size:13px; padding:30px; text-align:center; }
 </style>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
 <body>
 <div class="app">
   <!-- ============ EDITOR ============ -->
   <aside class="editor" id="editor">
     <div class="brand">
-      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" opacity=".95"/><circle cx="9" cy="10.5" r="1.3" fill="#635bff"/><circle cx="13" cy="10.5" r="1.3" fill="#635bff"/><circle cx="17" cy="10.5" r="1.3" fill="#635bff"/></svg></div>
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff"/><path d="M11.8 7.6c.15 1.75.7 2.3 2.45 2.45-1.75.15-2.3.7-2.45 2.45-.15-1.75-.7-2.3-2.45-2.45 1.75-.15 2.3-.7 2.45-2.45z" fill="#7c6df6"/></svg></div>
       <div><h1>Channel Studio</h1><small>Gmail · SMS · RCS · WhatsApp mockups</small></div>
     </div>
 
@@ -232,7 +233,7 @@
       <div class="sel-wrap" id="subWrap"><label>Sub-industry</label><select class="sel" id="selSub"></select></div>
     </div>
     <div class="divider"></div>
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Ready-made, industry-specific email mockups — promotional &amp; transactional. Pick one, then tweak.</div>
@@ -242,7 +243,7 @@
     </section>
 
     <!-- Sender -->
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Sender <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>Sender name</span><input type="text" id="senderName" value="Social Development Bank" /></label>
@@ -260,7 +261,7 @@
     </section>
 
     <!-- Message -->
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Message <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>Subject</span><input type="text" id="subject" value="🎓 Transform Your Career – Free Vocational Training Awaits!" /></label>
@@ -285,7 +286,7 @@
     </section>
 
     <!-- Body -->
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Email body <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="segmented" id="bodyMode" style="margin-bottom:14px;">
@@ -317,7 +318,7 @@
     </section>
 
     <!-- Promotions annotation -->
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Promotions annotation <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Gmail shows a rich "deal" card under Promotions emails. Enable it and it appears in the inbox list view (Promotions tab).</div>
@@ -330,7 +331,7 @@
     </section>
 
     <!-- Inbox surroundings -->
-    <section class="group" data-group>
+    <section class="group collapsed" data-group>
       <button class="ghead" data-head>Inbox filler rows <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Surround your email with realistic inbox rows so the list view looks like a real inbox.</div>

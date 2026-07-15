@@ -154,13 +154,14 @@
   .ios-in .fld{ flex:1; border:1px solid #d1d1d6; border-radius:19px; display:flex; align-items:center; padding:7px 12px; gap:8px; min-width:0; } .ios.dark .ios-in .fld{ border-color:#38383a; }
   .ios-in .fld .ph{ flex:1; color:#8e8e93; font-size:16px; } .ios-in .fld .wv{ width:24px; height:24px; color:#8e8e93; flex:none; }
 </style>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
 <body>
 <div class="app">
   <!-- ============ SIDEBAR ============ -->
   <aside class="editor" id="editor">
     <div class="brand">
-      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" opacity=".95"/><circle cx="9" cy="10.5" r="1.3" fill="#635bff"/><circle cx="13" cy="10.5" r="1.3" fill="#635bff"/><circle cx="17" cy="10.5" r="1.3" fill="#635bff"/></svg></div>
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff"/><path d="M11.8 7.6c.15 1.75.7 2.3 2.45 2.45-1.75.15-2.3.7-2.45 2.45-.15-1.75-.7-2.3-2.45-2.45 1.75-.15 2.3-.7 2.45-2.45z" fill="#7c6df6"/></svg></div>
       <div><h1>Channel Studio</h1><small>SMS · RCS · WhatsApp mockups</small></div>
     </div>
 
@@ -184,7 +185,7 @@
     </div>
     <div class="divider"></div>
 
-    <div class="group" data-group>
+    <div class="group collapsed" data-group>
       <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Ready-made, industry-specific messages. Ones tagged <span style="color:var(--accent-ink);font-weight:600">FLOW</span> are interactive — hit <b>Simulate</b> and tap the buttons to branch the conversation.</div>
@@ -193,7 +194,7 @@
       </div>
     </div>
 
-    <div class="group" data-group>
+    <div class="group collapsed" data-group>
       <button class="ghead" data-head>Sender / business <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>Business name</span><input type="text" id="bizName"></label>
@@ -210,7 +211,7 @@
       </div>
     </div>
 
-    <div class="group" data-group>
+    <div class="group collapsed" data-group>
       <button class="ghead" data-head>Conversation <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Each row is a bubble. Set who it's from and its type. Add <code>&gt;&gt; reply</code> after a button/list/chip to make it branch when tapped in Simulate.</div>
@@ -219,7 +220,7 @@
       </div>
     </div>
 
-    <div class="group" data-group>
+    <div class="group collapsed" data-group>
       <button class="ghead" data-head>Chat context <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>Date chip</span><input type="text" id="dateChip" value="Today"></label>
