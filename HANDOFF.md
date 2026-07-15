@@ -355,12 +355,12 @@ to `cosmetics`, not `clothing`. NOTE: sharp *live* photos still require `PEXELS_
   counts (6 push/inapp/messaging, 4 game), Simulate reveals, `#gameSeg`/`#grpWheel` visibility,
   push wallpaper-group logic, inapp all 5 types. `syncAppearance` tightened to `channel==='push'`.
 
-**Done:** **all 6 channels** — SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App
-(notify). Channel Studio design across all three tools, 6 templates × channel ×
-(sub)industry, DIY block builders, Simulate, US locale, digital-aware confirmations,
-dark mode removed, real Pexels photos live (56) with illustration fallback, no-terminal
-`setup.html` resolver, unified 6-channel dropdown, a **screen recorder** with a **review
-studio** (filmstrip trim + WebM/GIF export) in all three tools, touch-orb recording
+**Done:** **all 7 channels** — SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App +
+In-App Gamification (notify). Channel Studio design across all three tools, templates ×
+channel × (sub)industry, DIY block builders, Simulate, US locale, digital-aware
+confirmations, dark mode removed, real Pexels photos live (56) with illustration fallback,
+no-terminal `setup.html` resolver, unified 7-channel dropdown, a **screen recorder** with a
+**review studio** (filmstrip trim + WebM/GIF export) in all three tools, touch-orb recording
 cursor, and the Gmail desktop reading-pane scroll fix.
 
 **Done 2026-07-15 (this session):**
@@ -376,9 +376,11 @@ cursor, and the Gmail desktop reading-pane scroll fix.
 - **UI**: sidebar sections **collapsed by default**, new brand mark + `favicon.svg`,
   header-row polish.
 - **Env vars (owner-set, in Vercel):** `GROQ_API_KEY` (recommended) or `GEMINI_API_KEY`
-  for AI copy; `PEXELS_KEY` (optional) for live photo lookup of arbitrary AI keywords.
-  All optional — with none set, the core tools are unchanged and the ✨ button shows a
-  friendly "add a key" note.
+  for AI copy; `PEXELS_KEY` (optional) for live photo lookup of arbitrary AI keywords;
+  `LOGODEV_KEY` (optional, a Logo.dev *publishable* `pk_…` token) for real brand logos —
+  without it real brands fall back to keyless favicons, made-up brands to the generated
+  monogram. All optional — with none set, the core tools are unchanged and the ✨ button
+  shows a friendly "add a key" note. (Logo.dev confirmed working in production 2026-07-16.)
 
 **UI conventions (keep consistent):** collapse chevrons are the solid `▼` (rotate −90°
 when `.collapsed`; accent-coloured when a group is open); sidebar groups now default

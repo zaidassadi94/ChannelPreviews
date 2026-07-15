@@ -53,12 +53,22 @@ any specific image. Anything not resolved falls back to the illustration.
 
 Each tool has an **✨ AI** button in the top bar. It opens a prompt box on the right —
 type a short brief ("Diwali sale, 40% off, urgent tone") and it writes **one** on-brand
-message for the channel you're on and drops it straight into the editor, where you can
-tweak every field. The copy is written by a senior-copywriter prompt (clever hooks,
-tasteful emoji, real channel length, banned filler) with per-channel voice notes — and
-it works on **In-App Gamification** too (headline / prize / CTA for the game). For the
-image it emits both a short fallback keyword **and** a precise, literal search phrase
-(`imageQuery`) that drives a sharper Pexels lookup — see "AI photos" below.
+message and drops it straight into the editor, where you can tweak every field. The copy
+is written by a senior-copywriter prompt (clever hooks, tasteful emoji, real channel
+length, banned filler) with per-channel voice notes — and it works on **In-App
+Gamification** too (headline / prize / CTA for the game). For the image it emits both a
+short fallback keyword **and** a precise, literal search phrase (`imageQuery`) that drives
+a sharper Pexels lookup — see "AI photos" below.
+
+**The brief drives the studio.** You don't have to set the sidebar first — the AI reads
+the brief and switches everything to match. Name a **channel** ("give me an *in-app* for…",
+"an *email*…", "a *scratch card*…") and it jumps to that channel (hopping to the right tool
+if needed); imply an **industry** ("for a *grocery* retailer") and the Industry/Sub-industry
+selectors follow; the **brand** and **logo** are set from the brief too (a real brand gets
+its real logo — see "Brand logos"). So *"an in-app abandoned-cart for a grocery store"*
+typed while you're on WhatsApp/Travel lands as an In-App message for a grocery brand, no
+manual switching. If an industry isn't one of the built-in verticals, it still switches the
+channel + brand + copy so you can fine-tune the rest by hand.
 
 **Setup (one-time, no terminal):**
 
