@@ -59,33 +59,42 @@ const kwEnum = S('STRING', { description: 'one short image keyword/subject for t
 // A precise, literal stock-photo search phrase. This is what actually decides the
 // live Pexels photo, so it must describe exactly what should be in frame.
 const imgQuery = S('STRING', { description: 'a precise, literal stock-photo search phrase (3-6 words) naming the EXACT subject and, where it helps, the setting or style — e.g. "iced caramel coffee cup", "red running sneakers studio", "festive diwali sweets flatlay", "luxury hotel infinity pool". Concrete nouns only; no brand names, no on-image text/logos, no people descriptors.' });
+// Identity the model DECIDES from the brief (the app switches its UI to match).
+const brandField = S('STRING', { description: 'the brand this message is for: the name given in the brief, or a short realistic brand name you invent to fit the business the brief implies. Not necessarily the current app brand.' });
+const industryField = S('STRING', { description: 'the industry/sector in one short lowercase word, e.g. grocery, fashion, airline, banking, gaming, telecom, insurance, streaming.' });
+const domainField = S('STRING', { description: 'ONLY if the brand is a real, well-known company that the brief clearly refers to, its primary web domain (e.g. "nike.com", "starbucks.com") so its real logo can be shown. For made-up/generic brands leave this empty.' });
 const btnItems = S('OBJECT', { properties: {
   label: STR, type: S('STRING', { enum: ['reply', 'url', 'call', 'copy'] }), value: STR, reply: STR,
 }, required: ['label'] });
 
 function schemaFor(channel) {
   if (channel === 'gmail') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
     subject: STR, snippet: STR,
     category: S('STRING', { enum: ['primary', 'promotions', 'social', 'updates'] }),
     heading: STR, bodyText: STR, buttonLabel: STR, imageKeyword: kwEnum, imageQuery: imgQuery,
-  }, required: ['subject', 'snippet', 'heading', 'bodyText'] });
+  }, required: ['brand', 'industry', 'subject', 'snippet', 'heading', 'bodyText'] });
   if (channel === 'push') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
     title: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery,
     actions: S('ARRAY', { items: STR }), expanded: S('BOOLEAN'),
-  }, required: ['title', 'body'] });
+  }, required: ['brand', 'industry', 'title', 'body'] });
   if (channel === 'inapp') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.inapp }), headline: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery,
     ctas: S('ARRAY', { items: S('OBJECT', { properties: {
       label: STR, style: S('STRING', { enum: ['primary', 'secondary', 'text'] }) }, required: ['label'] }) }),
     close: S('BOOLEAN'),
-  }, required: ['type', 'headline'] });
+  }, required: ['brand', 'industry', 'type', 'headline'] });
   if (channel === 'game') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.game }),
     headline: STR, body: STR, prize: STR, cta: STR,
     segments: S('ARRAY', { items: STR }),
-  }, required: ['headline', 'prize'] });
+  }, required: ['brand', 'industry', 'headline', 'prize'] });
   // messaging (whatsapp / rcs / sms)
   return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS[channel] || CHANNELS.whatsapp }),
     text: STR, caption: STR, title: STR, desc: STR, body: STR, footer: STR,
     btnText: STR, header: STR, imageKeyword: kwEnum, imageQuery: imgQuery,
@@ -93,7 +102,7 @@ function schemaFor(channel) {
     chips: S('ARRAY', { items: S('OBJECT', { properties: { label: STR, reply: STR }, required: ['label'] }) }),
     items: S('ARRAY', { items: S('OBJECT', { properties: { t: STR, d: STR, reply: STR }, required: ['t'] }) }),
     cards: S('ARRAY', { items: S('OBJECT', { properties: { name: STR, price: STR, imageKeyword: kwEnum, imageQuery: imgQuery }, required: ['name'] }) }),
-  }, required: ['type'] });
+  }, required: ['brand', 'industry', 'type'] });
 }
 
 // Per-channel voice notes — what "good" looks like on each surface.
@@ -110,8 +119,10 @@ const CHANNEL_VOICE = {
 function systemPrompt(ctx) {
   const brand = ctx.brand || 'the brand';
   return [
-    `You are a senior lifecycle-marketing copywriter for "${brand}", a ${ctx.industry || 'consumer'} brand. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send.`,
+    `You are a senior lifecycle-marketing copywriter. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send. The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`,
     `Return ONLY the structured fields defined by the schema — nothing else. No HTML, no markdown (except WhatsApp *bold*), no links other than plain domains, no instructions.`,
+    // --- identity: the brief decides the brand/industry; the app switches its UI to match ---
+    `Identity: from the brief, decide the brand and industry. If the brief names or implies a specific business or sector (e.g. "a grocery retailer", "for a bank", "Nike"), write for THAT — invent a short, realistic, brandable name if none is given — and do NOT reuse "${brand}" when the brief implies a different business. If the brief implies no particular business, keep "${brand}" (${ctx.industry || 'consumer'}). Return your choice in the "brand" and "industry" fields. Set "domain" ONLY when the brand is a real, well-known company the brief clearly refers to (e.g. nike.com); otherwise leave it empty.`,
     // --- craft ---
     `Craft: open with a hook or a real benefit, not a greeting or a category name. Be specific and human — a little wit, warmth, or urgency. Skimmable and tight: true ${ctx.channel} length, never an essay. Vary the rhythm. Numbers make it real — concrete prices ($19, $149), percentages, counts, times.`,
     `BANNED because they're generic filler: "Shop the latest", "Don't miss out", "Limited time only", "Check it out", "We've got you covered", "Elevate your", "Hurry". Say something a lazy template never would.`,

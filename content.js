@@ -100,3 +100,36 @@ const CONFIRM={
   gaming:{noun:'purchase',head:'Purchase complete',line:'Your items have been added to your account.',cta:'Open game',ship:false},
   telecom:{noun:'plan',head:'Plan activated',line:'Your new plan is live. Enjoy!',cta:'Manage plan',ship:false},
 };
+// Map a free-text industry label (from the AI, or a brief) onto a known vertical
+// so the sidebar can switch to it. Returns {industryId, subId} or null if unknown.
+function resolveIndustry(label){
+  if(!label) return null;
+  const t=String(label).toLowerCase();
+  const SYN={
+    retail:'fashion',ecommerce:'fashion',ecom:'fashion',shopping:'fashion',store:'fashion',apparel:'fashion',clothing:'fashion',fashion:'fashion',outfit:'fashion',
+    marketplace:'marketplace',
+    beauty:'d2c',cosmetics:'d2c',skincare:'d2c',d2c:'d2c',dtc:'d2c',cpg:'d2c',
+    bank:'banking',banking:'banking',retailbanking:'banking',finance:'banking',bfsi:'banking',financial:'banking',
+    insurance:'insurance',insurer:'insurance',
+    fintech:'fintech',payments:'fintech',payment:'fintech',wallet:'fintech',neobank:'fintech',
+    ott:'ott',streaming:'ott',stream:'ott',video:'ott',entertainment:'ott',
+    news:'news',publishing:'news',publisher:'news',media:'ott',
+    travel:'airlines',airline:'airlines',airlines:'airlines',flight:'airlines',flights:'airlines',aviation:'airlines',
+    hotel:'hotels',hotels:'hotels',hospitality:'hotels',ota:'hotels',resort:'hotels',accommodation:'hotels',
+    food:'delivery',restaurant:'delivery',delivery:'delivery',fooddelivery:'delivery',takeout:'delivery',dining:'delivery',
+    grocery:'grocery',groceries:'grocery',supermarket:'grocery',
+    edtech:'edtech',education:'edtech',learning:'edtech',elearning:'edtech',course:'edtech',school:'edtech',university:'edtech',
+    gaming:'gaming',game:'gaming',games:'gaming',gamer:'gaming',esports:'gaming',
+    telecom:'telecom',telco:'telecom',mobile:'telecom',carrier:'telecom',network:'telecom',wireless:'telecom',broadband:'telecom',
+  };
+  const cands=[t.replace(/[^a-z0-9]+/g,'')].concat(t.split(/[^a-z0-9]+/).filter(Boolean));
+  let key=null;
+  for(const c of cands){ if(SYN[c]){ key=SYN[c]; break; } }
+  if(!key){ for(const ind of INDUSTRIES){ if(cands.includes(ind.id)){ key=ind.id; break; } for(const s of (ind.subs||[])) if(cands.includes(s[0])){ key=s[0]; break; } if(key) break; } }
+  if(!key) return null;
+  for(const ind of INDUSTRIES){
+    if(ind.id===key) return { industryId:ind.id, subId:(ind.subs&&ind.subs.length)?ind.subs[0][0]:null };
+    for(const s of (ind.subs||[])) if(s[0]===key) return { industryId:ind.id, subId:s[0] };
+  }
+  return null;
+}

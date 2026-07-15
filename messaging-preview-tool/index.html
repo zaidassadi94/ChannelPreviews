@@ -669,6 +669,11 @@
     applyTemplate({ build:()=>({ msgs:[ mk(type,o) ] }), flow:false });
   }
   if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    channels:['whatsapp','rcs','sms'],
+    setChannel:ch=>{ state.channel=ch; $('#selChannel').value=ch; onChannelChange(); render(); },
+    setBrand:name=>{ if(!name)return; state.bizName=name; const b=$('#bizName'); if(b) b.value=name; render(); },
+    setIndustry:label=>{ const r=(typeof resolveIndustry==='function')&&resolveIndustry(label); if(!r)return; state.industry=r.industryId; $('#selIndustry').value=r.industryId; fillSubs(); if(r.subId){ state.sub=r.subId; $('#selSub').value=r.subId; } renderTemplates(); },
+    setLogo:url=>{ state.logo=url||null; render(); },
     getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:state.channel, brand:state.bizName, industry:ind?ind.name:state.industry }; } });
 
   // ---------- Init ----------

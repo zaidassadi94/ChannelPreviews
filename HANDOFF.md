@@ -290,6 +290,28 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
+**Done 2026-07-15 (brief-authoritative AI routing + auto logos):** The sidebar used to
+*constrain* the AI (brand/industry injected into the prompt), so a jeans brief on the Travel
+vertical still said "SkyHigh". Flipped it — the **brief now drives the UI**:
+- Server (`api/generate.js`) returns `brand` + `industry` (+ optional `domain`) it decides
+  from the brief; the prompt treats the current sidebar as a fallback only and invents a
+  fitting brand when the brief implies a different business. `content.js` `resolveIndustry(label)`
+  maps a free label ("grocery", "airline") to a known {industryId, subId}.
+- `ai.js` detects an explicitly-named channel in the brief (`detectChannel`), then: switches
+  within the current tool (`setChannel`), or — for a channel another tool owns — stashes the
+  brief in `sessionStorage['cs-ai-handoff']`, navigates via `toolUrl`, and the target tool
+  auto-runs it (`ChannelStudioAI.autogen`, fired on load). After generating it calls the tool
+  hooks `setBrand`/`setIndustry`/`setLogo` so the sidebar (channel, industry, sub, business
+  name, logo) all switch to match. New init opts per tool: `channels, setChannel, setBrand,
+  setIndustry, setLogo`. Verified E2E (12 checks): identity switch, whatsapp→sms in-tool,
+  whatsapp→in-app cross-tool handoff.
+- **Auto logos** — `brandMark(name,size)` in `image-system.js` generates a gradient monogram
+  logo (SVG data URI) used as every default avatar/app-icon across all tools. For **real**
+  brands the AI returns a `domain` and `api/logo.js` (new serverless fn) fetches the real logo
+  (Clearbit → favicon fallback) as a data URI; `ChannelStudioAI.resolveLogo` caches it and
+  `setLogo` applies it, else the generated mark shows. NOTE: real logos need no key; live
+  photos still need `PEXELS_KEY`.
+
 **Done 2026-07-15 (AI image relevance fix):** The AI often omits `imageKeyword`/`imageQuery`
 on copy-focused briefs, and the old fallback then used `KW[ctxId()]` — the **sub-industry**
 keyword — so a "face cream" brief on the Fashion vertical showed the `clothing` photo. Fixed:

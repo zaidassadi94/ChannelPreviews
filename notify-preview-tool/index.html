@@ -1017,6 +1017,11 @@
     applyTemplate({ build:()=>({ type:t, eyebrow:state.game.eyebrow||'Exclusive reward', headline:m.headline||'', sub:m.body||'', prize:m.prize||'', prizeCap:'', cta:m.cta||'Claim reward', segments:segs, close:true }), flow:false });
   }
   if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    channels:['push','inapp','game'],
+    setChannel:ch=>{ state.channel=ch; $('#selChannel').value=ch; onChannelChange(); render(); },
+    setBrand:name=>{ if(!name)return; state.push.appName=name; const b=$('#appName'); if(b) b.value=name; render(); },
+    setIndustry:label=>{ const r=(typeof resolveIndustry==='function')&&resolveIndustry(label); if(!r)return; state.industry=r.industryId; $('#selIndustry').value=r.industryId; fillSubs(); if(r.subId){ state.sub=r.subId; $('#selSub').value=r.subId; } renderTemplates(); },
+    setLogo:url=>{ state.appLogo=url||null; render(); },
     getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:state.channel, brand:appName(), industry:ind?ind.name:state.industry }; } });
 
   // ---------- Init ----------

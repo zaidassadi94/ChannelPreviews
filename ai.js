@@ -15,7 +15,46 @@
    ========================================================================== */
 (function () {
   "use strict";
-  const API = { ENDPOINT: '/api/generate', PHOTO_ENDPOINT: '/api/photo' };
+  const API = { ENDPOINT: '/api/generate', PHOTO_ENDPOINT: '/api/photo', LOGO_ENDPOINT: '/api/logo' };
+  const HANDOFF_KEY = 'cs-ai-handoff';
+
+  // ---- brief-driven channel routing ------------------------------------------
+  // Which tool owns which channel (matches nav.js). The brief can ask for a
+  // channel in another tool; we hand the brief off and re-generate there.
+  const TOOL_CHANNELS = { messaging: ['sms', 'rcs', 'whatsapp'], notify: ['push', 'inapp', 'game'], gmail: ['gmail'] };
+  const CH_LABEL = { sms: 'SMS', rcs: 'RCS', whatsapp: 'WhatsApp', push: 'Push', inapp: 'In-App', game: 'In-App Gamification', gmail: 'Gmail' };
+  function toolOf(ch) { for (const t in TOOL_CHANNELS) if (TOOL_CHANNELS[t].indexOf(ch) >= 0) return t; return null; }
+  function toolUrl(ch) { const t = toolOf(ch); if (t === 'gmail') return '../gmail-preview-tool/index.html'; if (t === 'notify') return '../notify-preview-tool/index.html?channel=' + ch; return '../messaging-preview-tool/index.html?channel=' + ch; }
+  // Detect an explicitly-requested channel in the brief (order matters: specific first).
+  const CH_WORDS = [
+    [/\b(in[\s-]?app|inapp)\b/, 'inapp'],
+    [/\b(scratch\s*card|spin\s*the\s*wheel|spin\s*wheel|slot\s*machine|mystery\s*box|gamif\w*|reward\s*(game|wheel))\b/, 'game'],
+    [/\b(push|lock[\s-]?screen)\b/, 'push'],
+    [/\b(e-?mail|gmail|inbox|subject\s*line|newsletter)\b/, 'gmail'],
+    [/\b(whats\s?app|wa\b)\b/, 'whatsapp'],
+    [/\brcs\b/, 'rcs'],
+    [/\b(sms|text\s*message|text\s*msg)\b/, 'sms'],
+  ];
+  function detectChannel(brief) { const b = ' ' + (brief || '').toLowerCase() + ' '; for (const [re, ch] of CH_WORDS) if (re.test(b)) return ch; return null; }
+
+  // Real brand logo (Clearbit → favicon), returned as a data: URI. Cached per
+  // domain. Returns a URL or null; on any failure the caller keeps the generated mark.
+  const logoMem = {};
+  async function resolveLogo(domain) {
+    domain = (domain || '').toLowerCase().trim();
+    if (!domain || domain.indexOf('.') < 1) return null;
+    if (domain in logoMem) return logoMem[domain];
+    let cached = null; try { cached = localStorage.getItem('cs-logo:' + domain); } catch (e) {}
+    if (cached != null) return (logoMem[domain] = cached === '0' ? null : cached);
+    try {
+      const r = await fetch(API.LOGO_ENDPOINT + '?domain=' + encodeURIComponent(domain));
+      const d = await r.json().catch(() => ({}));
+      const url = (d && d.ok && d.url) ? d.url : null;
+      logoMem[domain] = url;
+      try { localStorage.setItem('cs-logo:' + domain, url || '0'); } catch (e) {}
+      return url;
+    } catch (e) { return (logoMem[domain] = null); }
+  }
 
   // One live Pexels lookup for a search phrase, at a given orientation. Cached
   // (memory + localStorage) so each phrase is fetched at most once per visitor.
@@ -107,11 +146,18 @@
     document.head.appendChild(el);
   }
 
+  let _autogen = null;   // set by init(); lets a handoff from another tool trigger a run
+
   function init(opts) {
     opts = opts || {};
     const getContext = opts.getContext || (() => ({}));
     const apply = opts.apply || (() => {});
     const toast = opts.toast || (m => {});
+    const channels = opts.channels || null;        // channels this tool owns (for routing)
+    const setChannel = opts.setChannel || null;    // switch to a locally-owned channel
+    const setBrand = opts.setBrand || null;        // set the business/brand name
+    const setIndustry = opts.setIndustry || null;  // switch industry/sub to a label
+    const setLogo = opts.setLogo || null;          // set (url) or clear (null) the brand logo
     const trigger = opts.button;
     if (!trigger) return;
     trigger.innerHTML = '<span style="font-size:14px">✨</span> AI';
@@ -126,7 +172,7 @@
         <textarea class="cs-ai-ta" maxlength="500" placeholder="e.g. ${EXAMPLES[0]}"></textarea>
         <div class="cs-ai-ex">${EXAMPLES.map(e => `<button type="button" data-ex="${e.replace(/"/g, '&quot;')}">${e}</button>`).join('')}</div>
         <button class="cs-ai-go" type="button">Generate message</button>
-        <div class="cs-ai-cap">One message at a time, for the channel you're on now. The AI writes the copy and picks an image — you can tweak everything after.</div>
+        <div class="cs-ai-cap">Name a channel or industry in your brief and the studio switches to it. The AI writes the copy, picks an image, and sets the brand &amp; logo — tweak anything after.</div>
         <div class="cs-ai-status"></div>
       </div>`;
     document.body.appendChild(panel);
@@ -142,39 +188,65 @@
     panel.querySelector('.cs-ai-x').addEventListener('click', closePanel);
     panel.querySelectorAll('.cs-ai-ex button').forEach(b => b.addEventListener('click', () => { ta.value = b.dataset.ex; ta.focus(); }));
 
-    async function generate() {
-      const brief = ta.value.trim();
+    async function generate(briefArg) {
+      const brief = (briefArg != null ? String(briefArg) : ta.value).trim();
       if (!brief) { setStatus('err', 'Write a short brief first.'); ta.focus(); return; }
+      ta.value = brief;
       const ctx = getContext() || {};
+      // --- brief-driven channel routing ---
+      const target = detectChannel(brief);
+      if (target && channels && channels.indexOf(target) < 0) {
+        // the brief asks for a channel this tool doesn't own → hand the brief off
+        // to the tool that does and let it regenerate there.
+        try { sessionStorage.setItem(HANDOFF_KEY, JSON.stringify({ brief })); } catch (e) {}
+        setStatus('ok', 'Switching to ' + (CH_LABEL[target] || target) + '…');
+        location.href = toolUrl(target);
+        return;
+      }
+      const channel = target || ctx.channel;
+      if (target && target !== ctx.channel && setChannel) setChannel(target);  // switch within this tool
+
       go.disabled = true; go.innerHTML = '<span class="cs-ai-spin"></span> Generating…'; setStatus('', '');
       try {
         const r = await fetch(API.ENDPOINT, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channel: ctx.channel, brand: ctx.brand, industry: ctx.industry, brief }),
+          body: JSON.stringify({ channel, brand: ctx.brand, industry: ctx.industry, brief }),
         });
         const data = await r.json().catch(() => ({ ok: false, error: 'Bad response from server' }));
         if (!r.ok || !data.ok) {
-          const msg = (data && data.error) || ('Request failed (' + r.status + ')');
-          const hint = /GEMINI_API_KEY/.test(msg)
-            ? '<br><span style="opacity:.85">Add a free Gemini key in Vercel → Settings → Environment Variables, then redeploy.</span>' : '';
-          setStatus('err', msg + hint);
+          const em = (data && data.error) || ('Request failed (' + r.status + ')');
+          const hint = /GEMINI_API_KEY|GROQ_API_KEY/.test(em)
+            ? '<br><span style="opacity:.85">Add a free key in Vercel → Settings → Environment Variables, then redeploy.</span>' : '';
+          setStatus('err', em + hint);
           return;
         }
-        // the adapter owns image resolution (via ChannelStudioAI.photoFor).
-        // Pass the brief so the adapter can fall back to the message's own subject
-        // (not the industry vertical) when the model omits imageQuery/imageKeyword.
-        await apply(data.message || {}, { brief });
+        const msg = data.message || {};
+        // --- switch the sidebar identity to match what the AI wrote (brief wins) ---
+        if (msg.industry && setIndustry) setIndustry(msg.industry);
+        if (msg.brand && setBrand) setBrand(msg.brand);
+        if (setLogo) setLogo(msg.domain ? await resolveLogo(msg.domain) : null);  // real logo, else generated mark
+        // the adapter owns image resolution (via ChannelStudioAI.photoFor); the
+        // brief lets it fall back to the message's own subject, not the vertical.
+        await apply(msg, { brief });
         toast('✨ AI message generated');
-        setStatus('ok', 'Done — edit any field on the left, or generate again.');
+        const note = (target && target !== ctx.channel) ? ('Switched to ' + (CH_LABEL[target] || target) + '. ') : '';
+        setStatus('ok', note + 'Done — edit any field on the left, or generate again.');
       } catch (e) {
         setStatus('err', 'Could not reach the generator. On the live site make sure the function is deployed.');
       } finally {
         go.disabled = false; go.innerHTML = 'Generate message';
       }
     }
-    go.addEventListener('click', generate);
+    go.addEventListener('click', () => generate());
     ta.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate(); });
+
+    // let a brief handed off from another tool auto-run here
+    _autogen = function (brief) { ta.value = brief || ''; openPanel(); generate(brief); };
+    try {
+      const h = sessionStorage.getItem(HANDOFF_KEY);
+      if (h) { sessionStorage.removeItem(HANDOFF_KEY); const parsed = JSON.parse(h); if (parsed && parsed.brief) setTimeout(() => _autogen(parsed.brief), 220); }
+    } catch (e) {}
   }
 
-  window.ChannelStudioAI = { init, API, resolvePhoto, livePhoto, photoFor };
+  window.ChannelStudioAI = { init, API, resolvePhoto, livePhoto, photoFor, resolveLogo, detectChannel, autogen: b => _autogen && _autogen(b) };
 })();
