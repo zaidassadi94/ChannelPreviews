@@ -41,7 +41,7 @@ recorder.js                     # shared screen recorder + review studio (trim, 
 gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc (used by recorder.js)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
-notify-preview-tool/index.html      # Push + In-App  (notifications tool)
+notify-preview-tool/index.html      # Push + In-App + In-App Gamification  (notifications tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -60,7 +60,9 @@ them in headless Chromium via the global Playwright at
 ## 3. Navigation & channels
 
 - **Channel is a dropdown** in each tool's sidebar: **Gmail · WhatsApp · RCS · SMS ·
-  Push · In-App**. Selecting a channel that lives in the *other* tool navigates there:
+  Push · In-App · In-App Gamification**. `game` (In-App Gamification) is owned by the
+  notify tool, same as Push/In-App (`nav.js` routes `push|inapp|game` → notify). Selecting
+  a channel that lives in the *other* tool navigates there:
   - messaging → pick "Gmail" → `../gmail-preview-tool/index.html`; pick Push/In-App →
     `../notify-preview-tool/index.html?channel=push|inapp`
   - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`;
@@ -287,6 +289,34 @@ prematurely close the script — this bit us once in the gmail tool).
 ---
 
 ## 10. Status & possible next steps
+
+**Done 2026-07-15 (later session — copy + images + gamification):**
+- **In-App Gamification — a new channel** (`game`, owned by the notify tool). Premium dark
+  "reward moment" takeovers in a CRED / Cult-UI aesthetic: **Scratch card, Spin the wheel,
+  Mystery box, Slot machine** (topbar `#gameSeg`). Each fills the phone screen; **Simulate**
+  reveals the win (foil fades, wheel spins to the winning wedge, box lid lifts, reels land
+  on 💎) with confetti, a prize pill and CTA. State = `state.game`; render fns `renderGame`/
+  `gmScratch`/`gmWheel`/`gmBox`/`gmSlots`; `GAME_ARCH` = 4 per-vertical presets; editor group
+  `.chan-game` (+ `#grpWheel` segments, one per line, trailing `*` = winner). The **wheel is
+  drawn as inline SVG** (pie-slice `<path>` + `<text>`) — deliberately *not* conic-gradient,
+  which html2canvas can't rasterise; accent colours are passed as literal hex into the SVG
+  (CSS `var()` won't resolve in a serialised SVG). `game` added to every tool's channel
+  dropdown + `nav.js` routing; AI wired via `applyGameAI`.
+- **Sharper AI copy** — `api/generate.js` `systemPrompt` rebuilt as a senior-copywriter brief
+  (hooks over greetings, tasteful emoji, personalisation, banned-filler list, tone
+  benchmarks) + `CHANNEL_VOICE` per-channel notes. Built-in template scaffolding copy in
+  messaging (`ARCH`) + notify (`PUSH_ARCH`/`INAPP_ARCH`) elevated to match (removed the
+  now-banned "Shop the latest" / "Don't miss out" / "limited time only").
+- **Sharper AI images** — the model now returns a precise `imageQuery` (literal 3-6-word
+  photo phrase) alongside `imageKeyword`. `api/photo.js` searches that phrase, pulls a
+  **15-photo candidate pool**, and scores by alt-text/query overlap + resolution instead of
+  taking the first hit; honours `orientation` (portrait for full/image, landscape else) with
+  an unconstrained retry on empty. `ai.js` `photoFor(kw,w,h,query)` prefers the live query
+  (sharper) over the generic pre-resolved keyword; orientation derived from the slot's w/h.
+  All 4 tools' `applyAI` pass `imageQuery`; the dead `m.imageUrl` reads were removed.
+- **Hygiene:** verified via Playwright — all channels/tools render, no `pageerror`, template
+  counts (6 push/inapp/messaging, 4 game), Simulate reveals, `#gameSeg`/`#grpWheel` visibility,
+  push wallpaper-group logic, inapp all 5 types. `syncAppearance` tightened to `channel==='push'`.
 
 **Done:** **all 6 channels** — SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App
 (notify). Channel Studio design across all three tools, 6 templates × channel ×

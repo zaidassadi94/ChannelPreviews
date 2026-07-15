@@ -21,6 +21,7 @@ Gmail — from the **Channel** dropdown inside the app.
 | **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents |
 | **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
 | **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | MoEngage-style in-app messages over a dimmed app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · 6 templates per vertical |
+| **In-App Gamification** | [`notify-preview-tool/?channel=game`](notify-preview-tool/index.html?channel=game) | Premium dark "reward moment" takeovers (CRED / Cult-UI style) · **Scratch card** · **Spin the wheel** · **Mystery box** · **Slot machine** · headline/sub/prize/CTA · **Simulate** to reveal the win (scratch fades, wheel spins, box opens, reels land) with confetti · editable wheel segments · 4 templates per vertical |
 
 
 ## Real product photos (one-time setup)
@@ -53,8 +54,11 @@ any specific image. Anything not resolved falls back to the illustration.
 Each tool has an **✨ AI** button in the top bar. It opens a prompt box on the right —
 type a short brief ("Diwali sale, 40% off, urgent tone") and it writes **one** on-brand
 message for the channel you're on and drops it straight into the editor, where you can
-tweak every field. It generates the copy and picks an image keyword; the image itself
-uses the same photo/illustration system as everything else.
+tweak every field. The copy is written by a senior-copywriter prompt (clever hooks,
+tasteful emoji, real channel length, banned filler) with per-channel voice notes — and
+it works on **In-App Gamification** too (headline / prize / CTA for the game). For the
+image it emits both a short fallback keyword **and** a precise, literal search phrase
+(`imageQuery`) that drives a sharper Pexels lookup — see "AI photos" below.
 
 **Setup (one-time, no terminal):**
 
@@ -74,13 +78,17 @@ note and nothing else changes. Optional env vars: `GROQ_MODEL` (default
 `llama-3.3-70b-versatile`), `GEMINI_MODEL` (default `gemini-2.0-flash`), `AI_PROVIDER`,
 `CS_ALLOW_ORIGINS`.
 
-**AI photos (optional):** when the AI picks an image subject that isn't in the
-pre-resolved `images.js`, the app can fetch a matching photo live from Pexels through
-`api/photo.js` (another Vercel function, key server-side). To enable it, add a second
-env var `PEXELS_KEY` (your free Pexels key) in Vercel and redeploy. Results are cached
-in the visitor's browser, so each subject is fetched at most once — Pexels is barely
-touched. Without `PEXELS_KEY` set, unresolved subjects just keep their clean
-illustration; nothing breaks.
+**AI photos (optional, sharper):** the AI returns a precise `imageQuery` (e.g. *"festive
+silk saree flatlay"*, *"iced caramel coffee cup"*) describing exactly what should be in
+frame. `api/photo.js` (a Vercel function, key server-side) searches Pexels for that
+phrase, pulls a **pool of candidates**, and picks the best by matching the photo's own
+alt-text to the query and preferring high resolution — instead of blindly taking the
+first hit. It also honours **orientation** (portrait for full-screen / image-only,
+landscape elsewhere). A rich query beats the generic pre-resolved keyword, so AI images
+are much more on-point. To enable it, add `PEXELS_KEY` (your free Pexels key) in Vercel
+and redeploy. Results are cached in the visitor's browser, so each phrase is fetched at
+most once — Pexels is barely touched. Without `PEXELS_KEY` set, subjects fall back to the
+pre-resolved keyword photo, then a clean illustration; nothing breaks.
 
 ## How it works
 
@@ -108,6 +116,10 @@ illustration; nothing breaks.
   collapsed or expanded (big-picture) with a large image; up to 3 action buttons
 - **In-App** — modal, slim banner (top/bottom), full-screen takeover, bottom sheet,
   image-only; headline/body/image, 1–2 CTAs (primary/secondary/text), close button
+- **In-App Gamification** — scratch card, spin the wheel, mystery box, slot machine;
+  premium dark reward takeover with headline/sub/prize/CTA; **Simulate** to play (tap to
+  reveal the prize) with confetti; wheel segments editable (one per line, `*` marks the
+  winning wedge)
 
 Buttons use a simple one-per-line format: `Label | reply|url|call | value`.
 Carousel cards: `imageURL | title | subtitle | buttonLabel | buttonValue` per line.

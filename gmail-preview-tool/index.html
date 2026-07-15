@@ -227,6 +227,7 @@
           <option value="sms">SMS</option>
           <option value="push">Push</option>
           <option value="inapp">In-App</option>
+          <option value="game">In-App Gamification</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
@@ -877,7 +878,7 @@
     const head=esc(m.heading||'');
     const bodyHtml='<p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">'
       + esc(m.bodyText||'').replace(/\n+/g,'</p><p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">') + '</p>';
-    const heroUrl = m.imageUrl || await ChannelStudioAI.photoFor(m.imageKeyword||KW[ctxId()]||'product',600,360);  // always a real pre-resolved photo by default
+    const heroUrl = await ChannelStudioAI.photoFor(m.imageKeyword||KW[ctxId()]||'product',600,360,m.imageQuery);  // rich imageQuery -> sharp live photo, else pre-resolved keyword
     const hero = heroUrl
       ? `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${esc(heroUrl)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div>`
       : '';

@@ -172,6 +172,109 @@
 
   .ia-imgonly{ position:relative; width:100%; max-width:300px; }
   .ia-imgonly img{ width:100%; display:block; aspect-ratio:3/4; object-fit:cover; border-radius:20px; box-shadow:0 22px 55px rgba(8,10,20,.4); background:#e7e9ee; }
+
+  /* ============================================================
+     In-App GAMIFICATION — premium dark "reward" takeovers
+     (CRED / Cult-UI inspired: deep gradients, gold accents,
+     glassmorphism, confetti). Each game is a full-screen surface
+     inside the phone; Simulate reveals the win.
+     ============================================================ */
+  .gm{ position:absolute; inset:0; overflow:hidden; z-index:45; color:#fff;
+    background:radial-gradient(120% 90% at 50% -8%, #23284a 0%, #12142a 42%, #0a0b1a 100%);
+    display:flex; flex-direction:column; --gm-accent:#ffd36e; --gm-accent-2:#f5a623; --gm-ink:#0c0d1a;
+    font-family:var(--font,system-ui,sans-serif); }
+  /* soft brand glows + fine grain */
+  .gm::before{ content:""; position:absolute; width:340px; height:340px; left:-90px; top:-70px; border-radius:50%;
+    background:radial-gradient(circle, color-mix(in srgb, var(--gm-accent) 34%, transparent) 0%, transparent 66%); filter:blur(6px); opacity:.55; pointer-events:none; }
+  .gm::after{ content:""; position:absolute; width:300px; height:300px; right:-100px; bottom:-40px; border-radius:50%;
+    background:radial-gradient(circle, rgba(124,110,246,.4) 0%, transparent 66%); filter:blur(6px); opacity:.5; pointer-events:none; }
+  .gm-top{ position:relative; z-index:3; display:flex; align-items:center; gap:9px; padding:16px 16px 4px; }
+  .gm-top .gm-ic{ width:26px; height:26px; border-radius:8px; object-fit:cover; flex:none; }
+  .gm-top .gm-ic.mono{ display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#fff; }
+  .gm-top .gm-nm{ font-size:12.5px; font-weight:650; letter-spacing:.02em; color:rgba(255,255,255,.92); flex:1; }
+  .gm-x{ width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.8); flex:none; }
+  .gm-x svg{ width:13px; height:13px; }
+  .gm-stage{ position:relative; z-index:3; flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 26px 30px; gap:3px; }
+  .gm-eyebrow{ font-size:10.5px; font-weight:800; letter-spacing:.22em; text-transform:uppercase;
+    background:linear-gradient(90deg,var(--gm-accent),var(--gm-accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:4px; }
+  .gm-hl{ font-size:25px; font-weight:800; letter-spacing:-.5px; line-height:1.12; text-shadow:0 2px 20px rgba(0,0,0,.35); }
+  .gm-sub{ font-size:13px; line-height:1.5; color:rgba(255,255,255,.72); margin-top:6px; max-width:88%; }
+  .gm-play{ position:relative; margin:20px 0 8px; display:flex; align-items:center; justify-content:center; }
+  .gm-hint{ font-size:11px; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.5); margin-top:2px; height:14px; transition:opacity .25s; }
+  .gm.revealed .gm-hint{ opacity:0; }
+  /* the prize banner + CTA appear on reveal */
+  .gm-win{ margin-top:16px; width:100%; max-width:280px; opacity:0; transform:translateY(10px) scale(.96); transition:opacity .4s .15s, transform .4s .15s; pointer-events:none; }
+  .gm.revealed .gm-win{ opacity:1; transform:none; }
+  .gm-prize-pill{ display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px;
+    background:linear-gradient(135deg, color-mix(in srgb, var(--gm-accent) 22%, transparent), rgba(255,255,255,.05));
+    border:1px solid color-mix(in srgb, var(--gm-accent) 55%, transparent); box-shadow:0 8px 24px rgba(0,0,0,.35);
+    font-size:15px; font-weight:800; letter-spacing:-.2px; color:#fff; }
+  .gm-prize-pill .gm-star{ color:var(--gm-accent); }
+  .gm-cta{ display:block; width:100%; margin-top:16px; padding:14px; border:0; border-radius:14px; cursor:default;
+    font-family:inherit; font-size:14.5px; font-weight:750; letter-spacing:-.1px; color:var(--gm-ink);
+    background:linear-gradient(135deg,var(--gm-accent),var(--gm-accent-2)); box-shadow:0 10px 26px color-mix(in srgb, var(--gm-accent) 34%, transparent); }
+  .gm-terms{ font-size:10px; color:rgba(255,255,255,.4); margin-top:10px; }
+
+  /* --- Scratch card --- */
+  .gm-card{ position:relative; width:250px; height:150px; border-radius:20px; overflow:hidden; box-shadow:0 20px 46px rgba(0,0,0,.5); }
+  .gm-card-prize{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    background:radial-gradient(120% 120% at 50% 0%, #2a2f52, #171a30); }
+  .gm-card-prize .ic{ font-size:34px; line-height:1; filter:drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+  .gm-card-prize .val{ font-size:24px; font-weight:850; letter-spacing:-.6px; background:linear-gradient(90deg,var(--gm-accent),var(--gm-accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .gm-card-prize .cap{ font-size:11px; color:rgba(255,255,255,.6); }
+  .gm-foil{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;
+    background:linear-gradient(135deg,#c8ccd8 0%,#eef1f8 22%,#aeb4c6 46%,#e7eaf2 68%,#b9bfd0 100%); color:#5a6072;
+    transition:opacity .5s ease, transform .5s ease; }
+  .gm-foil::after{ content:""; position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.5) 0 2px, transparent 2px 7px); opacity:.35; }
+  .gm-foil .fic{ width:30px; height:30px; opacity:.7; }
+  .gm-foil .ft{ font-size:12px; font-weight:750; letter-spacing:.02em; position:relative; }
+  .gm.revealed .gm-foil{ opacity:0; transform:scale(1.08); }
+
+  /* --- Spin the wheel --- */
+  .gm-wheelwrap{ position:relative; width:246px; height:246px; }
+  .gm-wheel{ position:absolute; inset:0; border-radius:50%; transform:rotate(0deg); transition:transform 4.2s cubic-bezier(.15,.62,.14,1);
+    box-shadow:0 0 0 7px rgba(255,255,255,.08), 0 0 0 12px color-mix(in srgb, var(--gm-accent) 40%, transparent), 0 22px 50px rgba(0,0,0,.55); }
+  .gm.revealed .gm-wheel{ transform:rotate(var(--spin,1440deg)); }
+  .gm-wheel svg{ display:block; border-radius:50%; }
+  .gm-pointer{ position:absolute; top:-6px; left:50%; transform:translateX(-50%); z-index:4; width:0; height:0;
+    border-left:11px solid transparent; border-right:11px solid transparent; border-top:20px solid var(--gm-accent); filter:drop-shadow(0 3px 5px rgba(0,0,0,.5)); }
+  .gm-hub{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3; width:60px; height:60px; border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #fff 0%, var(--gm-accent) 46%, var(--gm-accent-2) 100%); color:var(--gm-ink);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:850; letter-spacing:.03em;
+    box-shadow:0 6px 16px rgba(0,0,0,.5), inset 0 2px 3px rgba(255,255,255,.6); }
+
+  /* --- Mystery box --- */
+  .gm-box{ position:relative; width:160px; height:150px; }
+  .gm-box-glow{ position:absolute; left:50%; top:52%; width:220px; height:220px; transform:translate(-50%,-50%) scale(.5); border-radius:50%;
+    background:radial-gradient(circle, color-mix(in srgb, var(--gm-accent) 55%, transparent) 0%, transparent 62%); opacity:0; transition:opacity .5s, transform .6s; }
+  .gm.revealed .gm-box-glow{ opacity:.9; transform:translate(-50%,-50%) scale(1); }
+  .gm-box-b{ position:absolute; left:20px; right:20px; bottom:0; height:92px; border-radius:8px 8px 12px 12px;
+    background:linear-gradient(135deg,#3b2f6e,#2a2150); box-shadow:inset 0 -8px 18px rgba(0,0,0,.35), 0 16px 34px rgba(0,0,0,.5); }
+  .gm-box-b::after{ content:""; position:absolute; left:50%; top:0; bottom:0; width:22px; transform:translateX(-50%); background:linear-gradient(var(--gm-accent),var(--gm-accent-2)); opacity:.9; }
+  .gm-box-lid{ position:absolute; left:8px; right:8px; top:34px; height:34px; border-radius:8px; z-index:2;
+    background:linear-gradient(135deg,#4a3c85,#342a63); box-shadow:0 8px 16px rgba(0,0,0,.45); transition:transform .55s cubic-bezier(.3,.9,.3,1.4), opacity .55s; }
+  .gm-box-lid::after{ content:""; position:absolute; left:50%; top:-13px; width:26px; height:26px; transform:translateX(-50%) rotate(45deg); background:linear-gradient(135deg,var(--gm-accent),var(--gm-accent-2)); border-radius:5px; }
+  .gm-box-pop{ position:absolute; left:50%; top:24px; transform:translate(-50%,10px) scale(.3); z-index:1; font-size:40px; opacity:0; transition:opacity .5s .15s, transform .6s .15s cubic-bezier(.3,.9,.3,1.5); }
+  .gm.revealed .gm-box-lid{ transform:translateY(-46px) rotate(-14deg); opacity:0; }
+  .gm.revealed .gm-box-pop{ opacity:1; transform:translate(-50%,-32px) scale(1); }
+
+  /* --- Slot machine --- */
+  .gm-slots{ display:flex; gap:9px; padding:16px; border-radius:20px; background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.14); box-shadow:0 18px 42px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14); }
+  .gm-reel{ width:60px; height:74px; border-radius:12px; overflow:hidden; background:radial-gradient(120% 120% at 50% 0%, #22263f, #12142a);
+    box-shadow:inset 0 6px 12px rgba(0,0,0,.5), inset 0 -6px 12px rgba(0,0,0,.5); position:relative; }
+  .gm-reel::after{ content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); border-radius:12px; }
+  .gm-strip{ display:flex; flex-direction:column; align-items:center; transform:translateY(var(--rest,0)); }
+  .gm.revealed .gm-strip{ transition:transform 1.15s cubic-bezier(.16,.7,.2,1); transform:translateY(var(--stop,0)); }
+  .gm.revealed .gm-reel:nth-child(2) .gm-strip{ transition-duration:1.45s; }
+  .gm.revealed .gm-reel:nth-child(3) .gm-strip{ transition-duration:1.75s; }
+  .gm-strip span{ height:74px; display:flex; align-items:center; justify-content:center; font-size:36px; line-height:1; }
+
+  /* --- confetti (shown on reveal) --- */
+  .gm-confetti{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; opacity:0; }
+  .gm.revealed .gm-confetti{ opacity:1; }
+  .gm-confetti i{ position:absolute; top:-14px; width:7px; height:11px; border-radius:1px; opacity:.95; animation:gm-fall linear forwards; }
+  @keyframes gm-fall{ 0%{ transform:translateY(-14px) rotate(0); opacity:1; } 100%{ transform:translateY(720px) rotate(540deg); opacity:.9; } }
 </style>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
@@ -193,6 +296,7 @@
           <option value="sms">SMS</option>
           <option value="push">Push</option>
           <option value="inapp">In-App</option>
+          <option value="game">In-App Gamification</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
@@ -278,6 +382,28 @@
         <div class="hint">The message shows over a generic app screen (dimmed). The app name above sets the backdrop's title.</div>
       </div>
     </div>
+
+    <div class="group collapsed chan-game" data-group style="display:none;">
+      <button class="ghead" data-head>Reward content <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">A premium <b>reward moment</b> — pick a game above (Scratch · Wheel · Box · Slots). Hit <b>Simulate</b> and tap the game to reveal the prize.</div>
+        <label class="f"><span>Eyebrow (small label)</span><input type="text" id="gmEyebrow"></label>
+        <label class="f"><span>Headline</span><input type="text" id="gmHl"></label>
+        <label class="f"><span>Sub-text</span><textarea id="gmSub"></textarea></label>
+        <label class="f"><span>Prize (the reward)</span><input type="text" id="gmPrize" placeholder="e.g. 20% OFF"></label>
+        <label class="f"><span>Prize caption</span><input type="text" id="gmPrizeCap" placeholder="e.g. on your next order"></label>
+        <label class="f"><span>CTA button</span><input type="text" id="gmCta" placeholder="e.g. Claim reward"></label>
+        <div class="toggle-row"><span>Close (✕) button</span><label class="switch"><input type="checkbox" id="gmClose" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <div class="group collapsed chan-game" data-group id="grpWheel" style="display:none;">
+      <button class="ghead" data-head>Wheel segments <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">One prize per line (5–8 works best). It spins to the segment marked <b>◆ winner</b> — add <code>*</code> to the end of a line to make it the winner.</div>
+        <textarea id="gmSegments" class="mono" style="min-height:120px;"></textarea>
+      </div>
+    </div>
   </aside>
 
   <!-- ============ STAGE ============ -->
@@ -289,6 +415,7 @@
       </div>
       <div class="seg" id="surfaceSeg"></div>
       <div class="seg" id="inappSeg" style="display:none;"></div>
+      <div class="seg" id="gameSeg" style="display:none;"></div>
       <span class="topcap" id="chanCap"></span>
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
@@ -336,6 +463,7 @@
     appLogo:null, expanded:true, wallpaper:'aurora',
     push:{ appName:'Nova', title:'', body:'', image:'', actions:'', time:'now' },
     inapp:{ type:'modal', image:'', headline:'', body:'', ctas:'', close:true, bannerPos:'top' },
+    game:{ type:'scratch', eyebrow:'Exclusive reward', headline:'', sub:'', prize:'', prizeCap:'', cta:'', segments:'', close:true },
   };
   const appName=()=>state.push.appName;
 
@@ -477,6 +605,84 @@
     return `<div style="position:absolute;inset:0;--brand:${brand}">${body}</div>`;
   }
 
+  // ======================================================================
+  //  IN-APP GAMIFICATION — premium reward moments (scratch / wheel / box / slots)
+  // ======================================================================
+  const GM_TYPES=[['scratch','Scratch'],['wheel','Wheel'],['box','Box'],['slots','Slots']];
+  const GM_ACCENTS={ scratch:['#ffd36e','#f5a623'], wheel:['#b79cff','#7c6ef6'], box:['#6ee7c7','#22b99a'], slots:['#ff9ec7','#f472b6'] };
+
+  // segments: one per line; a trailing "*" marks the winning wedge.
+  function gmSegList(){
+    let rows=(state.game.segments||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>({ label:s.replace(/\s*\*+$/,'').trim(), win:/\*+$/.test(s) }));
+    if(!rows.length) rows=[{label:'5% off',win:false},{label:'Free gift',win:true},{label:'2× points',win:false},{label:'$10 off',win:false},{label:'Try again',win:false},{label:'15% off',win:false}];
+    rows=rows.slice(0,8);
+    if(!rows.some(r=>r.win)) rows[0].win=true; else { let seen=false; rows.forEach(r=>{ if(r.win&&seen) r.win=false; if(r.win) seen=true; }); }  // exactly one winner
+    return rows;
+  }
+  function gmConfetti(){
+    const cols=['var(--gm-accent)','#ffffff','#7c6ef6','#f472b6','#34d399'];
+    let out='';
+    for(let i=0;i<26;i++){ const left=((i*11)%100); const dur=(2.4+(i%6)*0.35).toFixed(2); const delay=((i%9)*0.11).toFixed(2); const col=cols[i%cols.length]; const w=5+(i%3);
+      out+=`<i style="left:${left}%; background:${col}; width:${w}px; height:${w+4}px; animation-duration:${dur}s; animation-delay:${delay}s;"></i>`; }
+    return `<div class="gm-confetti">${out}</div>`;
+  }
+  const gmTap=on=> (state.play&&on)?' clickable':'';
+  const gmAttr=()=> state.play?' data-gm="1"':'';
+
+  function gmScratch(){
+    const g=state.game;
+    return `<div class="gm-card${gmTap(true)}"${gmAttr()}>
+      <div class="gm-card-prize"><div class="ic">🎁</div><div class="val">${esc(g.prize||'20% OFF')}</div>${g.prizeCap?`<div class="cap">${esc(g.prizeCap)}</div>`:''}</div>
+      <div class="gm-foil"><svg class="fic" viewBox="0 0 24 24" fill="none"><path d="M12 3c.4 2.6 1 3.2 3.6 3.6C13 7 12.4 7.6 12 10.2 11.6 7.6 11 7 8.4 6.6 11 6.2 11.6 5.6 12 3zM6 13c.3 1.7.7 2.1 2.4 2.4C6.7 15.7 6.3 16.1 6 17.8 5.7 16.1 5.3 15.7 3.6 15.4 5.3 15.1 5.7 14.7 6 13zM18 12c.2 1.3.5 1.6 1.8 1.8-1.3.2-1.6.5-1.8 1.8-.2-1.3-.5-1.6-1.8-1.8 1.3-.2 1.6-.5 1.8-1.8z" fill="currentColor"/></svg><span class="ft">Scratch to reveal</span></div>
+    </div>`;
+  }
+  function gmWheel(acc){
+    const segs=gmSegList(); const N=segs.length, a=360/N, R=100, cx=100, cy=100;
+    const P=(ang,r)=>[ (cx+r*Math.sin(ang*Math.PI/180)), (cy-r*Math.cos(ang*Math.PI/180)) ];
+    let paths='', labels='', winMid=0;
+    segs.forEach((s,i)=>{
+      const t1=i*a, t2=(i+1)*a, mid=(i+0.5)*a;
+      const [x1,y1]=P(t1,R), [x2,y2]=P(t2,R);
+      const fill=s.win?'url(#gmWin)':(i%2?'#1a1f3a':'#131735');
+      paths+=`<path d="M${cx} ${cy} L${x1.toFixed(2)} ${y1.toFixed(2)} A${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z" fill="${fill}" stroke="rgba(255,255,255,.09)" stroke-width="1"/>`;
+      const [lx,ly]=P(mid,60); let rot=mid; if(mid>90&&mid<270) rot=mid+180;
+      const lab=s.label.length>11?s.label.slice(0,11):s.label;
+      labels+=`<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" fill="${s.win?'#12142a':'#ffffff'}" font-size="8.4" font-weight="800" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rot.toFixed(1)} ${lx.toFixed(2)} ${ly.toFixed(2)})">${esc(lab)}</text>`;
+      if(s.win) winMid=mid;
+    });
+    const spin=(360*5 - winMid).toFixed(1);
+    const svg=`<svg viewBox="0 0 200 200" width="100%" height="100%"><defs><linearGradient id="gmWin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${acc[0]}"/><stop offset="1" stop-color="${acc[1]}"/></linearGradient></defs>${paths}${labels}</svg>`;
+    return `<div class="gm-wheelwrap${gmTap(true)}"${gmAttr()}><div class="gm-pointer"></div><div class="gm-wheel" style="--spin:${spin}deg">${svg}</div><div class="gm-hub">SPIN</div></div>`;
+  }
+  function gmBox(){
+    return `<div class="gm-box${gmTap(true)}"${gmAttr()}><div class="gm-box-glow"></div><div class="gm-box-pop">🎉</div><div class="gm-box-b"></div><div class="gm-box-lid"></div></div>`;
+  }
+  function gmSlots(){
+    const jack='💎', fill=['🍒','7️⃣','⭐','🔔','🍋','🪙'];
+    const reel=ri=>{ const syms=[]; for(let i=0;i<8;i++) syms.push(fill[(i+ri*3)%fill.length]); syms.push(jack);
+      const strip=syms.map(s=>`<span>${s}</span>`).join(''); return `<div class="gm-reel"><div class="gm-strip" style="--rest:${-74}px; --stop:${-8*74}px">${strip}</div></div>`; };
+    return `<div class="gm-slots${gmTap(true)}"${gmAttr()}>${reel(0)}${reel(1)}${reel(2)}</div>`;
+  }
+  function renderGame(){
+    const g=state.game, t=g.type, acc=GM_ACCENTS[t]||GM_ACCENTS.scratch;
+    const el = t==='wheel'?gmWheel(acc) : t==='box'?gmBox() : t==='slots'?gmSlots() : gmScratch();
+    const hint = t==='wheel'?'Tap SPIN to play' : t==='box'?'Tap the box to open' : t==='slots'?'Tap to spin' : 'Scratch the card';
+    const pill = `<div class="gm-prize-pill"><span class="gm-star">★</span> ${esc(g.prize||'You won!')}${g.prizeCap?` · ${esc(g.prizeCap)}`:''}</div>`;
+    const x = g.close?`<div class="gm-x">${IC.clear}</div>`:'';
+    return `<div class="gm" style="--gm-accent:${acc[0]}; --gm-accent-2:${acc[1]}">
+      <div class="gm-top">${appIcon('gm-ic')}<span class="gm-nm">${esc(appName())}</span>${x}</div>
+      <div class="gm-stage">
+        ${g.eyebrow?`<div class="gm-eyebrow">${esc(g.eyebrow)}</div>`:''}
+        ${g.headline?`<div class="gm-hl">${fmtLite(g.headline)}</div>`:''}
+        ${g.sub?`<div class="gm-sub">${esc(g.sub)}</div>`:''}
+        <div class="gm-play">${el}</div>
+        <div class="gm-hint">${esc(hint)}</div>
+        <div class="gm-win">${pill}${g.cta?`<button class="gm-cta">${esc(g.cta)}</button>`:''}<div class="gm-terms">T&Cs apply</div></div>
+      </div>
+      ${gmConfetti()}
+    </div>`;
+  }
+
   const stage=$('#stage');
   stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
 
@@ -488,34 +694,50 @@
     const android=state.device==='android';
     const head=android?`<div class="punch"></div>`:`<div class="notch"></div>`;
     stage.className='stage'+(state.play?' sim-on':'');
-    const badge=state.play?`<div class="sim-badge">● Simulate — tap the buttons</div>`:'';
-    const inner=state.channel==='inapp'?renderInApp():renderPush();
+    const badge=state.play?`<div class="sim-badge">● Simulate — tap ${state.channel==='game'?'to play':'the buttons'}</div>`:'';
+    const inner=state.channel==='game'?renderGame():(state.channel==='inapp'?renderInApp():renderPush());
     let cap=document.getElementById('capture');
     if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
     cap.className='phone'+(android?' android':'');
     cap.innerHTML=`${head}${badge}<div class="screen">${inner}</div>`;
-    bindOpts(); fitDevice();
+    bindOpts(); bindGame(); fitDevice();
   }
   function bindOpts(){ if(!state.play) return; stage.querySelectorAll('[data-opt]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); const r=el.dataset.reply||''; toast('▸ '+(r?('“'+r+'” → opens '+state.push.appName):('Opens '+state.push.appName))); })); }
+  // Gamification: tapping the game reveals the prize (scratch fades, wheel spins,
+  // box opens, reels land) via the .revealed class, then a celebratory toast.
+  function bindGame(){ if(!state.play||state.channel!=='game') return; const gm=stage.querySelector('.gm'); if(!gm) return;
+    const reveal=e=>{ if(e) e.stopPropagation(); if(gm.classList.contains('revealed')) return; gm.classList.add('revealed'); toast('🎉 '+(state.game.prize||'You won!')+' — '+appName()); };
+    stage.querySelectorAll('[data-gm]').forEach(el=>el.addEventListener('click',reveal)); }
 
   // ======================================================================
   //  TEMPLATES
   // ======================================================================
   const PUSH_ARCH=[
-    {name:'Promotional offer',kind:'Promotional',icon:'🏷️',desc:'Big image + CTA',build:p=>({title:`${p.emoji} ${p.offer}`,body:`Shop the latest at ${p.brand} — for a limited time only.`,image:photo(p.kw,600,340,3),actions:'Shop now\nRemind me',expanded:true})},
+    {name:'Promotional offer',kind:'Promotional',icon:'🏷️',desc:'Big image + CTA',build:p=>({title:`${p.emoji} ${p.offer}`,body:`${p.brand} just dropped something good — tap to see it first. 👀`,image:photo(p.kw,600,340,3),actions:'Shop the drop\nRemind me',expanded:true})},
     {name:'Order update',kind:'Transactional',icon:'✅',desc:'Confirmation / delivery',build:p=>{ const c=ecx(); return {title:`${cap(c.noun)} #${p.orderId} ${c.ship?'is on the way':'confirmed'}`,body:c.ship?'Arriving today by 6 PM. Tap to track it live.':c.line,image:'',actions:c.ship?'Track order':c.cta,expanded:true}; }},
     {name:'Win-back',kind:'Flow',icon:'💛',desc:'Re-engagement + choices',build:p=>({title:`We miss you at ${p.brand}`,body:oneLine(p.flow.intro),image:photo(p.kw,600,340,7),actions:p.flow.opts.slice(0,3).map(o=>o[0]).join('\n'),expanded:true})},
     {name:'Reminder',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>({title:`Reminder from ${p.brand}`,body:cap(p.reminder),image:'',actions:`Open ${p.brand}`,expanded:false})},
-    {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + image',build:p=>({title:`⏰ Last chance — ${p.offer}`,body:`Ends at midnight. Don't miss out on ${p.brand}.`,image:photo(p.kw,600,340,5),actions:'Shop now',expanded:true})},
+    {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + image',build:p=>({title:`⏰ Gone at midnight — ${p.offer}`,body:`This is your reminder. After tonight, it's back to full price at ${p.brand}.`,image:photo(p.kw,600,340,5),actions:'Shop the sale',expanded:true})},
     {name:'Feedback',kind:'Flow',icon:'⭐',desc:'Rating buttons',build:p=>({title:'How did we do?',body:p.feedbackQ||`Tell us how ${p.brand} did — it takes 10 seconds.`,image:'',actions:'😍 Great\n🙂 Okay\n😞 Poor',expanded:true})},
   ];
   const INAPP_ARCH=[
-    {name:'Welcome modal',kind:'Promotional',icon:'👋',desc:'Center modal + image',build:p=>({type:'modal',image:photo(p.kw,600,340,2),headline:`Welcome to ${p.brand} 🎉`,body:`Here's ${p.offer} to get you started. Jump in and take a look.`,ctas:'Get started | primary\nMaybe later | text',close:true})},
-    {name:'Offer full-screen',kind:'Promotional',icon:'🖼️',desc:'Hero image takeover',build:p=>({type:'full',image:photo(p.kw,700,900,3),headline:p.offer,body:`Only at ${p.brand} — for a limited time.`,ctas:'Shop now | primary\nNo thanks | text',close:true})},
+    {name:'Welcome modal',kind:'Promotional',icon:'👋',desc:'Center modal + image',build:p=>({type:'modal',image:photo(p.kw,600,340,2),headline:`Welcome in 🎉`,body:`${p.offer} is sitting in your account — think of it as our hello from ${p.brand}.`,ctas:'Use my welcome gift | primary\nMaybe later | text',close:true})},
+    {name:'Offer full-screen',kind:'Promotional',icon:'🖼️',desc:'Hero image takeover',build:p=>({type:'full',image:photo(p.kw,700,900,3),headline:p.offer,body:`${p.brand}, and only for a moment. Make it yours before it's gone.`,ctas:'Shop the drop | primary\nNo thanks | text',close:true})},
     {name:'Rate us',kind:'Flow',icon:'⭐',desc:'Modal, no image',build:p=>({type:'modal',image:'',headline:`Enjoying ${p.brand}?`,body:p.feedbackQ||'Your feedback helps us make things better.',ctas:'Rate us ★ | primary\nNot now | text',close:true})},
     {name:'Feature banner',kind:'Transactional',icon:'📣',desc:'Slim top banner',build:p=>({type:'banner',bannerPos:'top',image:'',headline:cap(p.reminder),body:`Tap to open ${p.brand}.`,ctas:'View | primary',close:true})},
     {name:'Cart bottom-sheet',kind:'Flow',icon:'🛒',desc:'Bottom sheet + image',build:p=>({type:'sheet',image:photo(p.kw,600,340,7),headline:'You left something behind',body:oneLine(p.flow.intro),ctas:'Checkout | primary\nKeep browsing | secondary',close:true})},
     {name:'Promo image-only',kind:'Promotional',icon:'✨',desc:'Full creative, tap to act',build:p=>({type:'image',image:photo(p.kw,600,760,5),headline:'',body:'',ctas:'',close:true})},
+  ];
+  // Gamified reward moments — one clever preset per game, brand-woven from the pack.
+  const GAME_ARCH=[
+    {name:'Scratch card',type:'scratch',kind:'Flow',icon:'🎟️',desc:'Scratch the foil to reveal a prize',
+      build:p=>({ eyebrow:'A card with your name on it', headline:'Scratch. Reveal. Smile.', sub:`We tucked a reward under the foil — see what ${p.brand} saved for you.`, prize:'20% OFF', prizeCap:p.code?`use ${p.code}`:'your next order', cta:'Reveal my reward' })},
+    {name:'Spin the wheel',type:'wheel',kind:'Flow',icon:'🎡',desc:'Give the wheel a spin',
+      build:p=>({ eyebrow:'Your daily spin is ready', headline:'One spin. You always win.', sub:'Every wedge is a reward — the only question is which one lands.', prize:'Free delivery', prizeCap:'unlocked for you', segments:'5% off\nFree delivery *\n2× points\n$10 off\nMystery gift\n15% off', cta:'Spin the wheel' })},
+    {name:'Mystery box',type:'box',kind:'Flow',icon:'🎁',desc:'Tap to unwrap your gift',
+      build:p=>({ eyebrow:'Something just landed for you', headline:'A little gift, just because', sub:`Tap to unwrap — no catch, all yours from ${p.brand}.`, prize:'500 points', prizeCap:'added instantly', cta:'Open my gift' })},
+    {name:'Slot machine',type:'slots',kind:'Flow',icon:'🎰',desc:'Match three to hit the jackpot',
+      build:p=>({ eyebrow:'Feeling lucky today?', headline:'Line up three. Win big.', sub:'One pull — match the reels and the jackpot is yours.', prize:'$50 off', prizeCap:'jackpot', cta:'Pull to win' })},
   ];
   function templatesPush(){
     const base=PACKS[ctxId()]; if(!base) return [];
@@ -527,7 +749,12 @@
     const p=Object.assign({}, base, base.push||{}, {kw:KW[ctxId()]||'product'});  // push-flavoured pack view
     return INAPP_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>Object.assign({appName:p.brand}, a.build(p)) }));
   }
-  function templatesFor(){ return state.channel==='inapp'?templatesInApp():templatesPush(); }
+  function templatesGame(){
+    const base=PACKS[ctxId()]; if(!base) return [];
+    const p=Object.assign({}, base, base.push||{}, {kw:KW[ctxId()]||'product'});
+    return GAME_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:'Flow', flow:true, icon:a.icon, build:()=>Object.assign({appName:p.brand, type:a.type}, a.build(p)) }));
+  }
+  function templatesFor(){ if(state.channel==='game') return templatesGame(); return state.channel==='inapp'?templatesInApp():templatesPush(); }
   function renderTemplates(){
     const list=templatesFor(); const g=$('#tplGrid');
     if(!list.length){ g.innerHTML=`<div class="tpl-empty">No preset for this combo — start blank below.</div>`; return; }
@@ -537,6 +764,15 @@
   function applyTemplate(t){
     const f=t.build();
     if(f.appName!=null) state.push.appName=f.appName; // shared app identity
+    if(state.channel==='game'){
+      const g=state.game;
+      g.type=f.type||g.type||'scratch';
+      g.eyebrow=f.eyebrow!=null?f.eyebrow:(g.eyebrow||'Exclusive reward');
+      g.headline=f.headline||''; g.sub=f.sub||''; g.prize=f.prize||''; g.prizeCap=f.prizeCap||'';
+      g.cta=f.cta||''; g.close=f.close!=null?f.close:true; if(f.segments!=null) g.segments=f.segments;
+      fillGameSeg(); syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to play':''));
+      return;
+    }
     if(state.channel==='inapp'){
       const a=state.inapp;
       a.type=f.type||'modal'; a.image=f.image||''; a.headline=f.headline||''; a.body=f.body||'';
@@ -603,6 +839,7 @@
   // ---------- editor sync ----------
   function syncEditor(){
     $('#appName').value=appName()||'';
+    if(state.channel==='game'){ syncGame(); return; }
     if(state.channel==='inapp'){ syncInApp(); return; }
     $('#pnTitle').value=state.push.title||'';
     $('#pnBody').value=state.push.body||'';
@@ -629,6 +866,21 @@
     $('#grpLayout').style.display = ia?'':'none';
     $('#iaPosWrap').style.display = (t==='banner')?'':'none';
   }
+  // ---------- gamification editor ----------
+  function syncGame(){
+    const g=state.game;
+    $('#gmEyebrow').value=g.eyebrow||'';
+    $('#gmHl').value=g.headline||'';
+    $('#gmSub').value=g.sub||'';
+    $('#gmPrize').value=g.prize||'';
+    $('#gmPrizeCap').value=g.prizeCap||'';
+    $('#gmCta').value=g.cta||'';
+    $('#gmClose').checked=!!g.close;
+    $('#gmSegments').value=g.segments||'';
+    applyGameFieldVis();
+  }
+  function applyGameFieldVis(){ $('#grpWheel').style.display = (state.channel==='game'&&state.game.type==='wheel')?'':'none'; }
+  function fillGameSeg(){ const seg=$('#gameSeg'); seg.innerHTML=GM_TYPES.map(o=>`<button data-gmtype="${o[0]}" class="${state.game.type===o[0]?'on':''}">${o[1]}</button>`).join(''); seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.game.type=b.dataset.gmtype; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); applyGameFieldVis(); render(); })); }
 
   // ---------- industries ----------
   function fillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
@@ -646,15 +898,18 @@
     seg.innerHTML=opts.map(o=>`<button data-surface="${o[0]}" class="${state.surface===o[0]?'on':''}">${o[1]}</button>`).join('');
     seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.surface=b.dataset.surface; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); syncAppearance(); render(); }));
   }
-  function syncAppearance(){ const wp = state.channel!=='inapp' && ((state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade')); $('#grpAppearance').style.display = wp?'':'none'; }
+  function syncAppearance(){ const wp = state.channel==='push' && ((state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade')); $('#grpAppearance').style.display = wp?'':'none'; }
   const IATYPES=[['modal','Modal'],['banner','Banner'],['full','Full'],['sheet','Sheet'],['image','Image']];
   function fillInappSeg(){ const seg=$('#inappSeg'); seg.innerHTML=IATYPES.map(o=>`<button data-iatype="${o[0]}" class="${state.inapp.type===o[0]?'on':''}">${o[1]}</button>`).join(''); seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.type=b.dataset.iatype; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); applyInappFieldVis(); render(); })); }
   function setChannelGroups(){
-    const ia=state.channel==='inapp';
-    document.querySelectorAll('.chan-push').forEach(g=>{ g.style.display = ia?'none':''; });
-    document.querySelectorAll('.chan-inapp').forEach(g=>{ g.style.display = ia?'':'none'; });
-    $('#surfaceSeg').style.display = ia?'none':'flex';
-    $('#inappSeg').style.display = ia?'flex':'none';
+    const ch=state.channel;
+    document.querySelectorAll('.chan-push').forEach(g=>{ g.style.display = ch==='push'?'':'none'; });
+    document.querySelectorAll('.chan-inapp').forEach(g=>{ g.style.display = ch==='inapp'?'':'none'; });
+    document.querySelectorAll('.chan-game').forEach(g=>{ g.style.display = ch==='game'?'':'none'; });
+    $('#surfaceSeg').style.display = ch==='push'?'flex':'none';
+    $('#inappSeg').style.display = ch==='inapp'?'flex':'none';
+    $('#gameSeg').style.display = ch==='game'?'flex':'none';
+    if(ch==='game') applyGameFieldVis();
     syncAppearance();
   }
 
@@ -676,6 +931,14 @@
   $('#iaHl').addEventListener('input',e=>{ state.inapp.headline=e.target.value; render(); });
   $('#iaBd').addEventListener('input',e=>{ state.inapp.body=e.target.value; render(); });
   $('#iaClose').addEventListener('change',e=>{ state.inapp.close=e.target.checked; render(); });
+  $('#gmEyebrow').addEventListener('input',e=>{ state.game.eyebrow=e.target.value; render(); });
+  $('#gmHl').addEventListener('input',e=>{ state.game.headline=e.target.value; render(); });
+  $('#gmSub').addEventListener('input',e=>{ state.game.sub=e.target.value; render(); });
+  $('#gmPrize').addEventListener('input',e=>{ state.game.prize=e.target.value; render(); });
+  $('#gmPrizeCap').addEventListener('input',e=>{ state.game.prizeCap=e.target.value; render(); });
+  $('#gmCta').addEventListener('input',e=>{ state.game.cta=e.target.value; render(); });
+  $('#gmSegments').addEventListener('input',e=>{ state.game.segments=e.target.value; render(); });
+  $('#gmClose').addEventListener('change',e=>{ state.game.close=e.target.checked; render(); });
   document.querySelectorAll('#iaPosSeg button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.bannerPos=b.dataset.pos; document.querySelectorAll('#iaPosSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); render(); }));
 
   (function(){ const drop=$('#iconDrop'),inp=$('#iconInput');
@@ -698,15 +961,16 @@
   function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.push.appName=ind.biz; } }
   function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
   function onChannelChange(){
-    const ia=state.channel==='inapp';
-    $('#chanCap').textContent = ia?'In-App messages':'Push notifications';
-    setChannelGroups(); if(ia) fillInappSeg();
+    const ch=state.channel;
+    $('#chanCap').textContent = ch==='game'?'In-App gamification':(ch==='inapp'?'In-App messages':'Push notifications');
+    setChannelGroups(); if(ch==='inapp') fillInappSeg(); if(ch==='game') fillGameSeg();
     renderTemplates(); const list=templatesFor();
     if(list.length){ applyTemplate(list[0]); } else { syncEditor(); render(); }
   }
 
   $('#clearMsgs').addEventListener('click',()=>{
-    if(state.channel==='inapp'){ state.inapp={ type:state.inapp.type, image:'', headline:'New message', body:'Your text here.', ctas:'Got it | primary', close:true, bannerPos:state.inapp.bannerPos }; fillInappSeg(); }
+    if(state.channel==='game'){ state.game={ type:state.game.type, eyebrow:'Exclusive reward', headline:'You’ve unlocked a reward', sub:'Play to reveal what’s inside.', prize:'20% OFF', prizeCap:'your next order', cta:'Claim reward', segments:'5% off\nFree gift *\n2× points\n$10 off\nTry again\n15% off', close:true }; fillGameSeg(); }
+    else if(state.channel==='inapp'){ state.inapp={ type:state.inapp.type, image:'', headline:'New message', body:'Your text here.', ctas:'Got it | primary', close:true, bannerPos:state.inapp.bannerPos }; fillInappSeg(); }
     else { state.push={ appName:state.push.appName, title:'New notification', body:'Your message here.', image:'', actions:'', time:'now' }; }
     syncEditor(); render();
   });
@@ -716,33 +980,45 @@
 
   let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
   async function capture(){ return captureDevice({ background:'#eef0f5', toast }); }
-  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); const nm=state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}`; a.download=`${nm}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
+  const exportName=()=> state.channel==='game'?`game-${state.industry}-${state.game.type}`:(state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}`);
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`${exportName()}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
 
-  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=> state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}` });
+  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:exportName });
 
   // ---------- AI generate: map one schema-locked message into push / in-app ----------
   async function applyAI(m){
-    const dkw=fallback=>m.imageKeyword||KW[ctxId()]||fallback||'product';  // vertical keyword default -> real pre-resolved photo
+    const dkw=fallback=>m.imageKeyword||KW[ctxId()]||fallback||'product';  // short keyword -> illustration / pre-resolved fallback
+    if(state.channel==='game'){ await applyGameAI(m); return; }
     if(state.channel==='inapp'){
       const types=['modal','banner','full','sheet','image'];
       const t=types.includes(m.type)?m.type:'modal';
       const ctas=Array.isArray(m.ctas)?m.ctas.map(c=>`${c.label||''} | ${['primary','secondary','text'].includes(c.style)?c.style:'primary'}`).filter(x=>x.split('|')[0].trim()).join('\n'):'';
       const wantsImg=['modal','full','sheet','image'].includes(t);
-      const iaImg=wantsImg?(m.imageUrl||await ChannelStudioAI.photoFor(dkw(m.headline),600,760)):'';
+      const portrait=(t==='full'||t==='image');  // these fill the screen -> want a portrait photo
+      const dw=portrait?700:600, dh=portrait?900:340;
+      const iaImg=wantsImg?await ChannelStudioAI.photoFor(dkw(m.headline),dw,dh,m.imageQuery):'';
       applyTemplate({ build:()=>({ type:t, image:iaImg, headline:m.headline||'', body:m.body||'', ctas, close:m.close!=null?m.close:true }), flow:false });
     } else {
       const actions=Array.isArray(m.actions)?m.actions.filter(Boolean).join('\n'):'';
-      const pnImg=m.imageUrl||await ChannelStudioAI.photoFor(dkw(m.title),600,340);
+      const pnImg=await ChannelStudioAI.photoFor(dkw(m.title),600,340,m.imageQuery);
       applyTemplate({ build:()=>({ title:m.title||'', body:m.body||'', image:pnImg, actions, expanded:pnImg?true:(m.expanded!=null?m.expanded:true) }), flow:false });
     }
+  }
+  // AI copy for a gamified reward moment (headline / sub / prize / cta [+ wheel segments]).
+  async function applyGameAI(m){
+    const types=['scratch','wheel','box','slots'];
+    const t=types.includes(m.type)?m.type:(state.game.type||'scratch');
+    let segs=state.game.segments;
+    if(Array.isArray(m.segments)&&m.segments.length){ const arr=m.segments.map(s=>String(s).replace(/\*+$/,'').trim()).filter(Boolean).slice(0,8); if(arr.length){ arr[0]+=' *'; segs=arr.join('\n'); } }
+    applyTemplate({ build:()=>({ type:t, eyebrow:state.game.eyebrow||'Exclusive reward', headline:m.headline||'', sub:m.body||'', prize:m.prize||'', prizeCap:'', cta:m.cta||'Claim reward', segments:segs, close:true }), flow:false });
   }
   if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
     getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:state.channel, brand:appName(), industry:ind?ind.name:state.industry }; } });
 
   // ---------- Init ----------
   const qp=new URLSearchParams(location.search); const qc=(qp.get('channel')||'').toLowerCase();
-  if(qc==='push'||qc==='inapp') state.channel=qc;
+  if(qc==='push'||qc==='inapp'||qc==='game') state.channel=qc;
   $('#selChannel').value=state.channel;
   fillIndustries(); fillSubs(); fillSurface(); fillWallpapers(); syncAppearance();
   onChannelChange();

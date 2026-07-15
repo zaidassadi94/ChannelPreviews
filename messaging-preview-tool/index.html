@@ -174,6 +174,7 @@
           <option value="sms">SMS</option>
           <option value="push">Push</option>
           <option value="inapp">In-App</option>
+          <option value="game">In-App Gamification</option>
         </select>
       </div>
       <div class="sel-wrap"><label>Industry</label>
@@ -348,18 +349,18 @@
   function ecx(){ return CONFIRM[ctxId()]||{noun:'order',head:'Order confirmed',line:'',cta:'View details',ship:true}; }
   const ARCH={
     whatsapp:[
-      {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Image + offer + CTA',build:p=>[ mk('template',{img:photo(p.kw,600,340,3),body:`${p.emoji} *${p.offer}* at ${p.brand}!\nLimited time — treat yourself today.`,footer:p.brand,buttons:`Shop now | url | https://${p.url}`}) ]},
+      {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Image + offer + CTA',build:p=>[ mk('template',{img:photo(p.kw,600,340,3),body:`${p.emoji} *${p.offer}* just went live at ${p.brand}.\nYou're on the early list — first pick, best of the lot.`,footer:p.brand,buttons:`Shop the drop | url | https://${p.url}`}) ]},
       {name:'Confirmation',kind:'Transactional',icon:'✅',desc:'Order / booking confirmed',build:p=>{ const c=ecx(); return [ mk('template',{body:`Your ${c.noun} *#${p.orderId}* is confirmed ✅\n${c.line}`,footer:p.brand,buttons:`${c.cta} | url | https://${p.url}${c.ship?'/track':''}\nContact support | call | +18005550199`}) ]; }},
       {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap buttons to branch',build:p=>[ mk('template',{img:photo(p.kw,600,340,7),body:p.flow.intro,footer:p.brand,buttons:optStr(p.flow.opts)}) ]},
       {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP + copy button',build:p=>[ mk('template',{body:`*457 812* is your ${p.brand} ${p.otpUse} code.\nFor your security, never share it.`,footer:'Expires in 10 minutes',buttons:`Copy code | copy`}) ]},
-      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable cards',build:p=>[ mk('text',{text:`${p.emoji} Fresh picks, just for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(kwFor(c[0]),300,200,i+1)} | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')}) ]},
+      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable cards',build:p=>[ mk('text',{text:`${p.emoji} We had a feeling these were your kind of thing:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(kwFor(c[0]),300,200,i+1)} | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')}) ]},
       {name:'Feedback request',kind:'Flow',icon:'⭐',desc:'Rating replies branch',build:p=>[ mk('template',{body:`Thanks for choosing ${p.brand} 🙌\n${p.feedbackQ||'How did we do?'}`,footer:p.brand,buttons:`😍 Loved it | reply >> Amazing — thank you! 💛 Mind leaving a quick review? ${p.url}/review\n🙂 It was OK | reply >> Thanks for the honest feedback — we're always improving.\n😞 Not great | reply >> So sorry. Reply here and we'll make it right.`}) ]},
     ],
     rcs:[
-      {name:'Offer card',kind:'Promotional',icon:'🏷️',desc:'Rich card + chips',build:p=>[ mk('card',{img:photo(p.kw,600,340,3),title:p.offer,desc:`${p.brand} · Limited-time offer`,buttons:`Shop now | url | https://${p.url}`,chips:'See all deals\nNotify me'}) ]},
+      {name:'Offer card',kind:'Promotional',icon:'🏷️',desc:'Rich card + chips',build:p=>[ mk('card',{img:photo(p.kw,600,340,3),title:p.offer,desc:`${p.brand} · here while it lasts 👀`,buttons:`Shop the drop | url | https://${p.url}`,chips:'See all deals\nNotify me'}) ]},
       {name:'Confirmation',kind:'Transactional',icon:'✅',desc:'Status card + actions',build:p=>{ const c=ecx(); return [ c.ship ? mk('card',{img:photo(p.kw,600,340,5),title:`${cap(c.noun)} #${p.orderId}`,desc:'On the way · Arriving today by 6 PM',buttons:`Track live | url | https://${p.url}/track`,chips:'Change address >> Sure — reply with your new delivery address.\nContact support'}) : mk('card',{img:photo(p.kw,600,340,5),title:c.head,desc:c.line,buttons:`${c.cta} | url | https://${p.url}`,chips:'View details\nContact support'}) ]; }},
-      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable rich cards',build:p=>[ mk('text',{text:`${p.emoji} Handpicked for you:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(kwFor(c[0]),300,200,i+1)} | ${c[0]} | ${c[1]} | View | https://${p.url}`).join('\n'),chips:'See all\nTalk to us'}) ]},
-      {name:'Reminder card',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>[ mk('card',{img:photo(p.kw,600,340,9),title:'A quick reminder',desc:cap(p.reminder),buttons:`Open ${p.brand} | url | https://${p.url}`,chips:'Remind me later\nNot now'}) ]},
+      {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable rich cards',build:p=>[ mk('text',{text:`${p.emoji} Picked with you in mind:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(kwFor(c[0]),300,200,i+1)} | ${c[0]} | ${c[1]} | View | https://${p.url}`).join('\n'),chips:'See all\nTalk to us'}) ]},
+      {name:'Reminder card',kind:'Transactional',icon:'🔔',desc:'Nudge + open app',build:p=>[ mk('card',{img:photo(p.kw,600,340,9),title:"Don't forget 👋",desc:cap(p.reminder),buttons:`Open ${p.brand} | url | https://${p.url}`,chips:'Remind me later\nNot now'}) ]},
       {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap chips to branch',build:p=>[ mk('text',{text:p.flow.intro,chips:chipStr(p.flow.opts)}) ]},
       {name:'Feedback request',kind:'Flow',icon:'⭐',desc:'Rating chips branch',build:p=>[ mk('text',{text:`Thanks for choosing ${p.brand} 🙌 How did we do?`,chips:`😍 Great >> Thank you! Mind leaving a review? ${p.url}/review\n🙂 Okay >> Thanks — we'll keep improving.\n😞 Poor >> Sorry! Reply and we'll make it right.`}) ]},
     ],
@@ -652,14 +653,14 @@
     const type=types.includes(m.type)?m.type:'text';
     const o={from:'business'};
     ['text','caption','title','desc','body','footer','btnText','header','file','meta'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; });
-    const dkw=()=>m.imageKeyword||KW[ctxId()]||'product';  // vertical keyword default -> a real pre-resolved photo
-    if(['image','card','template'].includes(type)) o.img = m.imageUrl || await ChannelStudioAI.photoFor(dkw(),600,340);
+    const dkw=()=>m.imageKeyword||KW[ctxId()]||'product';  // short keyword -> illustration / pre-resolved fallback
+    if(['image','card','template'].includes(type)) o.img = await ChannelStudioAI.photoFor(dkw(),600,340,m.imageQuery);
     if(Array.isArray(m.buttons)) o.buttons=serRows('buttons', m.buttons.map(b=>({label:b.label||'',type:(['reply','url','call','copy'].includes(b.type)?b.type:'reply'),value:b.value||'',reply:b.reply||''})));
     if(Array.isArray(m.chips)) o.chips=serRows('chips', m.chips.map(c=>({label:c.label||'',reply:c.reply||''})));
     if(Array.isArray(m.items)) o.items=serRows('items', m.items.map(i=>({t:i.t||'',d:i.d||'',reply:i.reply||''})));
     if(Array.isArray(m.cards)){
       const cards=[];
-      for(const c of m.cards){ cards.push({img:await ChannelStudioAI.photoFor(c.imageKeyword||kwFor(c.name||'')||KW[ctxId()]||'product',320,240),title:c.name||'',sub:c.price||'',btn:'Shop',val:''}); }
+      for(const c of m.cards){ cards.push({img:await ChannelStudioAI.photoFor(c.imageKeyword||kwFor(c.name||'')||KW[ctxId()]||'product',320,240,c.imageQuery||c.name),title:c.name||'',sub:c.price||'',btn:'Shop',val:''}); }
       o.cards=serRows('cards', cards);
     }
     applyTemplate({ build:()=>({ msgs:[ mk(type,o) ] }), flow:false });

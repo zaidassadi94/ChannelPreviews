@@ -17,32 +17,45 @@
   "use strict";
   const API = { ENDPOINT: '/api/generate', PHOTO_ENDPOINT: '/api/photo' };
 
-  // Resolve an image keyword the pre-fetched set (images.js) doesn't cover, via
-  // the server-side Pexels lookup. Cached per-keyword (memory + localStorage) so
-  // each subject is fetched at most once per visitor. Returns a URL or null; on
-  // any failure/absent key the caller falls back to the illustration.
+  // One live Pexels lookup for a search phrase, at a given orientation. Cached
+  // (memory + localStorage) so each phrase is fetched at most once per visitor.
+  // Returns a URL or null (null on absent key / no match / any failure).
   const photoMem = {};
-  async function resolvePhoto(kw) {
+  async function livePhoto(query, orientation) {
+    query = (query || '').toLowerCase().trim();
+    if (!query) return null;
+    const key = 'cs-photo:' + (orientation || 'landscape') + ':' + query;
+    if (key in photoMem) return photoMem[key];
+    let cached = null; try { cached = localStorage.getItem(key); } catch (e) {}
+    if (cached) return (photoMem[key] = cached);
+    try {
+      const r = await fetch(API.PHOTO_ENDPOINT + '?q=' + encodeURIComponent(query) + '&orientation=' + encodeURIComponent(orientation || 'landscape'));
+      const d = await r.json().catch(() => ({}));
+      const url = (d && d.ok && d.url) ? d.url : null;
+      photoMem[key] = url;
+      if (url) { try { localStorage.setItem(key, url); } catch (e) {} }
+      return url;
+    } catch (e) { return (photoMem[key] = null); }
+  }
+  // Resolve one keyword against the pre-fetched set (images.js) or, if absent
+  // there, a live keyword lookup. Kept for back-compat + as the fallback path.
+  async function resolvePhoto(kw, orientation) {
     kw = (kw || '').toLowerCase().trim();
     if (!kw) return null;
     if (window.__PXIMG && window.__PXIMG[kw]) return window.__PXIMG[kw];
-    if (kw in photoMem) return photoMem[kw];
-    let cached = null; try { cached = localStorage.getItem('cs-photo:' + kw); } catch (e) {}
-    if (cached) return (photoMem[kw] = cached);
-    try {
-      const r = await fetch(API.PHOTO_ENDPOINT + '?q=' + encodeURIComponent(kw));
-      const d = await r.json().catch(() => ({}));
-      const url = (d && d.ok && d.url) ? d.url : null;
-      photoMem[kw] = url;
-      if (url) { try { localStorage.setItem('cs-photo:' + kw, url); } catch (e) {} }
-      return url;
-    } catch (e) { return (photoMem[kw] = null); }
+    return livePhoto(kw, orientation);
   }
-  // Best image URL for a keyword: pre-resolved (images.js) → live Pexels → illustration.
-  // Adapters call this so an image slot is never empty.
-  async function photoFor(kw, w, h) {
-    const url = await resolvePhoto(kw);
-    if (url) return url;
+  function orientFor(w, h) { w = +w || 0; h = +h || 0; if (h > w * 1.15) return 'portrait'; if (w > h * 1.15) return 'landscape'; return 'square'; }
+  // Best image URL for an AI subject. A rich, literal `query` (from the model)
+  // decides the photo via a live Pexels search — sharper than the generic
+  // pre-resolved keyword. Precedence: live query → pre-resolved keyword → live
+  // keyword → illustration. Orientation is derived from the slot (w/h) so
+  // portrait slots (full-screen / image-only) don't get a letterboxed landscape.
+  async function photoFor(kw, w, h, query) {
+    const orientation = orientFor(w, h);
+    if (query) { const u = await livePhoto(query, orientation); if (u) return u; }
+    const u2 = await resolvePhoto(kw, orientation);
+    if (u2) return u2;
     return (typeof photo === 'function') ? photo(kw, w, h) : '';
   }
 
@@ -158,5 +171,5 @@
     ta.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate(); });
   }
 
-  window.ChannelStudioAI = { init, API, resolvePhoto, photoFor };
+  window.ChannelStudioAI = { init, API, resolvePhoto, livePhoto, photoFor };
 })();
