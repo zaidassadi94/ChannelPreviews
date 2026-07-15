@@ -33,8 +33,9 @@ image-system.js                 # shared tile/photo/ePhoto/KW/IMGKW/kwFor image 
 blocks.js                       # shared DIY block builder (serRows/parseRows/imageField/buildBlocks) — §11 Phase 3
 device.js                       # shared fitDevice / statusBarHTML / captureDevice (html2canvas) — §11 Phase 3
 nav.js                          # shared channel-dropdown routing (initChannelNav) — §11 Phase 3
-ai.js                           # shared "✨ AI" prompt panel (right-hand) → POSTs to /api/generate
+ai.js                           # shared "✨ AI" prompt panel (right-hand) → POSTs to /api/generate; resolvePhoto()
 api/generate.js                 # Vercel serverless fn: Gemini structured output, schema-locked, key server-side
+api/photo.js                    # Vercel serverless fn: live Pexels lookup for AI keywords not in images.js (PEXELS_KEY server-side)
 recorder.js                     # shared screen recorder + review studio (trim, export WebM/GIF)
 gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc (used by recorder.js)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
@@ -316,13 +317,22 @@ image system, block builder, device frame + export, dropdown nav). The owner app
   ONE schema-valid message — no tools, no browsing, no conversation. Key is server-side
   only (`GEMINI_API_KEY` env var). Anti-abuse: enum-only channel/type, 500-char brief cap,
   best-effort per-IP rate limit, origin check, capped output tokens, response validation;
-  provider free-tier quota is the hard backstop. Images: AI picks an `imageKeyword` from a
-  curated vocab → resolved by the existing `photo()` system (no image-gen API). Verified
-  end-to-end with a mocked `/api/generate` across all 4 channel families (panel opens →
-  generate → message renders in `#capture` → fields land in the editor block builders,
-  editable); real Gemini call only runs on the live site (host is firewalled in-sandbox).
-  Setup is one env var in Vercel (README "Generate with AI"). `#capture`/editor unchanged
-  vs pre-AI (only the topbar gains the ✨ button; the panel is hidden until opened).
+  provider free-tier quota is the hard backstop. Robustness: `api/generate.js` tries a few
+  free models in order (2.0-flash → 2.5-flash → 2.0-flash-lite; `GEMINI_MODEL` override
+  first) so a per-model 429/404 falls through, and it surfaces Google's real error
+  (per-day cap / per-minute / bad key) instead of a generic message.
+  **Images (AI):** the AI now returns a free-text `imageKeyword` (not enum-locked).
+  `ai.js resolvePhoto()` uses it: pre-resolved `images.js` URL if present, else a **live
+  Pexels lookup via `api/photo.js`** (`PEXELS_KEY` server-side, cached per-keyword in the
+  visitor's `localStorage`), else the illustration. `applyAI()` uses `message.imageUrl ||
+  photo(keyword)`. So the AI can name any concrete subject and still get a real photo; with
+  no `PEXELS_KEY` set it degrades to illustrations (nothing breaks). Verified end-to-end
+  with mocked `/api/generate` + `/api/photo` across all 4 channel families (panel opens →
+  generate → message renders in `#capture`, live photo used for an unresolved keyword,
+  graceful illustration fallback when the key is absent); real Gemini/Pexels calls only run
+  on the live site (hosts firewalled in-sandbox). Setup is 1–2 env vars in Vercel (README
+  "Generate with AI" + "AI photos"). `#capture`/editor unchanged vs pre-AI (only the topbar
+  gains the ✨ button; the panel is hidden until opened).
 - **Notify app backdrop** — see §4: replaced the grey skeleton with a realistic
   vertical-aware app home.
 

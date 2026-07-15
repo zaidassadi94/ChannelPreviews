@@ -15,7 +15,29 @@
    ========================================================================== */
 (function () {
   "use strict";
-  const API = { ENDPOINT: '/api/generate' };
+  const API = { ENDPOINT: '/api/generate', PHOTO_ENDPOINT: '/api/photo' };
+
+  // Resolve an image keyword the pre-fetched set (images.js) doesn't cover, via
+  // the server-side Pexels lookup. Cached per-keyword (memory + localStorage) so
+  // each subject is fetched at most once per visitor. Returns a URL or null; on
+  // any failure/absent key the caller falls back to the illustration.
+  const photoMem = {};
+  async function resolvePhoto(kw) {
+    kw = (kw || '').toLowerCase().trim();
+    if (!kw) return null;
+    if (window.__PXIMG && window.__PXIMG[kw]) return window.__PXIMG[kw];
+    if (kw in photoMem) return photoMem[kw];
+    let cached = null; try { cached = localStorage.getItem('cs-photo:' + kw); } catch (e) {}
+    if (cached) return (photoMem[kw] = cached);
+    try {
+      const r = await fetch(API.PHOTO_ENDPOINT + '?q=' + encodeURIComponent(kw));
+      const d = await r.json().catch(() => ({}));
+      const url = (d && d.ok && d.url) ? d.url : null;
+      photoMem[kw] = url;
+      if (url) { try { localStorage.setItem('cs-photo:' + kw, url); } catch (e) {} }
+      return url;
+    } catch (e) { return (photoMem[kw] = null); }
+  }
 
   const EXAMPLES = [
     'Flash sale, 40% off, ends tonight — urgent tone',
@@ -115,7 +137,13 @@
           setStatus('err', msg + hint);
           return;
         }
-        apply(data.message);
+        const message = data.message || {};
+        // fill a live Pexels photo when the keyword isn't in the pre-resolved set
+        if (message.imageKeyword && !(window.__PXIMG && window.__PXIMG[message.imageKeyword])) {
+          const url = await resolvePhoto(message.imageKeyword);
+          if (url) message.imageUrl = url;
+        }
+        await apply(message);
         toast('✨ AI message generated');
         setStatus('ok', 'Done — edit any field on the left, or generate again.');
       } catch (e) {
@@ -128,5 +156,5 @@
     ta.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate(); });
   }
 
-  window.ChannelStudioAI = { init, API };
+  window.ChannelStudioAI = { init, API, resolvePhoto };
 })();

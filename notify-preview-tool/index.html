@@ -726,10 +726,12 @@
       const types=['modal','banner','full','sheet','image'];
       const t=types.includes(m.type)?m.type:'modal';
       const ctas=Array.isArray(m.ctas)?m.ctas.map(c=>`${c.label||''} | ${['primary','secondary','text'].includes(c.style)?c.style:'primary'}`).filter(x=>x.split('|')[0].trim()).join('\n'):'';
-      applyTemplate({ build:()=>({ type:t, image:m.imageKeyword?photo(m.imageKeyword,600,760):'', headline:m.headline||'', body:m.body||'', ctas, close:m.close!=null?m.close:true }), flow:false });
+      const iaImg=m.imageUrl||(m.imageKeyword?photo(m.imageKeyword,600,760):'');
+      applyTemplate({ build:()=>({ type:t, image:iaImg, headline:m.headline||'', body:m.body||'', ctas, close:m.close!=null?m.close:true }), flow:false });
     } else {
       const actions=Array.isArray(m.actions)?m.actions.filter(Boolean).join('\n'):'';
-      applyTemplate({ build:()=>({ title:m.title||'', body:m.body||'', image:m.imageKeyword?photo(m.imageKeyword,600,340):'', actions, expanded:m.expanded!=null?m.expanded:true }), flow:false });
+      const pnImg=m.imageUrl||(m.imageKeyword?photo(m.imageKeyword,600,340):'');
+      applyTemplate({ build:()=>({ title:m.title||'', body:m.body||'', image:pnImg, actions, expanded:m.expanded!=null?m.expanded:true }), flow:false });
     }
   }
   if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,

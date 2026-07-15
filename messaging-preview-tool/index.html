@@ -651,7 +651,7 @@
     const type=types.includes(m.type)?m.type:'text';
     const o={from:'business'};
     ['text','caption','title','desc','body','footer','btnText','header','file','meta'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; });
-    if(m.imageKeyword) o.img=photo(m.imageKeyword,600,340);
+    if(m.imageUrl) o.img=m.imageUrl; else if(m.imageKeyword) o.img=photo(m.imageKeyword,600,340);
     if(Array.isArray(m.buttons)) o.buttons=serRows('buttons', m.buttons.map(b=>({label:b.label||'',type:(['reply','url','call','copy'].includes(b.type)?b.type:'reply'),value:b.value||'',reply:b.reply||''})));
     if(Array.isArray(m.chips)) o.chips=serRows('chips', m.chips.map(c=>({label:c.label||'',reply:c.reply||''})));
     if(Array.isArray(m.items)) o.items=serRows('items', m.items.map(i=>({t:i.t||'',d:i.d||'',reply:i.reply||''})));

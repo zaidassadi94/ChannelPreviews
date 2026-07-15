@@ -69,6 +69,14 @@ a per-request length cap and best-effort rate limiting. If the key isn't set, th
 simply shows a friendly "add your key" note and nothing else changes. Optional env vars:
 `GEMINI_MODEL` (default `gemini-2.0-flash`) and `CS_ALLOW_ORIGINS`.
 
+**AI photos (optional):** when the AI picks an image subject that isn't in the
+pre-resolved `images.js`, the app can fetch a matching photo live from Pexels through
+`api/photo.js` (another Vercel function, key server-side). To enable it, add a second
+env var `PEXELS_KEY` (your free Pexels key) in Vercel and redeploy. Results are cached
+in the visitor's browser, so each subject is fetched at most once — Pexels is barely
+touched. Without `PEXELS_KEY` set, unresolved subjects just keep their clean
+illustration; nothing breaks.
+
 ## How it works
 
 - **Pick a channel** (hub tabs, or open a folder).
