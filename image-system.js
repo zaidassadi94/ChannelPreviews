@@ -9,6 +9,28 @@
    ========================================================================== */
 function escXml(x){ return (x==null?'':String(x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function hueOf(x){ let h=0; x=x||'x'; for(let i=0;i<x.length;i++) h=(h*31+x.charCodeAt(i))>>>0; return h%360; }
+// ---- auto-generated brand logo -------------------------------------------------
+// A polished, deterministic logo mark from a brand name — a gradient container
+// (squircle / circle / soft-square, varied by name) with a soft highlight and a
+// bold 1-2 letter monogram. Self-contained SVG data URI: always loads, offline-safe,
+// perfect for fictional brands. Used as the default avatar/app-icon when no logo is
+// uploaded. brandInitials("Nova Market") -> "NM"; ("QuickBite") -> "Q".
+function brandInitials(name){ let s=(name||'?').trim().replace(/([a-z0-9])([A-Z])/g,'$1 $2'); const p=s.split(/\s+/).filter(Boolean); if(!p.length) return '?'; return (p.length>1?(p[0][0]+p[1][0]):p[0][0]).toUpperCase(); }
+function brandMark(name, size){
+  size=size||96; name=(name||'?').trim(); const init=brandInitials(name);
+  const h=hueOf(name), h2=(h+38)%360;
+  const acx = (h%2? 0.74 : 0.26)*size, acy=(h%3? 0.26 : 0.74)*size;      // highlight corner varies by name
+  const fs = init.length>1 ? size*0.40 : size*0.48;
+  // full-bleed gradient tile (rx=0): the avatar/icon container's own border-radius
+  // clips it to a circle or squircle, so corners never show through.
+  const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+size+"' height='"+size+"' viewBox='0 0 "+size+" "+size+"'>"
+    +"<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+h+",70%,57%)'/><stop offset='1' stop-color='hsl("+h2+",66%,43%)'/></linearGradient></defs>"
+    +"<rect width='"+size+"' height='"+size+"' fill='url(#bg)'/>"
+    +"<circle cx='"+acx.toFixed(1)+"' cy='"+acy.toFixed(1)+"' r='"+(size*0.32).toFixed(1)+"' fill='rgba(255,255,255,0.13)'/>"
+    +"<text x='50%' y='50%' font-family='Inter,Segoe UI,system-ui,sans-serif' font-size='"+fs.toFixed(1)+"' font-weight='800' letter-spacing='-0.5' fill='#ffffff' text-anchor='middle' dominant-baseline='central'>"+escXml(init)+"</text>"
+    +"</svg>";
+  return 'data:image/svg+xml,'+encodeURIComponent(svg);
+}
 const ILLUS={
   shirt:"M8 3l-4 2 1 4 2-1v13h10V8l2 1 1-4-4-2a3 3 0 01-8 0z",
   pants:"M7 3h10l-1 18h-4l-1-10-1 10H6z",

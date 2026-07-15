@@ -496,7 +496,7 @@
   function wallBg(){ const w=state.wallpaper; if(w && /^(data:|https?:)/.test(w)) return "url('"+w.replace(/'/g,"%27")+"') center/cover"; return WALLS[w]||WALLS.aurora; }
 
   // ---------- App icon ----------
-  function appIcon(cls){ const nm=state.push.appName; return state.appLogo?`<img class="${cls}" src="${state.appLogo}" alt="${esc(nm)}">`:`<div class="${cls} mono" style="background:${avColor(nm)}">${esc(initial(nm))}</div>`; }
+  function appIcon(cls){ const nm=state.push.appName; const src=state.appLogo||brandMark(nm,96); return `<img class="${cls}" src="${src}" alt="${esc(nm)}">`; }
   function pushActions(){ return (state.push.actions||'').split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3); }
 
   // ---------- Status bar ----------

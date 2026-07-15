@@ -410,7 +410,7 @@
     const msgs=effMsgs().map(waMsg).join('');
     return `<div class="wa ${state.theme==='dark'?'dark':''}">
       <div class="wa-header"><span class="bk">${IC.back}</span>
-        <div class="wa-av">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="wa-av"><img src="${state.logo||brandMark(state.bizName,96)}" alt="${esc(state.bizName)}"></div>
         <div class="wa-meta"><div class="wa-name"><span class="nm">${esc(state.bizName)}</span>${state.verified?`<span class="vf">${IC.verifWA}</span>`:''}</div><div class="wa-sub">${esc(state.bizSub||'online')}</div></div>
         <div class="wa-hicons">${IC.videoDrop}${IC.call}${IC.menu}</div>
       </div>
@@ -441,10 +441,10 @@
     let chips=''; const last=[...list].reverse().find(x=>x.from==='business'&&x.chips);
     if(!isSms && last && last.chips){ const cs=parseChips(last.chips); chips=`<div class="rcs-chips">${cs.map(c=>{ const a=/call/i.test(c.label)?IC.phone:/direction|map/i.test(c.label)?IC.map:''; return `<div class="rcs-chip${ck(true)}"${optAttr({kind:'reply',reply:c.label,response:c.response})}>${a}${esc(c.label)}</div>`;}).join('')}</div>`; }
     const verified=!isSms&&state.verified;
-    const agent=(!isSms&&state.agentCard)?`<div class="gm-agent"><div class="lg" style="background:${state.logo?'#fff':avColor(state.bizName)}">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div><div class="an">${esc(state.bizName)}${verified?`<span class="vf">${IC.verifG}</span>`:''}</div><div class="ad">${esc(state.bizDesc||'')}</div><div class="vb">${IC.verifG} Verified business</div></div>`:'';
+    const agent=(!isSms&&state.agentCard)?`<div class="gm-agent"><div class="lg" style="background:${state.logo?'#fff':avColor(state.bizName)}"><img src="${state.logo||brandMark(state.bizName,96)}" alt="${esc(state.bizName)}"></div><div class="an">${esc(state.bizName)}${verified?`<span class="vf">${IC.verifG}</span>`:''}</div><div class="ad">${esc(state.bizDesc||'')}</div><div class="vb">${IC.verifG} Verified business</div></div>`:'';
     return `<div class="gm ${state.theme==='dark'?'dark':''}">
       <div class="gm-header"><span class="bk">${IC.back}</span>
-        <div class="gm-av" style="background:${state.logo?'#fff':avColor(state.bizName)}">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="gm-av" style="background:${state.logo?'#fff':avColor(state.bizName)}"><img src="${state.logo||brandMark(state.bizName,96)}" alt="${esc(state.bizName)}"></div>
         <div class="gm-h-meta"><div class="gm-name"><span class="nm">${esc(state.bizName)}</span>${verified?`<span class="vf">${IC.verifG}</span>`:''}</div><div class="gm-sub">${isSms?esc(state.bizPhone):esc(state.bizSub||'Verified business')}</div></div>
         <div class="gm-hicons">${IC.videoDrop}${IC.call}</div>
       </div>
@@ -476,7 +476,7 @@
     const verified=isRcs&&state.verified;
     return `<div class="ios ${state.theme==='dark'?'dark':''}">
       <div class="ios-header"><span class="bk">${IC.back}</span>
-        <div class="ios-av" style="background:${state.logo?'#fff':avColor(state.bizName)}">${state.logo?`<img src="${state.logo}">`:esc(initial(state.bizName))}</div>
+        <div class="ios-av" style="background:${state.logo?'#fff':avColor(state.bizName)}"><img src="${state.logo||brandMark(state.bizName,96)}" alt="${esc(state.bizName)}"></div>
         <div class="ios-nm">${esc(state.bizName)}${verified?`<span class="vf">${IC.verifG}</span>`:''} <span class="cv">›</span></div>
       </div>
       <div class="ios-body">
