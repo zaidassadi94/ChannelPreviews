@@ -305,6 +305,21 @@ delete it via GitHub's UI. Nothing about SamuhaWorldCup is relevant to this repo
 
 ## 11. Refactor plan (agreed 2026-07-15 — phased, no-build)
 
+**Progress: Phase 1 DONE (2026-07-15).** `channel-studio.css` exists at the repo root
+and all three tools link it before their inline `<style>` (which now holds only
+channel-specific rules). Gmail was renamed onto the canonical convention (`--text`→
+`--ink`, `--border`→`--line`, `.group-head/.group-body`→`.ghead/.gbody`, `.field`→`.f`,
+`.logo-preview`→`.logo-prev`, `.btn-mini`→`.link-btn`, `.seg2`→`.seg`) and its
+sidebar/topbar converged to the shared design. Intentional per-tool overrides kept
+inline: notify moves `.notch`/`.punch` down over the wallpaper (+`.logo-prev img`
+cover, brighter dark home-ind); messaging keeps its `.sim-on` border-radius + dark
+stage; gmail keeps its stage gradient (so exports stay pixel-identical), its own
+device frames, `#capture{font-feature-settings:normal}` and an explicit statusbar
+color so the design system never leaks into exported mockups. Gotcha learned:
+`backdrop-filter` on the topbar flips Chromium's text antialiasing for the whole
+page — pixel-diffs must replicate compositing+geometry before comparing. Phases 2–3
+below remain.
+
 **Why:** the 3 tools each re-implement the same foundations, so a change (industry,
 photo keyword, button style) means editing 3 files, and they've **drifted** (chevrons,
 Gmail's missing clear button, stale defaults). Goal: one source of truth per concern.
