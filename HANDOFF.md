@@ -27,7 +27,8 @@ index.html                      # root — redirects to messaging-preview-tool/?
 setup.html                      # no-terminal Pexels photo resolver (see §6)
 resolve-images.js               # Node CLI resolver (alt to setup.html; user is non-technical so prefer setup.html)
 images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos)
-recorder.js                     # shared screen recorder (records only #capture → .webm)
+recorder.js                     # shared screen recorder + review studio (trim, export WebM/GIF)
+gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc (used by recorder.js)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
 notify-preview-tool/index.html      # Push + In-App  (notifications tool)
@@ -135,9 +136,18 @@ headless Chromium via the global Playwright at
   it's verified by mocking `getDisplayMedia` with a canvas stream.
 - **Clean-capture extras** (all gated by a `body.cs-rec-live` class the recorder toggles
   on start/stop): hides `.sim-badge` + `.toast` (tool-only overlays that Region Capture
-  would otherwise bake in), sets `cursor:none` on `#capture`, and shows a **touch-orb
-  cursor** (`.cs-orb`, follows the mouse, visible only over the device) plus a **click
-  ripple** (`.cs-ripple`) — so recordings look like a fingertip tapping, not an OS arrow.
+  would otherwise bake in), sets `cursor:none` on `#capture` (and inside same-origin
+  iframes), and shows a **touch-orb cursor** (`.cs-orb`, visible only over the device)
+  plus a **click ripple** (`.cs-ripple`) — so recordings look like a fingertip tapping.
+- **Review studio** (opens on Stop instead of auto-downloading; injected DOM `.cs-rev*`):
+  looping preview, a **filmstrip trim bar** (12 thumbnails + draggable start/end handles +
+  "play selection"), and export as **WebM** (untrimmed = original blob, lossless/instant;
+  trimmed = real-time re-encode of the slice via `video.captureStream()` → MediaRecorder)
+  or **GIF** (`gifenc` per-frame 256-colour palette + ordered/Bayer dithering, fps + size
+  controls, progress bar). MediaRecorder webm blobs report `Infinity` duration until nudged,
+  so `resolveDuration()` seeks to 1e6 to force it. `gif-encoder.js` must be loaded first.
+  Verified by mocking `getDisplayMedia` (record) and by feeding a canvas-made webm into
+  `ChannelStudioRecorder._openReview()` (studio) — the real tab-share only runs on-device.
 - **Critical dependency:** each tool's `render()` now **reuses a persistent `#capture`
   element** (updates its `className` + `innerHTML`) instead of replacing the node. This is
   what keeps a mid-recording crop alive across re-renders (template switch, Simulate tap,
