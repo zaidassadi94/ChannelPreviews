@@ -308,9 +308,11 @@ vertical still said "SkyHigh". Flipped it — the **brief now drives the UI**:
 - **Auto logos** — `brandMark(name,size)` in `image-system.js` generates a gradient monogram
   logo (SVG data URI) used as every default avatar/app-icon across all tools. For **real**
   brands the AI returns a `domain` and `api/logo.js` (new serverless fn) fetches the real logo
-  (Clearbit → favicon fallback) as a data URI; `ChannelStudioAI.resolveLogo` caches it and
-  `setLogo` applies it, else the generated mark shows. NOTE: real logos need no key; live
-  photos still need `PEXELS_KEY`.
+  as a data URI; `ChannelStudioAI.resolveLogo` caches it and `setLogo` applies it, else the
+  generated mark shows. **Logo source**: Clearbit's keyless API is shut down — `api/logo.js`
+  now uses **Logo.dev** (free *publishable* token in env `LOGODEV_KEY`, 500K/mo) for full
+  logos, falling back to **keyless** DuckDuckGo/Google favicons. So real-brand icons work with
+  no key; add `LOGODEV_KEY` for crisp logos. Live photos still need `PEXELS_KEY`.
 
 **Done 2026-07-15 (AI image relevance fix):** The AI often omits `imageKeyword`/`imageQuery`
 on copy-focused briefs, and the old fallback then used `KW[ctxId()]` — the **sub-industry**

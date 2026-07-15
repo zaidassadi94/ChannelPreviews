@@ -37,8 +37,8 @@
   ];
   function detectChannel(brief) { const b = ' ' + (brief || '').toLowerCase() + ' '; for (const [re, ch] of CH_WORDS) if (re.test(b)) return ch; return null; }
 
-  // Real brand logo (Clearbit → favicon), returned as a data: URI. Cached per
-  // domain. Returns a URL or null; on any failure the caller keeps the generated mark.
+  // Real brand logo (Logo.dev → favicon fallback), returned as a data: URI. Cached
+  // per domain. Returns a URL or null; on any failure the caller keeps the generated mark.
   const logoMem = {};
   async function resolveLogo(domain) {
     domain = (domain || '').toLowerCase().trim();
