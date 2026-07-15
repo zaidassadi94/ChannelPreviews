@@ -110,7 +110,11 @@ them in headless Chromium via the global Playwright at
   Topbar has a **device seg** (iPhone/Android) and a device-aware **surface seg**:
   iOS = **Lock Screen / Banner**, Android = **Heads-up / Shade**. Lock & shade render a
   **wallpaper** (gradient presets + upload, `WALLS`/`wallBg()`); banner & heads-up float
-  over a generic **`appBackdrop()`** (also the base for In-App's dimmed app screen).
+  over **`appBackdrop()`** (also the base for In-App's dimmed app screen) — a **realistic,
+  vertical-aware app home** (brand top bar, search, category chips, a brand-coloured promo
+  hero built from `p.offer`, a 2×2 product grid from `p.carousel` via `photo(kwFor(name))`,
+  and a bottom tab bar). It reads like a real premium app and its product photos never
+  duplicate the notification's own image. (2026-07-15 — replaced the old grey skeleton.)
   `state.push={appName,title,body,image,actions,time}` + `state.expanded/surface/wallpaper/appLogo`.
   Templates = `PUSH_ARCH` (6: 2 Promo / 2 Txn / 2 Flow) × `PACKS`. Simulate makes the
   action buttons tappable (toast feedback) — push has no branching conversation.
