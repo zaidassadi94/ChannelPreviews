@@ -241,6 +241,7 @@
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
       <button class="btn ghost" id="btnReset" style="display:none;">↺ Reset</button>
+      <button class="btn ghost" id="btnAI"></button>
       <button class="btn ghost" id="btnRecord"></button>
       <button class="btn ghost" id="btnCopy">Copy</button>
       <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
@@ -258,6 +259,7 @@
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
 <script src="../nav.js"></script>
+<script src="../ai.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -642,6 +644,22 @@
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
 
   if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=>`${state.channel}-${state.industry}-${state.device}` });
+
+  // ---------- AI generate: map one schema-locked message into a message bubble ----------
+  function applyAI(m){
+    const types=['text','image','card','carousel','template','list'];
+    const type=types.includes(m.type)?m.type:'text';
+    const o={from:'business'};
+    ['text','caption','title','desc','body','footer','btnText','header','file','meta'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; });
+    if(m.imageKeyword) o.img=photo(m.imageKeyword,600,340);
+    if(Array.isArray(m.buttons)) o.buttons=serRows('buttons', m.buttons.map(b=>({label:b.label||'',type:(['reply','url','call','copy'].includes(b.type)?b.type:'reply'),value:b.value||'',reply:b.reply||''})));
+    if(Array.isArray(m.chips)) o.chips=serRows('chips', m.chips.map(c=>({label:c.label||'',reply:c.reply||''})));
+    if(Array.isArray(m.items)) o.items=serRows('items', m.items.map(i=>({t:i.t||'',d:i.d||'',reply:i.reply||''})));
+    if(Array.isArray(m.cards)) o.cards=serRows('cards', m.cards.map(c=>({img:c.imageKeyword?photo(c.imageKeyword,320,240):'',title:c.name||'',sub:c.price||'',btn:'Shop',val:''})));
+    applyTemplate({ build:()=>({ msgs:[ mk(type,o) ] }), flow:false });
+  }
+  if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:state.channel, brand:state.bizName, industry:ind?ind.name:state.industry }; } });
 
   // ---------- Init ----------
   const qp=new URLSearchParams(location.search); const qc=(qp.get('channel')||'').toLowerCase();

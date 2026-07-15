@@ -47,6 +47,28 @@ people open the tool. The key is only used during the one-time lookup and never 
 in the app. Edit the query list at the top of `resolve-images.js` and re-run to swap
 any specific image. Anything not resolved falls back to the illustration.
 
+## Generate with AI (optional, free)
+
+Each tool has an **✨ AI** button in the top bar. It opens a prompt box on the right —
+type a short brief ("Diwali sale, 40% off, urgent tone") and it writes **one** on-brand
+message for the channel you're on and drops it straight into the editor, where you can
+tweak every field. It generates the copy and picks an image keyword; the image itself
+uses the same photo/illustration system as everything else.
+
+**Setup (one-time, no terminal):**
+
+1. Get a **free** Google Gemini key: https://aistudio.google.com/apikey (no card needed).
+2. In Vercel → your project → **Settings → Environment Variables**, add
+   `GEMINI_API_KEY` = your key, then redeploy.
+3. That's it — the **✨ AI** button now works on the live site.
+
+The key lives only on the server (in `api/generate.js`, a Vercel function) and is never
+exposed in the browser. The generator is deliberately locked down: it returns exactly
+one message that matches a fixed schema — no browsing, no tools, no conversation — with
+a per-request length cap and best-effort rate limiting. If the key isn't set, the button
+simply shows a friendly "add your key" note and nothing else changes. Optional env vars:
+`GEMINI_MODEL` (default `gemini-2.0-flash`) and `CS_ALLOW_ORIGINS`.
+
 ## How it works
 
 - **Pick a channel** (hub tabs, or open a folder).

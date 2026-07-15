@@ -33,6 +33,8 @@ image-system.js                 # shared tile/photo/ePhoto/KW/IMGKW/kwFor image 
 blocks.js                       # shared DIY block builder (serRows/parseRows/imageField/buildBlocks) — §11 Phase 3
 device.js                       # shared fitDevice / statusBarHTML / captureDevice (html2canvas) — §11 Phase 3
 nav.js                          # shared channel-dropdown routing (initChannelNav) — §11 Phase 3
+ai.js                           # shared "✨ AI" prompt panel (right-hand) → POSTs to /api/generate
+api/generate.js                 # Vercel serverless fn: Gemini structured output, schema-locked, key server-side
 recorder.js                     # shared screen recorder + review studio (trim, export WebM/GIF)
 gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc (used by recorder.js)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
@@ -302,11 +304,33 @@ image system, block builder, device frame + export, dropdown nav). The owner app
 **phased extraction into shared files** (like `recorder.js`/`images.js` already are),
 **staying no-build** (plain `.css`/`.js` via `<link>`/`<script>`, no bundler/framework).
 
+**DONE (2026-07-15): AI generate (Phase 4) + realistic notify app backdrop.**
+- **AI generate** — shared `ai.js` injects an **✨ AI** topbar button + a right-docked
+  prompt panel (self-contained, injects its own styles, like recorder.js). On Generate it
+  POSTs `{channel,brand,industry,brief}` to **`api/generate.js`** (a Vercel serverless fn)
+  and hands the returned message to a tiny per-tool `applyAI()` that maps it through the
+  SAME path as a built-in template (messaging → `applyTemplate` with a synthetic `mk()`
+  msg; notify → `applyTemplate` push/inapp shape; gmail → `applyEmailTemplate` with HTML
+  built from `eWrap/eBrand/eBtn/eHeroImg`). `api/generate.js` calls **Gemini** free tier
+  with **structured output** (per-channel `responseSchema`) so the model can only return
+  ONE schema-valid message — no tools, no browsing, no conversation. Key is server-side
+  only (`GEMINI_API_KEY` env var). Anti-abuse: enum-only channel/type, 500-char brief cap,
+  best-effort per-IP rate limit, origin check, capped output tokens, response validation;
+  provider free-tier quota is the hard backstop. Images: AI picks an `imageKeyword` from a
+  curated vocab → resolved by the existing `photo()` system (no image-gen API). Verified
+  end-to-end with a mocked `/api/generate` across all 4 channel families (panel opens →
+  generate → message renders in `#capture` → fields land in the editor block builders,
+  editable); real Gemini call only runs on the live site (host is firewalled in-sandbox).
+  Setup is one env var in Vercel (README "Generate with AI"). `#capture`/editor unchanged
+  vs pre-AI (only the topbar gains the ✨ button; the panel is hidden until opened).
+- **Notify app backdrop** — see §4: replaced the grey skeleton with a realistic
+  vertical-aware app home.
+
 **Smaller cleanups to fold in:** Gmail state still has a stale `"Social Development Bank"`
 default (harmless — overwritten by the first template on load, but should become a generic
-brand); messaging vs notify `IMGKW`/`PACKS` have minor drift. The Gmail email body could
-later become the same block builder. Review the `family` photo (telecom) per the "US, no
-Indians" ask.
+brand). The Gmail email body could later become the same block builder. Review the
+`family` photo (telecom) per the "US, no Indians" ask. AI panel: could add durable rate
+limiting (Vercel KV) and an optional real image-gen source later.
 
 **Cross-repo note:** This project was first built by mistake inside
 `zaidassadi94/SamuhaWorldCup` on branch `claude/gmail-preview-tool-2pg33e`, then moved

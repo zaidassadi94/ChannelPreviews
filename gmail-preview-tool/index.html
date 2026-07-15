@@ -354,6 +354,7 @@
         <button data-view="open">Open email</button>
       </div>
       <div class="grow"></div>
+      <button class="btn ghost" id="btnAI"></button>
       <button class="btn ghost" id="btnRecord"></button>
       <button class="btn ghost" id="btnCopy">⧉ Copy</button>
       <button class="btn primary" id="btnExport">⬇ Export PNG</button>
@@ -371,6 +372,7 @@
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
 <script src="../nav.js"></script>
+<script src="../ai.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -866,6 +868,25 @@
   });
 
   if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=>`gmail-${state.industry}-${state.skin}` });
+
+  // ---------- AI generate: build an email from one schema-locked message ----------
+  function applyAI(m){
+    const p=Object.assign({}, EPACKS[ctxId()]||{}, { brand:state.senderName, from:state.senderEmail });
+    if(!p.accent) p.accent='#635bff';
+    const head=esc(m.heading||'');
+    const bodyHtml='<p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">'
+      + esc(m.bodyText||'').replace(/\n+/g,'</p><p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">') + '</p>';
+    const inner = eBrand(p)
+      + (m.imageKeyword?eHeroImg(p,m.imageKeyword,7):'')
+      + '<div style="padding:30px 34px;text-align:center;">'
+        + (head?`<h1 style="margin:0 0 12px;font-size:24px;color:#111;">${head}</h1>`:'')
+        + bodyHtml
+        + (m.buttonLabel?eBtn(p,esc(m.buttonLabel)):'')
+      + '</div>';
+    applyEmailTemplate({ build:()=>({ sender:p.brand, from:p.from, category:m.category||'promotions', subject:m.subject||'', snippet:m.snippet||'', html:eWrap(inner) }) });
+  }
+  if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:'gmail', brand:state.senderName, industry:ind?ind.name:state.industry }; } });
 
   function gClear(){ state.subject='(No subject)'; state.snippet=''; state.htmlBody=''; state.bodyMode='upload'; var si=document.getElementById('subject'); if(si) si.value='(No subject)'; render(); toast('Cleared — start blank'); }
   (function(){ var b=document.getElementById('gClearBtn'); if(b) b.addEventListener('click', gClear); })();
