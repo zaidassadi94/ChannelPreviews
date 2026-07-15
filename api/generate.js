@@ -131,8 +131,10 @@ module.exports = async function handler(req, res) {
   if (rateLimited(ip)) return send(res, 429, { ok: false, error: 'Too many requests — please wait a moment.' });
 
   // ---- call Gemini with schema-locked structured output ----
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  // Try a few free-tier models in order: a 429/404 on one (often "no free quota
+  // for THIS model") falls through to the next, whose quota is separate. An env
+  // override (GEMINI_MODEL) is tried first but still falls back.
+  const MODELS = [...new Set([process.env.GEMINI_MODEL, 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash-lite'].filter(Boolean))];
   const payload = {
     systemInstruction: { parts: [{ text: systemPrompt(ctx) }] },
     contents: [{ role: 'user', parts: [{ text: `Brief: ${brief}` }] }],
@@ -141,23 +143,52 @@ module.exports = async function handler(req, res) {
       responseMimeType: 'application/json', responseSchema: schemaFor(channel),
     },
   };
-  try {
-    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!r.ok) {
-      const txt = await r.text().catch(() => '');
-      if (r.status === 429) return send(res, 429, { ok: false, error: 'The AI provider is rate-limiting (free-tier quota). Try again shortly.' });
-      return send(res, 502, { ok: false, error: 'AI provider error', detail: txt.slice(0, 300) });
-    }
-    const data = await r.json();
-    const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-    let message;
-    try { message = JSON.parse(text); } catch (e) { return send(res, 502, { ok: false, error: 'AI returned unparseable output' }); }
-    if (!message || typeof message !== 'object' || Array.isArray(message))
-      return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
-    // final guard: type (if present) must be allowed for this channel
-    if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
-    return send(res, 200, { ok: true, channel, message });
-  } catch (e) {
-    return send(res, 502, { ok: false, error: 'Could not reach the AI provider', detail: String(e).slice(0, 200) });
+  function parseErr(txt) {
+    try {
+      const e = (JSON.parse(txt).error) || {};
+      const q = (e.details || []).flatMap(d => d.violations || []).map(v => v.quotaId || '').join(' ');
+      return { message: e.message || '', status: e.status || '', perDay: /PerDay/i.test(q), perMinute: /PerMinute/i.test(q) };
+    } catch (_) { return { message: (txt || '').slice(0, 200) }; }
   }
+
+  let last = { http: 0, info: { message: 'no response from provider' } };
+  for (const model of MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    let r;
+    try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
+    catch (e) { last = { http: 502, info: { message: String(e).slice(0, 200) } }; continue; }
+    if (r.ok) {
+      const data = await r.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      if (!text) {
+        const fr = data?.candidates?.[0]?.finishReason || data?.promptFeedback?.blockReason || '';
+        return send(res, 502, { ok: false, error: 'The AI returned no content' + (fr ? ' (' + fr + ')' : '') + '. Try rephrasing the brief.' });
+      }
+      let message;
+      try { message = JSON.parse(text); } catch (e) { return send(res, 502, { ok: false, error: 'AI returned unparseable output' }); }
+      if (!message || typeof message !== 'object' || Array.isArray(message))
+        return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
+      if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
+      return send(res, 200, { ok: true, channel, model, message });
+    }
+    const txt = await r.text().catch(() => '');
+    last = { http: r.status, info: parseErr(txt) };
+    if (r.status !== 429 && r.status !== 404) break; // 400/401/403 etc. won't be fixed by another model
+  }
+
+  // ---- all attempts failed: surface the real reason ----
+  const info = last.info || {};
+  if (last.http === 429) {
+    const detail = info.perDay
+      ? "You've hit the free-tier daily request limit for these models — it resets each day (or add billing in Google AI Studio for higher limits)."
+      : info.perMinute
+      ? 'Too many requests in a short window — wait ~30 seconds and try again.'
+      : (info.message || 'Free-tier quota reached. Wait a bit and try again.');
+    return send(res, 429, { ok: false, error: detail });
+  }
+  if (last.http === 404)
+    return send(res, 502, { ok: false, error: 'No usable model for this key. Remove any GEMINI_MODEL override, or set it to gemini-2.0-flash, then redeploy.' });
+  if (/API key not valid|API_KEY_INVALID/i.test(info.message || ''))
+    return send(res, 502, { ok: false, error: 'That GEMINI_API_KEY was rejected. Check the value in Vercel → Settings → Environment Variables and redeploy.' });
+  return send(res, 502, { ok: false, error: 'AI provider error' + (info.message ? ': ' + info.message : ''), detail: info.message || '' });
 };
