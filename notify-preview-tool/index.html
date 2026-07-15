@@ -40,7 +40,7 @@
   .group + .group{ border-top:1px solid var(--line-2); }
   .group > .ghead{ width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:15px 20px 13px; font-size:11px; font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); display:flex; align-items:center; justify-content:space-between; }
   .group > .ghead:hover{ color:var(--ink); }
-  .ghead .chev{ transition:transform .2s; color:var(--muted-2); font-size:11px; }
+  .ghead .chev{ transition:transform .2s; color:var(--muted); font-size:11.5px; }
   .group.collapsed .chev{ transform:rotate(-90deg); }
   .group.collapsed .gbody{ display:none; }
   .group.hide{ display:none; }
@@ -84,6 +84,8 @@
   .btn.ghost{ background:var(--panel); color:var(--ink-2); border:1px solid var(--line); } .btn.ghost:hover{ background:var(--panel-2); border-color:#d7d9e3; }
   .btn.block{ width:100%; }
   .btn.on{ background:#e9fbf1; color:#0b8043; border-color:#b6ebcc; }
+  .btn.reset{ background:#fff4f2; color:#d1495b; border:1px solid #f7d6d0; }
+  .btn.reset:hover{ background:#ffe9e5; border-color:#f2c2ba; color:#c0392b; }
 
   /* DIY block builder */
   .blk{ border:1px solid var(--line); border-radius:9px; padding:11px; margin-bottom:8px; background:#fff; }
@@ -310,16 +312,16 @@
     <div class="divider"></div>
 
     <div class="group" data-group>
-      <button class="ghead" data-head>Templates <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Ready-made, industry-specific messages. <span style="color:var(--accent-ink);font-weight:600">FLOW</span> ones are interactive — hit <b>Simulate</b> and tap the buttons.</div>
         <div class="tpl-grid" id="tplGrid"></div>
-        <button class="btn ghost block" id="clearMsgs" style="margin-top:11px;">Clear &amp; start blank</button>
+        <button class="btn reset block" id="clearMsgs" style="margin-top:11px;"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear &amp; start blank</button>
       </div>
     </div>
 
     <div class="group" data-group>
-      <button class="ghead" data-head>App <span class="chev">▾</span></button>
+      <button class="ghead" data-head>App <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>App name</span><input type="text" id="appName"></label>
         <label class="f"><span>App icon</span>
@@ -331,7 +333,7 @@
     </div>
 
     <div class="group chan-push" data-group>
-      <button class="ghead" data-head>Notification <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Notification <span class="chev">▼</span></button>
       <div class="gbody">
         <label class="f"><span>Title (bold line)</span><input type="text" id="pnTitle"></label>
         <label class="f"><span>Body</span><textarea id="pnBody"></textarea></label>
@@ -344,7 +346,7 @@
     </div>
 
     <div class="group chan-push" data-group>
-      <button class="ghead" data-head>Action buttons <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Action buttons <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Up to 3 buttons. They show when the notification is <b>expanded</b>.</div>
         <div class="blkz" id="pnActs"></div>
@@ -352,7 +354,7 @@
     </div>
 
     <div class="group chan-push" data-group id="grpAppearance">
-      <button class="ghead" data-head>Wallpaper <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Wallpaper <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Shows behind the notification on the <b>Lock Screen</b> and <b>Shade</b>.</div>
         <div class="wp-grid" id="wpGrid"></div>
@@ -361,7 +363,7 @@
     </div>
 
     <div class="group chan-inapp" data-group style="display:none;">
-      <button class="ghead" data-head>Content <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Content <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="f" id="iaImgWrap"><span>Image</span><div class="imgz" id="iaImg"></div></div>
         <label class="f" id="iaHlWrap"><span>Headline</span><input type="text" id="iaHl"></label>
@@ -371,7 +373,7 @@
     </div>
 
     <div class="group chan-inapp" data-group id="grpCtas" style="display:none;">
-      <button class="ghead" data-head>Buttons (CTAs) <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Buttons (CTAs) <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="hint">Up to 2 CTAs. Set each one's style — <b>primary</b> (filled), <b>secondary</b> (outline) or <b>text</b>.</div>
         <div class="blkz" id="iaCtas"></div>
@@ -379,7 +381,7 @@
     </div>
 
     <div class="group chan-inapp" data-group id="grpLayout" style="display:none;">
-      <button class="ghead" data-head>Layout <span class="chev">▾</span></button>
+      <button class="ghead" data-head>Layout <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="f" id="iaPosWrap"><span>Banner position</span>
           <div class="seg-in" id="iaPosSeg"><button data-pos="top" class="on">Top</button><button data-pos="bottom">Bottom</button></div>
