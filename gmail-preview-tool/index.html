@@ -364,6 +364,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../image-system.js"></script>
+<script src="../content.js"></script>
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
@@ -409,66 +411,11 @@
   state.industry='ecom'; state.sub='fashion';
 
   // ---------- Industries + email content packs ----------
-  const INDUSTRIES=[
-    {id:'ecom', name:'E-commerce & Retail', subs:[['fashion','Fashion'],['marketplace','Marketplace'],['d2c','D2C']]},
-    {id:'bfsi', name:'Banking & Finance', subs:[['banking','Retail Banking'],['insurance','Insurance'],['fintech','Fintech']]},
-    {id:'media', name:'Media & Entertainment', subs:[['ott','OTT / Streaming'],['news','News & Publishing']]},
-    {id:'travel', name:'Travel & Hospitality', subs:[['airlines','Airlines'],['hotels','Hotels & OTA']]},
-    {id:'food', name:'Food & Delivery', subs:[['delivery','Food Delivery'],['grocery','Grocery']]},
-    {id:'edtech', name:'EdTech', subs:[]},
-    {id:'gaming', name:'Gaming', subs:[]},
-    {id:'telecom', name:'Telecom', subs:[]},
-  ];
-  const KW={fashion:'clothing',marketplace:'electronics',d2c:'cosmetics',banking:'money',insurance:'umbrella',fintech:'smartphone',ott:'cinema',news:'newspaper',airlines:'airplane',hotels:'hotel',delivery:'food',grocery:'vegetables',edtech:'classroom',gaming:'videogame',telecom:'smartphone'};
-  const IMGKW={'Oversized Tee':'tshirt','Cargo Pants':'trousers','Knit Hoodie':'hoodie','Wireless Earbuds':'earbuds','Smart Watch':'smartwatch','Power Bank':'battery','Vitamin C Serum':'serum','Night Cream':'cosmetics','SPF 50':'sunscreen','Savings+ Account':'savings','Gold Credit Card':'creditcard','Auto Loan':'car','Youth Account':'piggybank','Motor':'car','Health':'stethoscope','Travel':'suitcase','Pay bills':'invoice','Send money':'cash','Rewards':'gift','New Originals':'cinema','Blockbusters':'popcorn','Live Comedy':'microphone','Business':'stockmarket','Technology':'laptop','Sport':'stadium','Miami':'miami','New York':'newyork','Chicago':'chicago','Palm Grand':'hotel','City Suites':'hotelroom','Beach Villa':'beach','Burger Yard':'burger','Sushi Bar':'sushi','Pizza Co':'pizza','Fresh Milk':'milk','Free-range Eggs':'eggs','Sourdough':'bread','Data Analytics':'dashboard','UX Design':'wireframe','Cloud 101':'server','Legendary Crate':'treasure','Season Pass':'videogame','Hero Bundle':'gamepad','Unlimited':'smartphone','Family Plan':'family','Data Add-on':'wifi'};
-  function kwFor(name){ return IMGKW[name] || (name||'product').split(' ')[0].toLowerCase(); }
-  const EPACKS={
-    fashion:{brand:'Nova',from:'hello@nova.shop',accent:'#111111',offer:'40% off new arrivals',code:'NOVA10',url:'nova.shop',products:[['Oversized Tee','$89'],['Cargo Pants','$149'],['Knit Hoodie','$199']],orderId:'10482',total:'$437',otpUse:'sign-in'},
-    marketplace:{brand:'Nova Market',from:'orders@novamarket.com',accent:'#ff6d00',offer:'Deals up to 70% off',code:'SAVE15',url:'novamarket.com',products:[['Wireless Earbuds','$129'],['Smart Watch','$299'],['Power Bank','$79']],orderId:'88231',total:'$507',otpUse:'sign-in'},
-    d2c:{brand:'GlowLab',from:'care@glowlab.co',accent:'#e91e8c',offer:'Buy 1 Get 1 on bestsellers',code:'GLOW20',url:'glowlab.co',products:[['Vitamin C Serum','$119'],['Night Cream','$149'],['SPF 50','$89']],orderId:'4471',total:'$357',otpUse:'sign-in'},
-    banking:{brand:'Meridian Bank',from:'no-reply@meridian.com',accent:'#0b57d0',offer:'0% EMI on your card',code:'',url:'meridian.com',products:[['Savings+ Account','3.2% p.a.'],['Gold Credit Card','Rewards'],['Auto Loan','from 4.5%']],orderId:'RQ-2093',total:'—',otpUse:'sign-in'},
-    insurance:{brand:'Meridian Assure',from:'care@meridian.com',accent:'#0b8043',offer:'Renew early & save 15%',code:'RENEW15',url:'meridian.com',products:[['Motor','from $900/yr'],['Health','Family cover'],['Travel','Annual']],orderId:'MA-88213',total:'$1,150',otpUse:'account access'},
-    fintech:{brand:'Meridian Pay',from:'hello@meridianpay.com',accent:'#6d28d9',offer:'Cashback week — 5% back',code:'CASH5',url:'meridianpay.com',products:[['Pay bills','Instant'],['Send money','0% fee'],['Rewards','Redeem']],orderId:'PMT-5521',total:'$320',otpUse:'payment'},
-    ott:{brand:'Streamly',from:'hello@streamly.tv',accent:'#e50914',offer:'50% off your next month',code:'COMEBACK50',url:'streamly.tv',products:[['New Originals','Watch'],['Blockbusters','4K'],['Live Comedy','Tonight']],orderId:'SUB-771',total:'$29',otpUse:'sign-in'},
-    news:{brand:'Streamly News',from:'daily@news.streamly.tv',accent:'#b91c1c',offer:'Go Premium — ad-free',code:'READ30',url:'news.streamly.tv',products:[['Business','Live'],['Technology','Daily'],['Sport','Scores']],orderId:'NS-330',total:'$19',otpUse:'sign-in'},
-    airlines:{brand:'SkyHigh',from:'noreply@skyhigh.com',accent:'#0077c8',offer:'Fares from $199',code:'FLY15',url:'skyhigh.com',products:[['Miami','from $199'],['New York','from $320'],['Chicago','from $280']],orderId:'SH-233',total:'$640',otpUse:'booking'},
-    hotels:{brand:'SkyHigh Stays',from:'stays@skyhigh.com',accent:'#0f766e',offer:'Weekend stays 30% off',code:'STAY30',url:'skyhigh.com/stays',products:[['Palm Grand','$640/nt'],['City Suites','$420/nt'],['Beach Villa','$980/nt']],orderId:'SG-77120',total:'$1,280',otpUse:'booking'},
-    delivery:{brand:'QuickBite',from:'orders@quickbite.app',accent:'#f4511e',offer:'Free delivery all weekend',code:'FREEDEL',url:'quickbite.app',products:[['Burger Yard','20% off'],['Sushi Bar','Free miso'],['Pizza Co','B1G1']],orderId:'5521',total:'$74',otpUse:'sign-in'},
-    grocery:{brand:'QuickBite Fresh',from:'fresh@quickbite.app',accent:'#2e7d32',offer:'$20 off groceries',code:'FRESH20',url:'quickbite.app/fresh',products:[['Fresh Milk','$8'],['Free-range Eggs','$18'],['Sourdough','$12']],orderId:'7830',total:'$84',otpUse:'sign-in'},
-    edtech:{brand:'LearnSphere',from:'hello@learnsphere.io',accent:'#5b3df5',offer:'Certificates 50% off',code:'LEARN50',url:'learnsphere.io',products:[['Data Analytics','12 wks'],['UX Design','8 wks'],['Cloud 101','6 wks']],orderId:'EN-9012',total:'$299',otpUse:'sign-in'},
-    gaming:{brand:'PixelForge',from:'noreply@pixelforge.gg',accent:'#7c3aed',offer:'Double gems this weekend',code:'GEMS2X',url:'pixelforge.gg',products:[['Legendary Crate','500 gems'],['Season Pass','30 tiers'],['Hero Bundle','3 heroes']],orderId:'PX-4410',total:'$120',otpUse:'sign-in'},
-    telecom:{brand:'ConnectTel',from:'care@connecttel.com',accent:'#d81b60',offer:'Unlimited data — $149/mo',code:'UNLTD',url:'connecttel.com',products:[['Unlimited','$149'],['Family Plan','4 SIMs'],['Data Add-on','10GB']],orderId:'CT-6621',total:'$149',otpUse:'sign-in'},
-  };
+  // Shared PACKS (../content.js) + per-entry email overrides -> gmail's EPACKS view
+  const EPACKS=(()=>{ const o={}; for(const k in PACKS) o[k]=Object.assign({}, PACKS[k], PACKS[k].email||{}); return o; })();
   function ctxId(){ return state.sub || state.industry; }
 
   // ---------- Email HTML builders ----------
-  const ILLUS={
-    shirt:"M8 3l-4 2 1 4 2-1v13h10V8l2 1 1-4-4-2a3 3 0 01-8 0z",pants:"M7 3h10l-1 18h-4l-1-10-1 10H6z",hoodie:"M6 8l-2 2 2 2v9h12v-9l2-2-2-2M8 6a4 4 0 018 0M9 6c1 1.5 5 1.5 6 0",
-    headphones:"M5 13a7 7 0 0114 0M4 13h2v6H5a1 1 0 01-1-1zM20 13h-2v6h1a1 1 0 001-1z",watch:"M8 6V3h8v3M8 18v3h8v-3M6 6h12v12H6zM12 9v3l2 1",phone:"M7 2h10a1 1 0 011 1v18a1 1 0 01-1 1H7a1 1 0 01-1-1V3a1 1 0 011-1zM10 19h4",
-    battery:"M3 8h15a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V9a1 1 0 011-1zM21 11v2M6 12h4",bottle:"M10 2h4v3l1 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V7l1-2zM9 12h6",card:"M2 6h20a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V7a1 1 0 011-1zM1 10h22M5 15h4",
-    coins:"M8 7c0-1.7 2.7-3 6-3s6 1.3 6 3-2.7 3-6 3-6-1.3-6-3zM8 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M4 14c0-1.4 2.2-2.5 5-2.5M4 14v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-2",piggy:"M3 13a7 6 0 0113-3.5L20 9l1 3-1.5 1.5.5 3h-3l-1-1.5a7 6 0 01-9 0L6 19H4l-.5-3A3.5 3.5 0 013 13zM16 11.5h.01",
-    umbrella:"M12 3v2M3 11a9 8 0 0118 0zM3 11h18M12 11v7a2 2 0 003 1.7",gift:"M3 9h18v11H3zM2 6h20v3H2zM12 6V4a2 2 0 10-2 2h2zm0 0V4a2 2 0 112 2h-2zM12 6v14",film:"M4 4h16v16H4zM8 4v16M16 4v16M4 8h4M4 12h4M4 16h4M16 8h4M16 12h4M16 16h4",
-    news:"M4 5h14v15H5a1 1 0 01-1-1zM18 8h2v10a2 2 0 01-2 2M7 8h6M7 12h6M7 16h4",laptop:"M5 5h14v10H5zM3 18l1-3h16l1 3zM9 15h6",plane:"M12 3c1 0 1.5 1 1.5 2v4l7 4v2l-7-2v4l2 1.5V21l-3.5-1L9 21v-1.5L11 18v-4l-7 2v-2l7-4V5c0-1 .5-2 1-2z",
-    bed:"M3 9v10M3 12h18v7M21 15v4M3 12V9a1 1 0 011-1h6a1 1 0 011 1v3M11 12h9a1 1 0 011 1",burger:"M4 9a8 4 0 0116 0zM4 12h16M4 15h16a4 3 0 01-4 3H8a4 3 0 01-4-3zM8 6.5h.01M12 5.8h.01M15.5 6.5h.01",pizza:"M12 3l9 15a1 1 0 01-.5 1.4L4 20 3 6a1 1 0 011-1zM9 9h.01M14 13h.01M11 15h.01",
-    basket:"M4 8h16l-1.5 11h-13zM4 8l3-4M20 8l-3-4M9 12v4M15 12v4M12 12v4",controller:"M7 8h10a4 4 0 014 4v2a3 3 0 01-5.5 1.6L15 14H9l-.5 1.6A3 3 0 013 14v-2a4 4 0 014-4zM6.5 11v3M5 12.5h3M15.5 11.5h.01M17.5 13h.01",chart:"M4 4v16h16M8 16v-5M12 16V9M16 16v-8",
-    building:"M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2",box:"M3 8l9-5 9 5-9 5zM3 8v8l9 5 9-5V8M12 13v8",car:"M4 12l1.5-4.5A2 2 0 017.4 6h9.2a2 2 0 011.9 1.5L20 12M3 12h18v4a1 1 0 01-1 1M5 17H4a1 1 0 01-1-1v-4M7 17a2 2 0 004 0M13 17a2 2 0 004 0M6 12h12",
-    stethoscope:"M6 3v6a4 4 0 008 0V3M6 3H4M12 3h2M10 13v2a4 4 0 008 0M18 13a2 2 0 100-.01",suitcase:"M5 8h14v11H5zM9 8V5h6v3M12 8v11",mic:"M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3zM7 11a5 5 0 0010 0M12 16v4M9 21h6",
-    trophy:"M7 4h10v4a5 5 0 01-10 0zM7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 13h4l1 4H9zM8 20h8",family:"M8 8a2 2 0 100-.01M16 8a2 2 0 100-.01M5 20v-4a2 2 0 012-2h2M19 20v-4a2 2 0 00-2-2h-2M12 14a2 2 0 100-.01M10 20v-3a2 2 0 014 0v3",server:"M4 4h16v6H4zM4 14h16v6H4zM7 7h.01M7 17h.01",
-    sun:"M12 8a4 4 0 100 8 4 4 0 000-8zM12 3v2M12 19v2M3 12h2M19 12h2M6 6l1 1M17 17l1 1M18 6l-1 1M7 17l-1 1"
-  };
-  const ILMAP={tshirt:'shirt',clothing:'shirt',trousers:'pants',hoodie:'hoodie',earbuds:'headphones',electronics:'headphones',smartwatch:'watch',battery:'battery',serum:'bottle',cosmetics:'bottle',sunscreen:'bottle',milk:'bottle',savings:'coins',cash:'coins',money:'coins',piggybank:'piggy',creditcard:'card',invoice:'card',car:'car',stethoscope:'stethoscope',suitcase:'suitcase',umbrella:'umbrella',gift:'gift',treasure:'gift',cinema:'film',popcorn:'film',microphone:'mic',newspaper:'news',laptop:'laptop',wireframe:'laptop',classroom:'laptop',dashboard:'chart',stockmarket:'chart',plane:'plane',airplane:'plane',hotel:'bed',hotelroom:'bed',beach:'sun',burger:'burger',food:'burger',sushi:'burger',pizza:'pizza',vegetables:'basket',groceries:'basket',eggs:'box',bread:'box',product:'box',server:'server',controller:'controller',videogame:'controller',gamepad:'controller',smartphone:'phone',wifi:'phone',family:'family',stadium:'trophy',sport:'trophy',building:'building',city:'building',miami:'building',newyork:'building',chicago:'building',dubai:'building',pyramids:'building',mountains:'building'};
-  function hueOf(x){ let h=0; x=x||'x'; for(let i=0;i<x.length;i++) h=(h*31+x.charCodeAt(i))>>>0; return h%360; }
-  function illusFor(kw){ kw=(kw||'').toLowerCase(); return ILMAP[kw] || (ILLUS[kw]?kw:'box'); }
-  function tile(kw,hue,w,h){ w=w||600; h=h||360; if(hue==null) hue=hueOf(kw); const h2=(hue+34)%360;
-    const d=ILLUS[illusFor(kw)]||ILLUS.box; const S=(Math.min(w,h)*0.4/24), cx=w/2, cy=h/2, r=Math.min(w,h)*0.31;
-    const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'>"
-      +"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",56%,58%)'/><stop offset='1' stop-color='hsl("+h2+",52%,44%)'/></linearGradient></defs>"
-      +"<rect width='100%' height='100%' fill='url(#g)'/>"
-      +"<circle cx='"+cx.toFixed(0)+"' cy='"+cy.toFixed(0)+"' r='"+r.toFixed(0)+"' fill='rgba(255,255,255,0.13)'/>"
-      +"<g transform='translate("+cx.toFixed(1)+","+cy.toFixed(1)+") scale("+S.toFixed(3)+") translate(-12,-12)' fill='none' stroke='#fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'><path d='"+d+"'/></g>"
-      +"</svg>";
-    return 'data:image/svg+xml,'+encodeURIComponent(svg); }
-  function ePhoto(kw,seed){ const m=(window.__PXIMG||{}); return m[kw] || tile(kw,null,600,360); }
   function eBtn(p,l){ return `<a href="#" style="display:inline-block;background:${p.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${l}</a>`; }
   function eBrand(p){ return `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${p.accent};">${p.brand}</span></div>`; }
   function eHeroImg(p,kw,seed){ return `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(kw,seed)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove()"></div>`; }
@@ -476,24 +423,7 @@
   function eOrderTable(p){ const rows=p.products.map(pr=>`<tr><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;color:#333;font-size:14px;">${pr[0]}</td><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;text-align:right;color:#333;font-size:14px;">${pr[1]}</td></tr>`).join(''); return `<table style="width:100%;border-collapse:collapse;">${rows}<tr><td style="padding:13px 0;font-weight:800;color:#111;">Total</td><td style="padding:13px 0;text-align:right;font-weight:800;color:${p.accent};">${p.total}</td></tr></table>`; }
   function eWrap(inner){ return `<div style="background:#eef0f3;padding:20px 12px;font-family:Arial,Helvetica,sans-serif;"><div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">${inner}</div><div style="max-width:600px;margin:14px auto 0;text-align:center;color:#9aa0ac;font-size:12px;line-height:1.6;">You're receiving this because you subscribed.<br>Unsubscribe · Manage preferences</div></div>`; }
 
-  const CONFIRM={
-    fashion:{noun:'order',head:'Order confirmed',line:"We'll email your tracking link once it ships.",cta:'Track your order',ship:true},
-    marketplace:{noun:'order',head:'Order confirmed',line:"We'll email tracking as soon as it ships.",cta:'Track your order',ship:true},
-    d2c:{noun:'order',head:'Order confirmed',line:"We'll email tracking once it ships.",cta:'Track your order',ship:true},
-    banking:{noun:'request',head:'Request received',line:"Your request is being processed — we'll update you shortly.",cta:'View request',ship:false},
-    insurance:{noun:'policy',head:'Policy active',line:'Your policy is now active. Documents are attached.',cta:'View policy',ship:false},
-    fintech:{noun:'payment',head:'Payment successful',line:'Your payment went through. A receipt is below.',cta:'View receipt',ship:false},
-    ott:{noun:'subscription',head:"You're all set",line:'Your subscription is active — start watching now.',cta:'Start watching',ship:false},
-    news:{noun:'subscription',head:'Welcome to Premium',line:'Ad-free reading is unlocked on all your devices.',cta:'Start reading',ship:false},
-    airlines:{noun:'booking',head:'Booking confirmed',line:'Your seats are reserved. Check-in opens 48h before departure.',cta:'View booking',ship:false},
-    hotels:{noun:'reservation',head:'Reservation confirmed',line:"Your stay is booked — we can't wait to host you.",cta:'View reservation',ship:false},
-    delivery:{noun:'order',head:'Order confirmed',line:'Your food is being prepared — track your rider live.',cta:'Track order',ship:true},
-    grocery:{noun:'order',head:'Order confirmed',line:"We'll notify you when your delivery is on the way.",cta:'Track order',ship:true},
-    edtech:{noun:'enrollment',head:"You're enrolled",line:'Your seat is confirmed. Jump into your first lesson.',cta:'Start learning',ship:false},
-    gaming:{noun:'purchase',head:'Purchase complete',line:'Your items have been added to your account.',cta:'Open game',ship:false},
-    telecom:{noun:'plan',head:'Plan activated',line:'Your new plan is live. Enjoy!',cta:'Manage plan',ship:false},
-  };
-  function ecx(){ return CONFIRM[ctxId()]||{noun:'order',head:'Order confirmed',line:'',cta:'View details',ship:true}; }
+  function ecx(){ const c=CONFIRM[ctxId()]; return c?Object.assign({},c,c.email||{}):{noun:'order',head:'Order confirmed',line:'',cta:'View details',ship:true}; }  // email-flavoured confirmations
   function ecap(x){ return x?x.charAt(0).toUpperCase()+x.slice(1):x; }
   const EARCH=[
     {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Hero image + code + CTA',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`${p.brand}: ${p.offer} 🎉`,snippet:`${p.offer}${p.code?` — use code ${p.code}`:''}. Limited time only.`,html:eWrap(eBrand(p)+eHeroImg(p,p.kw,3)+`<div style="padding:32px 34px;text-align:center;"><h1 style="margin:0 0 10px;font-size:26px;color:#111;">${p.offer}</h1><p style="margin:0 0 8px;font-size:15px;color:#555;">Treat yourself — this week only.</p>${p.code?`<div style="margin:16px 0;display:inline-block;border:2px dashed ${p.accent};border-radius:8px;padding:10px 22px;font-size:18px;font-weight:800;color:${p.accent};letter-spacing:1px;">${p.code}</div><br>`:''}<div style="margin-top:12px;">${eBtn(p,'Shop now')}</div></div>`)})},

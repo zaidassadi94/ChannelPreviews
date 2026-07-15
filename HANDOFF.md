@@ -317,8 +317,24 @@ stage; gmail keeps its stage gradient (so exports stay pixel-identical), its own
 device frames, `#capture{font-feature-settings:normal}` and an explicit statusbar
 color so the design system never leaks into exported mockups. Gotcha learned:
 `backdrop-filter` on the topbar flips Chromium's text antialiasing for the whole
-page — pixel-diffs must replicate compositing+geometry before comparing. Phases 2–3
-below remain.
+page — pixel-diffs must replicate compositing+geometry before comparing.
+
+**Progress: Phase 2 DONE (2026-07-15).** `content.js` (INDUSTRIES, cap, PACKS, CONFIRM)
+and `image-system.js` (escXml, hueOf, ILLUS, ILMAP, illusFor, tile, photo, ePhoto,
+phGrad, phGray, KW, IMGKW, kwFor) now live at the repo root, loaded right after
+`images.js` (which stays data-only). Channel-variant copy lives INSIDE each PACKS/
+CONFIRM entry: base fields + `flow{}` = messaging; `push:{…}` = notify overrides
+(its one-line flows + shorter confirm lines); `email:{…}` = gmail overrides (from/
+accent/products/total/otpUse + a few offer/code/url edits). Each tool merges its own
+view with ~1 line of glue (notify: `Object.assign({},base,base.push||{})`; gmail
+builds `EPACKS` the same way; messaging reads base fields directly). Verified with
+content fingerprints — a hash of `#capture` innerHTML for every channel × combo ×
+template (540 total) before/after: notify + gmail 100% identical; messaging has 4
+intended diffs = the §10 IMGKW drift-bug fix ('Live comedy'/'Tech' carousel cards in
+media/ott + media/news now resolve to microphone/laptop instead of a generic box).
+`setup.html` + `resolve-images.js` queries gained `stockmarket` (kwFor('Business'));
+'product' is deliberately query-less (generic placeholder → illustration by design).
+Only Phase 3 below remains.
 
 **Why:** the 3 tools each re-implement the same foundations, so a change (industry,
 photo keyword, button style) means editing 3 files, and they've **drifted** (chevrons,

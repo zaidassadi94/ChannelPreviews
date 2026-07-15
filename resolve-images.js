@@ -29,7 +29,7 @@ const QUERIES = {
   // electronics
   earbuds:'wireless earbuds', smartwatch:'smartwatch on white', battery:'power bank charger', electronics:'tech gadgets flatlay',
   smartphone:'smartphone on white', laptop:'laptop computer desk', server:'server data center', wireframe:'ux design wireframe screen',
-  dashboard:'analytics dashboard screen', wifi:'wifi router',
+  dashboard:'analytics dashboard screen', stockmarket:'stock market chart screen', wifi:'wifi router',
   // beauty
   serum:'skincare serum bottle', cosmetics:'cosmetics products flatlay', sunscreen:'sunscreen bottle',
   // finance

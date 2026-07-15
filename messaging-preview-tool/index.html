@@ -251,6 +251,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../image-system.js"></script>
+<script src="../content.js"></script>
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
@@ -264,8 +266,6 @@
   const AV=['#5b6abf','#e07a5f','#3aa99f','#d96a97','#7b68c9','#8a63d2','#2aa9c9','#5aab6a','#e0a34e','#a1887f','#4a90d9','#0b8043','#e26b3a'];
   const avColor=n=>{ let h=0; const s=n||'?'; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return AV[h%AV.length]; };
   const initial=n=>{ const t=(n||'?').trim(); return t?t[0].toUpperCase():'?'; };
-  function escXml(x){ return (x==null?'':String(x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function hueOf(x){ let h=0; x=x||'x'; for(let i=0;i<x.length;i++) h=(h*31+x.charCodeAt(i))>>>0; return h%360; }
   function phImg(text,sub,hue,w,h){ w=w||600; h=h||340; if(hue==null) hue=hueOf(text); const h2=(hue+38)%360;
     const fs=Math.round(Math.min(w/8, 46)), fs2=Math.round(fs*0.62), t=escXml(text||''), s2=sub?escXml(sub):'';
     const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'>"
@@ -277,71 +277,8 @@
       +(s2?"<text x='50%' y='63%' fill='rgba(255,255,255,0.92)' font-family='Inter,Arial,sans-serif' font-weight='600' font-size='"+fs2+"' text-anchor='middle' dominant-baseline='middle'>"+s2+"</text>":"")
       +"</svg>";
     return 'data:image/svg+xml,'+encodeURIComponent(svg); }
-  // ---------- Self-contained product illustrations (always relevant) ----------
-  const ILLUS={
-    shirt:"M8 3l-4 2 1 4 2-1v13h10V8l2 1 1-4-4-2a3 3 0 01-8 0z",
-    pants:"M7 3h10l-1 18h-4l-1-10-1 10H6z",
-    hoodie:"M6 8l-2 2 2 2v9h12v-9l2-2-2-2M8 6a4 4 0 018 0M9 6c1 1.5 5 1.5 6 0",
-    headphones:"M5 13a7 7 0 0114 0M4 13h2v6H5a1 1 0 01-1-1zM20 13h-2v6h1a1 1 0 001-1z",
-    watch:"M8 6V3h8v3M8 18v3h8v-3M6 6h12v12H6zM12 9v3l2 1",
-    phone:"M7 2h10a1 1 0 011 1v18a1 1 0 01-1 1H7a1 1 0 01-1-1V3a1 1 0 011-1zM10 19h4",
-    battery:"M3 8h15a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V9a1 1 0 011-1zM21 11v2M6 12h4",
-    bottle:"M10 2h4v3l1 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V7l1-2zM9 12h6",
-    card:"M2 6h20a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V7a1 1 0 011-1zM1 10h22M5 15h4",
-    coins:"M8 7c0-1.7 2.7-3 6-3s6 1.3 6 3-2.7 3-6 3-6-1.3-6-3zM8 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M4 14c0-1.4 2.2-2.5 5-2.5M4 14v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-2",
-    piggy:"M3 13a7 6 0 0113-3.5L20 9l1 3-1.5 1.5.5 3h-3l-1-1.5a7 6 0 01-9 0L6 19H4l-.5-3A3.5 3.5 0 013 13zM16 11.5h.01",
-    umbrella:"M12 3v2M3 11a9 8 0 0118 0zM3 11h18M12 11v7a2 2 0 003 1.7",
-    gift:"M3 9h18v11H3zM2 6h20v3H2zM12 6V4a2 2 0 10-2 2h2zm0 0V4a2 2 0 112 2h-2zM12 6v14",
-    film:"M4 4h16v16H4zM8 4v16M16 4v16M4 8h4M4 12h4M4 16h4M16 8h4M16 12h4M16 16h4",
-    news:"M4 5h14v15H5a1 1 0 01-1-1zM18 8h2v10a2 2 0 01-2 2M7 8h6M7 12h6M7 16h4",
-    laptop:"M5 5h14v10H5zM3 18l1-3h16l1 3zM9 15h6",
-    plane:"M12 3c1 0 1.5 1 1.5 2v4l7 4v2l-7-2v4l2 1.5V21l-3.5-1L9 21v-1.5L11 18v-4l-7 2v-2l7-4V5c0-1 .5-2 1-2z",
-    bed:"M3 9v10M3 12h18v7M21 15v4M3 12V9a1 1 0 011-1h6a1 1 0 011 1v3M11 12h9a1 1 0 011 1",
-    burger:"M4 9a8 4 0 0116 0zM4 12h16M4 15h16a4 3 0 01-4 3H8a4 3 0 01-4-3zM8 6.5h.01M12 5.8h.01M15.5 6.5h.01",
-    pizza:"M12 3l9 15a1 1 0 01-.5 1.4L4 20 3 6a1 1 0 011-1zM9 9h.01M14 13h.01M11 15h.01",
-    basket:"M4 8h16l-1.5 11h-13zM4 8l3-4M20 8l-3-4M9 12v4M15 12v4M12 12v4",
-    controller:"M7 8h10a4 4 0 014 4v2a3 3 0 01-5.5 1.6L15 14H9l-.5 1.6A3 3 0 013 14v-2a4 4 0 014-4zM6.5 11v3M5 12.5h3M15.5 11.5h.01M17.5 13h.01",
-    chart:"M4 4v16h16M8 16v-5M12 16V9M16 16v-8",
-    building:"M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2",
-    box:"M3 8l9-5 9 5-9 5zM3 8v8l9 5 9-5V8M12 13v8",
-    car:"M4 12l1.5-4.5A2 2 0 017.4 6h9.2a2 2 0 011.9 1.5L20 12M3 12h18v4a1 1 0 01-1 1M5 17H4a1 1 0 01-1-1v-4M7 17a2 2 0 004 0M13 17a2 2 0 004 0M6 12h12",
-    stethoscope:"M6 3v6a4 4 0 008 0V3M6 3H4M12 3h2M10 13v2a4 4 0 008 0M18 13a2 2 0 100-.01",
-    suitcase:"M5 8h14v11H5zM9 8V5h6v3M12 8v11",
-    mic:"M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3zM7 11a5 5 0 0010 0M12 16v4M9 21h6",
-    trophy:"M7 4h10v4a5 5 0 01-10 0zM7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 13h4l1 4H9zM8 20h8",
-    family:"M8 8a2 2 0 100-.01M16 8a2 2 0 100-.01M5 20v-4a2 2 0 012-2h2M19 20v-4a2 2 0 00-2-2h-2M12 14a2 2 0 100-.01M10 20v-3a2 2 0 014 0v3",
-    server:"M4 4h16v6H4zM4 14h16v6H4zM7 7h.01M7 17h.01",
-    sun:"M12 8a4 4 0 100 8 4 4 0 000-8zM12 3v2M12 19v2M3 12h2M19 12h2M6 6l1 1M17 17l1 1M18 6l-1 1M7 17l-1 1"
-  };
-  const ILMAP={tshirt:'shirt',clothing:'shirt',trousers:'pants',hoodie:'hoodie',earbuds:'headphones',electronics:'headphones',smartwatch:'watch',battery:'battery',serum:'bottle',cosmetics:'bottle',sunscreen:'bottle',milk:'bottle',savings:'coins',cash:'coins',money:'coins',piggybank:'piggy',creditcard:'card',invoice:'card',car:'car',stethoscope:'stethoscope',suitcase:'suitcase',umbrella:'umbrella',gift:'gift',treasure:'gift',cinema:'film',popcorn:'film',microphone:'mic',newspaper:'news',laptop:'laptop',wireframe:'laptop',classroom:'laptop',dashboard:'chart',stockmarket:'chart',plane:'plane',airplane:'plane',hotel:'bed',hotelroom:'bed',beach:'sun',burger:'burger',food:'burger',sushi:'burger',pizza:'pizza',vegetables:'basket',groceries:'basket',eggs:'box',bread:'box',product:'box',server:'server',controller:'controller',videogame:'controller',gamepad:'controller',smartphone:'phone',wifi:'phone',family:'family',stadium:'trophy',sport:'trophy',building:'building',city:'building',miami:'building',newyork:'building',chicago:'building',dubai:'building',pyramids:'building',mountains:'building'};
-  function illusFor(kw){ kw=(kw||'').toLowerCase(); return ILMAP[kw] || (ILLUS[kw]?kw:'box'); }
-  function tile(kw,hue,w,h){ w=w||600; h=h||360; if(hue==null) hue=hueOf(kw); const h2=(hue+34)%360;
-    const d=ILLUS[illusFor(kw)]||ILLUS.box; const S=(Math.min(w,h)*0.4/24), cx=w/2, cy=h/2, r=Math.min(w,h)*0.31;
-    const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'>"
-      +"<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",56%,58%)'/><stop offset='1' stop-color='hsl("+h2+",52%,44%)'/></linearGradient></defs>"
-      +"<rect width='100%' height='100%' fill='url(#g)'/>"
-      +"<circle cx='"+cx.toFixed(0)+"' cy='"+cy.toFixed(0)+"' r='"+r.toFixed(0)+"' fill='rgba(255,255,255,0.13)'/>"
-      +"<g transform='translate("+cx.toFixed(1)+","+cy.toFixed(1)+") scale("+S.toFixed(3)+") translate(-12,-12)' fill='none' stroke='#fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'><path d='"+d+"'/></g>"
-      +"</svg>";
-    return 'data:image/svg+xml,'+encodeURIComponent(svg); }
-  function photo(kw,w,h){ const m=(window.__PXIMG||{}); return m[kw] || tile(kw,null,w,h); }
-  function phGrad(seed){ const hue=((seed||0)%360+360)%360, h2=(hue+40)%360; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='400' height='260'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl("+hue+",52%,62%)'/><stop offset='1' stop-color='hsl("+h2+",48%,46%)'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><circle cx='330' cy='60' r='130' fill='rgba(255,255,255,0.10)'/><circle cx='60' cy='230' r='90' fill='rgba(0,0,0,0.06)'/></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
-  const KW={fashion:'clothing',marketplace:'electronics',d2c:'cosmetics',banking:'money',insurance:'umbrella',fintech:'smartphone',ott:'cinema',news:'newspaper',airlines:'airplane',hotels:'hotel',delivery:'food',grocery:'vegetables',edtech:'classroom',gaming:'videogame',telecom:'smartphone'};
-  const IMGKW={'Oversized Tee':'tshirt','Cargo Pants':'trousers','Knit Hoodie':'hoodie','Wireless Earbuds':'earbuds','Smart Watch':'smartwatch','Power Bank':'battery','Vitamin C Serum':'serum','Night Cream':'cosmetics','SPF 50':'sunscreen','Savings+ Account':'savings','Savings+':'savings','Gold Credit Card':'creditcard','Gold Card':'creditcard','Auto Loan':'car','Youth Account':'piggybank','Motor':'car','Health':'stethoscope','Travel':'suitcase','Pay bills':'invoice','Send money':'cash','Rewards':'gift','New Originals':'cinema','Blockbusters':'popcorn','Live Comedy':'microphone','Originals':'cinema','Business':'stockmarket','Technology':'laptop','Sport':'stadium','Miami':'miami','New York':'newyork','Chicago':'chicago','Palm Grand':'hotel','City Suites':'hotelroom','Beach Villa':'beach','Burger Yard':'burger','Sushi Bar':'sushi','Pizza Co':'pizza','Fresh Milk':'milk','Free-range Eggs':'eggs','Sourdough':'bread','Data Analytics':'dashboard','UX Design':'wireframe','Cloud 101':'server','Legendary Crate':'treasure','Season Pass':'videogame','Hero Bundle':'gamepad','Unlimited':'smartphone','Family Plan':'family','Data Add-on':'wifi','Item one':'product','Item two':'product','Product one':'product','Product two':'product'};
-  function kwFor(name){ return IMGKW[name] || (name||'product').split(' ')[0].toLowerCase(); }
-  function phGray(w,h){ w=w||600; h=h||340; const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+w+"' height='"+h+"'><rect width='100%' height='100%' fill='%23e7e9ee'/><g fill='none' stroke='%23aab0bd' stroke-width='2'><rect x='"+Math.round(w*0.32)+"' y='"+Math.round(h*0.3)+"' width='"+Math.round(w*0.36)+"' height='"+Math.round(h*0.4)+"' rx='6'/><circle cx='"+Math.round(w*0.42)+"' cy='"+Math.round(h*0.43)+"' r='"+Math.round(h*0.05)+"'/><path d='M"+Math.round(w*0.35)+" "+Math.round(h*0.66)+" L"+Math.round(w*0.46)+" "+Math.round(h*0.53)+" L"+Math.round(w*0.54)+" "+Math.round(h*0.6)+" L"+Math.round(w*0.6)+" "+Math.round(h*0.55)+" L"+Math.round(w*0.65)+" "+Math.round(h*0.66)+"'/></g></svg>"; return 'data:image/svg+xml,'+encodeURIComponent(svg); }
   let uid=1; const nid=()=>'m'+(uid++);
 
-  const INDUSTRIES=[
-    {id:'ecom', name:'E-commerce & Retail', biz:'Nova', status:'online', subs:[['fashion','Fashion'],['marketplace','Marketplace'],['d2c','D2C']]},
-    {id:'bfsi', name:'Banking & Finance', biz:'Meridian Bank', status:'online', subs:[['banking','Retail Banking'],['insurance','Insurance'],['fintech','Fintech']]},
-    {id:'media', name:'Media & Entertainment', biz:'Streamly', status:'online', subs:[['ott','OTT / Streaming'],['news','News & Publishing']]},
-    {id:'travel', name:'Travel & Hospitality', biz:'SkyHigh', status:'online', subs:[['airlines','Airlines'],['hotels','Hotels & OTA']]},
-    {id:'food', name:'Food & Delivery', biz:'QuickBite', status:'online', subs:[['delivery','Food Delivery'],['grocery','Grocery']]},
-    {id:'edtech', name:'EdTech', biz:'LearnSphere', status:'online', subs:[]},
-    {id:'gaming', name:'Gaming', biz:'PixelForge', status:'online', subs:[]},
-    {id:'telecom', name:'Telecom', biz:'ConnectTel', status:'online', subs:[]},
-  ];
 
   const state={
     channel:'whatsapp', device:'ios', theme:'light',
@@ -403,63 +340,13 @@
     whatsapp:[['text','Text'],['image','Image'],['template','Template + buttons'],['carousel','Product carousel'],['list','List menu'],['document','Document']],
   };
 
-  // ---------- Content packs (per sub-industry / industry) ----------
-  const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):x;
-  const PACKS={
-    fashion:{brand:"Nova",emoji:"🛍️",offer:"40% off new arrivals",url:"nova.shop",hero:"fashion",orderNoun:"order",orderId:"10482",code:"NOVA10",otpUse:"login",reminder:"your wishlist item is back in stock",feedbackQ:"How was your recent order?",carousel:[["Oversized Tee","$89"],["Cargo Pants","$149"],["Knit Hoodie","$199"]],
-      flow:{intro:"Hi Zaid! You left *Nova Air Runner (US 9)* in your bag 👟\n\nStill want it? We saved your size.",opts:[["Complete purchase","🎉 Here's *10% off*: NOVA10. Checkout: nova.shop/bag"],["Remind me later","No rush — we'll hold your size for 24h. ⏰"],["Not interested","All good! Browse new arrivals at nova.shop/new"]]}},
-    marketplace:{brand:"Nova Market",emoji:"🛒",offer:"Deals up to 70% off",url:"novamarket.com",hero:"market",orderNoun:"order",orderId:"88231",code:"SAVE15",otpUse:"login",reminder:"prices dropped on items in your cart",feedbackQ:"How was your delivery?",carousel:[["Wireless Earbuds","$129"],["Smart Watch","$299"],["Power Bank","$79"]],
-      flow:{intro:"🛒 Your cart is waiting — 3 items, and one just dropped in price!",opts:[["Checkout now","🎉 Applied SAVE15 for you. Complete: novamarket.com/cart"],["Save for later","Saved! We'll alert you on further price drops. 🔔"],["Remove items","Done — your cart is cleared."]]}},
-    d2c:{brand:"GlowLab",emoji:"✨",offer:"Buy 1 Get 1 on bestsellers",url:"glowlab.co",hero:"beauty",orderNoun:"order",orderId:"4471",code:"GLOW20",otpUse:"login",reminder:"time to restock your Vitamin C serum",feedbackQ:"How's your skin feeling?",carousel:[["Vit-C Serum","$119"],["Night Cream","$149"],["SPF 50","$89"]],
-      flow:{intro:"✨ Running low, Zaid? Your *Vitamin C Serum* usually lasts 30 days — time to restock.",opts:[["Reorder now","🛒 Added to cart with 15% off (GLOW20). Checkout: glowlab.co/cart"],["Try something new","Great! Here are 3 bestsellers loved by your skin type."],["Not yet","No problem — we'll check in next week. 💛"]]}},
-    banking:{brand:"Meridian Bank",emoji:"🏦",offer:"0% EMI on your credit card",url:"meridian.com",hero:"bank",orderNoun:"request",orderId:"RQ-2093",code:"",otpUse:"login",reminder:"your monthly statement is ready",feedbackQ:"How was your branch visit?",carousel:[["Savings+","3.2% p.a."],["Youth Account","Zero fees"],["Gold Card","Rewards"]],
-      flow:{intro:"👋 Welcome to *Meridian Bank*. How can we help today?",opts:[["Check balance","Your available balance is *$24,930.55*. Last txn: −$220 at Nova Retail."],["Block my card","Your card is temporarily frozen 🔒 A replacement is on its way (2–3 days)."],["Talk to an agent","Connecting you to the next available agent… ⏳"]]}},
-    insurance:{brand:"Meridian Assure",emoji:"🛡️",offer:"Renew early & save 15%",url:"meridian.com/renew",hero:"insure",orderNoun:"policy",orderId:"MA-88213",code:"",otpUse:"account",reminder:"your motor policy expires on 20 Jul",feedbackQ:"How was your claim experience?",carousel:[["Motor","from $900/yr"],["Health","Family cover"],["Travel","Single/annual"]],
-      flow:{intro:"🛡️ Your *motor policy MA-88213* expires on *20 Jul*. Renew to stay covered.",opts:[["Renew now","✅ Renewed! No inspection needed. Policy doc: meridian.com/doc"],["File a claim","Sorry to hear that. Reply with your claim details and photos."],["Talk to advisor","Connecting you to an insurance advisor… ⏳"]]}},
-    fintech:{brand:"Meridian Pay",emoji:"💳",offer:"Cashback week — 5% back",url:"meridianpay.com",hero:"pay",orderNoun:"payment",orderId:"PMT-5521",code:"CASH5",otpUse:"payment",reminder:"you have $40 in unused rewards",feedbackQ:"How was your last payment?",carousel:[["Pay bills","Instant"],["Send money","0% fee"],["Rewards","Redeem"]],
-      flow:{intro:"📊 Your July spend is *$4,120* — 12% below last month. Nice work!",opts:[["Show savings tips","💡 Set a dining budget of $900 and enable round-ups to save ~$300/mo."],["Set a budget","Sure — reply with a monthly limit and we'll track it for you."],["Redeem rewards","You have $40 in rewards. Redeem: meridianpay.com/rewards"]]}},
-    ott:{brand:"Streamly",emoji:"🎬",offer:"50% off your next month",url:"streamly.tv",hero:"ott",orderNoun:"subscription",orderId:"SUB-771",code:"COMEBACK50",otpUse:"login",reminder:"3 new seasons landed in your watchlist",feedbackQ:"Enjoying the new releases?",carousel:[["Originals","New"],["Blockbusters","4K"],["Live comedy","Tonight"]],
-      flow:{intro:"We miss you, Zaid 🍿 *3 new seasons* just landed in your watchlist. Come back for *50% off*?",opts:[["Claim 50% off","🎉 Done! Your next month is half price. Jump back in: streamly.tv/home"],["What's new?","This week: 3 Originals, 2 blockbusters & a live comedy special 🎤"],["Cancel updates","Got it — no more promos. Manage anytime in Settings."]]}},
-    news:{brand:"Streamly News",emoji:"📰",offer:"Go Premium — ad-free",url:"news.streamly.tv",hero:"news",orderNoun:"subscription",orderId:"NS-330",code:"READ30",otpUse:"login",reminder:"your morning briefing is ready",feedbackQ:"How do you like your briefing?",carousel:[["Business","Live"],["Tech","Daily"],["Sport","Scores"]],
-      flow:{intro:"📰 Good morning! Your personalised briefing is ready. What matters most to you?",opts:[["Business","📈 Top story: Markets rally to record high. Read: news.streamly.tv/biz"],["Tech","🤖 Top story: New AI chips unveiled. Read: news.streamly.tv/tech"],["Sport","⚽ Last night: 3 results & today's fixtures. Read: news.streamly.tv/sport"]]}},
-    airlines:{brand:"SkyHigh",emoji:"✈️",offer:"Fares from $199",url:"skyhigh.com",hero:"air",orderNoun:"booking",orderId:"SH-233",code:"FLY15",otpUse:"booking",reminder:"online check-in is open for SH-233",feedbackQ:"How was your flight?",carousel:[["Miami","from $199"],["New York","from $320"],["Chicago","from $280"]],
-      flow:{intro:"✈️ *SkyHigh SH-233* New York → Miami\nDeparts *Fri 18 Jul, 14:20* · Gate B12\n\nCheck-in is now open. Ready to fly?",opts:[["Check in now","✅ Checked in! Seat 14A. Boarding pass: skyhigh.com/bp/SH233"],["Add baggage","Add 23kg for $120? Reply YES to confirm."],["Change seat","Window seats free: 9A, 22F. Reply with your pick."]]}},
-    hotels:{brand:"SkyHigh Stays",emoji:"🏨",offer:"Weekend stays 30% off",url:"skyhigh.com/stays",hero:"hotel",orderNoun:"booking",orderId:"SG-77120",code:"STAY30",otpUse:"booking",reminder:"your stay at Palm Grand is in 2 days",feedbackQ:"How was your stay?",carousel:[["Palm Grand","$640/nt"],["City Suites","$420/nt"],["Beach Villa","$980/nt"]],
-      flow:{intro:"🏨 Your stay at *Palm Grand, Miami* is in 2 days. Anything we can arrange?",opts:[["Early check-in","✅ Requested! We'll try for 11 AM and confirm at the desk."],["Airport pickup","Add a pickup for $90? Reply YES and share your flight no."],["View booking","Here are your details: skyhigh.com/stay/SG-77120"]]}},
-    delivery:{brand:"QuickBite",emoji:"🍔",offer:"Free delivery all weekend",url:"quickbite.app",hero:"food",orderNoun:"order",orderId:"5521",code:"FREEDEL",otpUse:"login",reminder:"hungry? your favourites are one tap away",feedbackQ:"How was your meal?",carousel:[["Burger Yard","20% off"],["Sushi Bar","Free miso"],["Pizza Co","Buy 1 Get 1"]],
-      flow:{intro:"Your order *#5521* from Burger Yard is being prepared 👨‍🍳 Need anything?",opts:[["Track rider","🛵 Ahmed is 8 min away. Track live: quickbite.app/track/5521"],["Add cutlery","Added! Your rider will bring cutlery. 🍴"],["Report an issue","Sorry about that! Reply with the item and we'll refund it."]]}},
-    grocery:{brand:"QuickBite Fresh",emoji:"🛒",offer:"$20 off your groceries",url:"quickbite.app/fresh",hero:"grocery",orderNoun:"order",orderId:"7830",code:"FRESH20",otpUse:"login",reminder:"running low? reorder your weekly essentials",feedbackQ:"How was your delivery?",carousel:[["Fresh Milk","$8"],["Free-range Eggs","$18"],["Sourdough","$12"]],
-      flow:{intro:"🥛 Running low? Reorder your *weekly essentials* (milk, eggs, bread +4) in one tap.",opts:[["Reorder now","🛒 Added 7 items — $84. Checkout: quickbite.app/cart"],["Edit list","Sure! What would you like to add or remove?"],["Skip this week","No problem — we'll check in next week. 👋"]]}},
-    edtech:{brand:"LearnSphere",emoji:"🎓",offer:"Certificates 50% off",url:"learnsphere.io",hero:"edu",orderNoun:"enrolment",orderId:"EN-9012",code:"LEARN50",otpUse:"login",reminder:"you're 68% through your course",feedbackQ:"How's the course going?",carousel:[["Data Analytics","12 wks"],["UX Design","8 wks"],["Cloud 101","6 wks"]],
-      flow:{intro:"You're *68% through* “Data Analytics Foundations” 📈 Just 3 lessons to your certificate!",opts:[["Resume lesson","🚀 Loading Lesson 9: Dashboards. Pick up here: learnsphere.io/resume"],["Book a mentor","Free 15-min slots today: 4:00, 5:30, 7:00 PM. Reply with a time."],["Remind me tonight","Done — we'll ping you at 8 PM. Keep the streak alive! 🔥"]]}},
-    gaming:{brand:"PixelForge",emoji:"🎮",offer:"Double gems this weekend",url:"pixelforge.gg",hero:"game",orderNoun:"purchase",orderId:"PX-4410",code:"GEMS2X",otpUse:"login",reminder:"your energy is full — time to play",feedbackQ:"Enjoying the new season?",carousel:[["Legendary Crate","500 gems"],["Season Pass","30 tiers"],["Hero Bundle","3 heroes"]],
-      flow:{intro:"Your squad misses you, Commander ⚔️ Log in today for a *free Legendary crate* + 500 gems.",opts:[["Claim reward","🎁 Claimed! Your crate + 500 gems are waiting in-game."],["What's new?","New season “Ironfall” is live: new map, 3 heroes & ranked rewards 🏆"],["Turn off alerts","Done — no more nudges. Rewards saved for 7 days."]]}},
-    telecom:{brand:"ConnectTel",emoji:"📱",offer:"Unlimited data — $149/mo",url:"connecttel.com",hero:"telco",orderNoun:"plan",orderId:"CT-6621",code:"UNLTD",otpUse:"login",reminder:"you've used 90% of your data",feedbackQ:"How's your network experience?",carousel:[["Unlimited","$149"],["Family Plan","4 SIMs"],["Data Add-on","10GB"]],
-      flow:{intro:"Heads up — you've used *90% of your data* 📶 3 days left in your cycle. Stay connected?",opts:[["Add 10GB · $30","✅ 10GB added instantly! Valid till your cycle ends. Enjoy 🎉"],["Upgrade plan","Our Unlimited plan is $149/mo. Reply YES to switch next cycle."],["No thanks","No problem! We'll remind you if you run low again."]]}},
-  };
+  // INDUSTRIES / PACKS / CONFIRM / cap / image system now load from ../content.js + ../image-system.js
   function ctxId(){ return state.sub || state.industry; }
   const heroImg=(p,sub)=>phImg(p.brand, sub||null, hueOf(p.brand), 600, 340);
   const optStr=opts=>opts.map(o=>`${o[0]} | reply >> ${o[1]}`).join('\n');
   const chipStr=opts=>opts.map(o=>`${o[0]} >> ${o[1]}`).join('\n');
 
   // ---------- Archetypes: exactly 6 per channel (Promotional / Transactional / Flow) ----------
-  const CONFIRM={
-    fashion:{noun:'order',head:'Order confirmed',line:"We'll email your tracking link once it ships.",cta:'Track order',ship:true},
-    marketplace:{noun:'order',head:'Order confirmed',line:"We'll email tracking as soon as it ships.",cta:'Track order',ship:true},
-    d2c:{noun:'order',head:'Order confirmed',line:"We'll email tracking once it ships.",cta:'Track order',ship:true},
-    banking:{noun:'request',head:'Request received',line:"Your request is being processed — we'll update you shortly.",cta:'View request',ship:false},
-    insurance:{noun:'policy',head:'Policy active',line:'Your policy is now active. Documents are attached.',cta:'View policy',ship:false},
-    fintech:{noun:'payment',head:'Payment successful',line:'Your payment went through. A receipt is below.',cta:'View receipt',ship:false},
-    ott:{noun:'subscription',head:"You're all set",line:'Your subscription is active — start watching now.',cta:'Start watching',ship:false},
-    news:{noun:'subscription',head:'Welcome to Premium',line:'Ad-free reading is unlocked on all your devices.',cta:'Start reading',ship:false},
-    airlines:{noun:'booking',head:'Booking confirmed',line:'Your seats are reserved. Check-in opens 48h before departure.',cta:'View booking',ship:false},
-    hotels:{noun:'reservation',head:'Reservation confirmed',line:"Your stay is booked — we can't wait to host you.",cta:'View reservation',ship:false},
-    delivery:{noun:'order',head:'Order confirmed',line:'Your food is being prepared — track your rider live.',cta:'Track order',ship:true},
-    grocery:{noun:'order',head:'Order confirmed',line:"We'll notify you when your delivery is on the way.",cta:'Track order',ship:true},
-    edtech:{noun:'enrollment',head:"You're enrolled",line:'Your seat is confirmed. Jump into your first lesson.',cta:'Start learning',ship:false},
-    gaming:{noun:'purchase',head:'Purchase complete',line:'Your items have been added to your account.',cta:'Open game',ship:false},
-    telecom:{noun:'plan',head:'Plan activated',line:'Your new plan is live. Enjoy!',cta:'Manage plan',ship:false},
-  };
   function ecx(){ return CONFIRM[ctxId()]||{noun:'order',head:'Order confirmed',line:'',cta:'View details',ship:true}; }
   const ARCH={
     whatsapp:[
