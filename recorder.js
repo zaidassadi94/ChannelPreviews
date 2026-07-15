@@ -14,7 +14,9 @@
     s.textContent='.btn.cs-recording{background:#e5484d!important;color:#fff!important;border-color:#e5484d!important;box-shadow:0 2px 6px rgba(229,72,77,.35)!important}'
       +'.btn.cs-recording:hover{background:#d13c41!important}'
       +'.cs-dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block;animation:cs-pulse 1.1s infinite}'
-      +'@keyframes cs-pulse{0%,100%{opacity:1}50%{opacity:.25}}';
+      +'@keyframes cs-pulse{0%,100%{opacity:1}50%{opacity:.25}}'
+      /* while recording, hide tool-only overlays that would otherwise be baked into the video */
+      +'body.cs-rec-live .sim-badge,body.cs-rec-live .toast{display:none!important}';
     document.head.appendChild(s);
   }
   function regionOK(){ return typeof window.CropTarget!=='undefined' && typeof CropTarget.fromElement==='function'; }
@@ -44,13 +46,13 @@
     chunks=[];
     rec.ondataavailable=function(e){ if(e.data && e.data.size) chunks.push(e.data); };
     rec.onstop=function(){ save((rec&&rec.mimeType)||mt); tracksStop(); };
-    rec.start(200);
-    active=true; startT=Date.now(); cfg.button.classList.add('cs-recording'); paint(); timer=setInterval(paint,500);
     toast('Recording… click Stop when you’re done.');
+    rec.start(200);
+    active=true; startT=Date.now(); document.body.classList.add('cs-rec-live'); cfg.button.classList.add('cs-recording'); paint(); timer=setInterval(paint,500);
   }
   function stop(){
     if(!active) return;
-    active=false; clearInterval(timer); if(cfg&&cfg.button){ cfg.button.classList.remove('cs-recording'); idle(); }
+    active=false; clearInterval(timer); document.body.classList.remove('cs-rec-live'); if(cfg&&cfg.button){ cfg.button.classList.remove('cs-recording'); idle(); }
     if(rec && rec.state!=='inactive'){ try{ rec.stop(); }catch(e){ tracksStop(); } } else { tracksStop(); }
   }
   function save(mt){
