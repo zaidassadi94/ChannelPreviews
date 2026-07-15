@@ -57,17 +57,21 @@ uses the same photo/illustration system as everything else.
 
 **Setup (one-time, no terminal):**
 
-1. Get a **free** Google Gemini key: https://aistudio.google.com/apikey (no card needed).
+1. Get a **free** key — either **Groq** (recommended: generous free tier, no card) at
+   https://console.groq.com/keys, or **Google Gemini** at https://aistudio.google.com/apikey.
 2. In Vercel → your project → **Settings → Environment Variables**, add
-   `GEMINI_API_KEY` = your key, then redeploy.
+   `GROQ_API_KEY` (or `GEMINI_API_KEY`) = your key, then redeploy.
 3. That's it — the **✨ AI** button now works on the live site.
 
-The key lives only on the server (in `api/generate.js`, a Vercel function) and is never
-exposed in the browser. The generator is deliberately locked down: it returns exactly
-one message that matches a fixed schema — no browsing, no tools, no conversation — with
-a per-request length cap and best-effort rate limiting. If the key isn't set, the button
-simply shows a friendly "add your key" note and nothing else changes. Optional env vars:
-`GEMINI_MODEL` (default `gemini-2.0-flash`) and `CS_ALLOW_ORIGINS`.
+If both keys are set, Groq is used (it has the roomier free tier); set `AI_PROVIDER=gemini`
+to force Gemini. The key lives only on the server (in `api/generate.js`, a Vercel function)
+and is never exposed in the browser. The generator is deliberately locked down: it returns
+exactly one message that matches a fixed schema — no browsing, no tools, no conversation —
+with a per-request length cap and best-effort rate limiting, and it tries a couple of free
+models before giving up. If no key is set, the button just shows a friendly "add your key"
+note and nothing else changes. Optional env vars: `GROQ_MODEL` (default
+`llama-3.3-70b-versatile`), `GEMINI_MODEL` (default `gemini-2.0-flash`), `AI_PROVIDER`,
+`CS_ALLOW_ORIGINS`.
 
 **AI photos (optional):** when the AI picks an image subject that isn't in the
 pre-resolved `images.js`, the app can fetch a matching photo live from Pexels through

@@ -99,6 +99,48 @@ function systemPrompt(ctx) {
   ].filter(Boolean).join(' ');
 }
 
+// Render the response schema as a readable field list for providers that use
+// plain JSON mode (Groq) rather than a native schema object (Gemini).
+function typeDesc(v) {
+  if (!v) return 'value';
+  if (v.type === 'ARRAY') return 'array of ' + (v.items ? typeDesc(v.items) : 'items');
+  if (v.type === 'OBJECT') return 'object';
+  let t = v.type === 'STRING' ? 'string' : v.type === 'BOOLEAN' ? 'true/false' : (v.type || 'value').toLowerCase();
+  if (v.enum) t += ' — one of: ' + v.enum.join(', ');
+  else if (v.description) t += ' — ' + v.description;
+  return t;
+}
+function schemaToText(s, indent) {
+  indent = indent || '';
+  if (!s || s.type !== 'OBJECT') return '';
+  const req = new Set(s.required || []);
+  return Object.entries(s.properties || {}).map(([k, v]) => {
+    let line = indent + '- ' + k + (req.has(k) ? ' (required)' : '') + ': ' + typeDesc(v);
+    if (v.type === 'OBJECT') line += '\n' + schemaToText(v, indent + '    ');
+    else if (v.type === 'ARRAY' && v.items && v.items.type === 'OBJECT') line += '\n' + schemaToText(v.items, indent + '    ');
+    return line;
+  }).join('\n');
+}
+function stripFences(t) {
+  t = (t || '').trim();
+  const m = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  return m ? m[1].trim() : t;
+}
+function parseGeminiErr(txt) {
+  try {
+    const e = (JSON.parse(txt).error) || {};
+    const q = (e.details || []).flatMap(d => d.violations || []).map(v => v.quotaId || '').join(' ');
+    return { message: e.message || '', perDay: /PerDay/i.test(q), perMinute: /PerMinute/i.test(q), badKey: /API_KEY_INVALID|API key not valid/i.test(e.message || '') };
+  } catch (_) { return { message: (txt || '').slice(0, 200) }; }
+}
+function parseGroqErr(txt) {
+  try {
+    const e = (JSON.parse(txt).error) || {};
+    const m = e.message || '';
+    return { message: m, perDay: /per day|daily/i.test(m), perMinute: /per minute|rate limit/i.test(m) && !/per day/i.test(m), badKey: /invalid api key|authentication/i.test(m + ' ' + (e.code || '')) };
+  } catch (_) { return { message: (txt || '').slice(0, 200) }; }
+}
+
 function send(res, status, obj) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json');
@@ -117,9 +159,6 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'POST only' });
   if (!sameSite) return send(res, 403, { ok: false, error: 'origin not allowed' });
 
-  if (!process.env.GEMINI_API_KEY)
-    return send(res, 500, { ok: false, error: 'GEMINI_API_KEY is not set. Add it in Vercel → Settings → Environment Variables.' });
-
   // ---- parse + validate input ----
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
@@ -133,65 +172,88 @@ module.exports = async function handler(req, res) {
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'anon';
   if (rateLimited(ip)) return send(res, 429, { ok: false, error: 'Too many requests — please wait a moment.' });
 
-  // ---- call Gemini with schema-locked structured output ----
-  // Try a few free-tier models in order: a 429/404 on one (often "no free quota
-  // for THIS model") falls through to the next, whose quota is separate. An env
-  // override (GEMINI_MODEL) is tried first but still falls back.
-  const MODELS = [...new Set([process.env.GEMINI_MODEL, 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash-lite'].filter(Boolean))];
-  const payload = {
-    systemInstruction: { parts: [{ text: systemPrompt(ctx) }] },
-    contents: [{ role: 'user', parts: [{ text: `Brief: ${brief}` }] }],
-    generationConfig: {
-      temperature: 0.75, maxOutputTokens: LIMITS.maxTokens,
-      responseMimeType: 'application/json', responseSchema: schemaFor(channel),
-    },
-  };
-  function parseErr(txt) {
-    try {
-      const e = (JSON.parse(txt).error) || {};
-      const q = (e.details || []).flatMap(d => d.violations || []).map(v => v.quotaId || '').join(' ');
-      return { message: e.message || '', status: e.status || '', perDay: /PerDay/i.test(q), perMinute: /PerMinute/i.test(q) };
-    } catch (_) { return { message: (txt || '').slice(0, 200) }; }
+  // ---- pick provider: Groq if its key is set (more generous free tier), else Gemini ----
+  const provider = (process.env.AI_PROVIDER || (process.env.GROQ_API_KEY ? 'groq' : 'gemini')).toLowerCase();
+  if (provider === 'groq' && !process.env.GROQ_API_KEY)
+    return send(res, 500, { ok: false, error: 'GROQ_API_KEY is not set. Add it in Vercel → Settings → Environment Variables.' });
+  if (provider === 'gemini' && !process.env.GEMINI_API_KEY)
+    return send(res, 500, { ok: false, error: 'No AI key set. Add GROQ_API_KEY (recommended) or GEMINI_API_KEY in Vercel → Settings → Environment Variables.' });
+
+  const schema = schemaFor(channel);
+
+  // Each returns { ok:true, text, empty? } or { ok:false, http, info }. A 429/404
+  // falls through to the next model (separate quota); other errors stop.
+  async function callGemini(model) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const payload = {
+      systemInstruction: { parts: [{ text: systemPrompt(ctx) }] },
+      contents: [{ role: 'user', parts: [{ text: `Brief: ${brief}` }] }],
+      generationConfig: { temperature: 0.75, maxOutputTokens: LIMITS.maxTokens, responseMimeType: 'application/json', responseSchema: schema },
+    };
+    let r;
+    try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
+    catch (e) { return { ok: false, http: 502, info: { message: String(e).slice(0, 200) } }; }
+    if (r.ok) {
+      const d = await r.json();
+      const text = d?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      return { ok: true, text, empty: text ? '' : (d?.candidates?.[0]?.finishReason || d?.promptFeedback?.blockReason || 'empty') };
+    }
+    return { ok: false, http: r.status, info: parseGeminiErr(await r.text().catch(() => '')) };
   }
+  async function callGroq(model) {
+    const sys = systemPrompt(ctx)
+      + '\n\nReturn ONLY a single JSON object with these fields (omit any that do not apply for this message):\n'
+      + schemaToText(schema) + '\nNo prose and no markdown — just the JSON object.';
+    const payload = {
+      model, temperature: 0.75, max_tokens: LIMITS.maxTokens, response_format: { type: 'json_object' },
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: `Brief: ${brief}` }],
+    };
+    let r;
+    try { r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.GROQ_API_KEY }, body: JSON.stringify(payload) }); }
+    catch (e) { return { ok: false, http: 502, info: { message: String(e).slice(0, 200) } }; }
+    if (r.ok) {
+      const d = await r.json();
+      const text = d?.choices?.[0]?.message?.content || '';
+      return { ok: true, text, empty: text ? '' : (d?.choices?.[0]?.finish_reason || 'empty') };
+    }
+    return { ok: false, http: r.status, info: parseGroqErr(await r.text().catch(() => '')) };
+  }
+
+  const MODELS = provider === 'groq'
+    ? [...new Set([process.env.GROQ_MODEL, 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(Boolean))]
+    : [...new Set([process.env.GEMINI_MODEL, 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.0-flash-lite'].filter(Boolean))];
+  const callFn = provider === 'groq' ? callGroq : callGemini;
 
   let last = { http: 0, info: { message: 'no response from provider' } };
   for (const model of MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    let r;
-    try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
-    catch (e) { last = { http: 502, info: { message: String(e).slice(0, 200) } }; continue; }
-    if (r.ok) {
-      const data = await r.json();
-      const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-      if (!text) {
-        const fr = data?.candidates?.[0]?.finishReason || data?.promptFeedback?.blockReason || '';
-        return send(res, 502, { ok: false, error: 'The AI returned no content' + (fr ? ' (' + fr + ')' : '') + '. Try rephrasing the brief.' });
-      }
+    const out = await callFn(model);
+    if (out.ok) {
+      if (out.empty) return send(res, 502, { ok: false, error: 'The AI returned no content (' + out.empty + '). Try rephrasing the brief.' });
       let message;
-      try { message = JSON.parse(text); } catch (e) { return send(res, 502, { ok: false, error: 'AI returned unparseable output' }); }
+      try { message = JSON.parse(stripFences(out.text)); } catch (e) { return send(res, 502, { ok: false, error: 'AI returned unparseable output' }); }
       if (!message || typeof message !== 'object' || Array.isArray(message))
         return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
       if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
-      return send(res, 200, { ok: true, channel, model, message });
+      return send(res, 200, { ok: true, provider, channel, model, message });
     }
-    const txt = await r.text().catch(() => '');
-    last = { http: r.status, info: parseErr(txt) };
-    if (r.status !== 429 && r.status !== 404) break; // 400/401/403 etc. won't be fixed by another model
+    last = out;
+    if (out.http !== 429 && out.http !== 404) break; // 400/401/403 won't be fixed by another model
   }
 
   // ---- all attempts failed: surface the real reason ----
   const info = last.info || {};
+  const keyName = provider === 'groq' ? 'GROQ_API_KEY' : 'GEMINI_API_KEY';
+  if (info.badKey)
+    return send(res, 502, { ok: false, error: 'The ' + keyName + ' was rejected. Check the value in Vercel → Settings → Environment Variables and redeploy.' });
   if (last.http === 429) {
     const detail = info.perDay
-      ? "You've hit the free-tier daily request limit for these models — it resets each day (or add billing in Google AI Studio for higher limits)."
+      ? "You've hit the free-tier daily request limit — it resets each day (or raise limits in your provider console)."
       : info.perMinute
       ? 'Too many requests in a short window — wait ~30 seconds and try again.'
       : (info.message || 'Free-tier quota reached. Wait a bit and try again.');
     return send(res, 429, { ok: false, error: detail });
   }
   if (last.http === 404)
-    return send(res, 502, { ok: false, error: 'No usable model for this key. Remove any GEMINI_MODEL override, or set it to gemini-2.0-flash, then redeploy.' });
-  if (/API key not valid|API_KEY_INVALID/i.test(info.message || ''))
-    return send(res, 502, { ok: false, error: 'That GEMINI_API_KEY was rejected. Check the value in Vercel → Settings → Environment Variables and redeploy.' });
+    return send(res, 502, { ok: false, error: 'No usable model for this key. Remove any ' + (provider === 'groq' ? 'GROQ_MODEL' : 'GEMINI_MODEL') + ' override and redeploy.' });
   return send(res, 502, { ok: false, error: 'AI provider error' + (info.message ? ': ' + info.message : ''), detail: info.message || '' });
 };

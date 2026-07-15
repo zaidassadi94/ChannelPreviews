@@ -312,10 +312,12 @@ image system, block builder, device frame + export, dropdown nav). The owner app
   and hands the returned message to a tiny per-tool `applyAI()` that maps it through the
   SAME path as a built-in template (messaging → `applyTemplate` with a synthetic `mk()`
   msg; notify → `applyTemplate` push/inapp shape; gmail → `applyEmailTemplate` with HTML
-  built from `eWrap/eBrand/eBtn/eHeroImg`). `api/generate.js` calls **Gemini** free tier
-  with **structured output** (per-channel `responseSchema`) so the model can only return
-  ONE schema-valid message — no tools, no browsing, no conversation. Key is server-side
-  only (`GEMINI_API_KEY` env var). Anti-abuse: enum-only channel/type, 500-char brief cap,
+  built from `eWrap/eBrand/eBtn/eHeroImg`). `api/generate.js` is **multi-provider**:
+  **Groq** (preferred when `GROQ_API_KEY` is set — roomier free tier; JSON-mode + the
+  schema rendered to a field list via `schemaToText`) or **Gemini** (`GEMINI_API_KEY`;
+  native `responseSchema`). `AI_PROVIDER` overrides; each returns ONE schema-valid message
+  — no tools, no browsing, no conversation. Keys are server-side only. Anti-abuse:
+  channel/type restricted to enums, 500-char brief cap,
   best-effort per-IP rate limit, origin check, capped output tokens, response validation;
   provider free-tier quota is the hard backstop. Robustness: `api/generate.js` tries a few
   free models in order (2.0-flash → 2.5-flash → 2.0-flash-lite; `GEMINI_MODEL` override
