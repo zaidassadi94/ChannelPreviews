@@ -1,0 +1,6 @@
+# local test artifacts (Playwright screenshots etc.) — never part of the site
+scratch-*.png
+route-*.png
+logo-*.png
+game-*.png
+*.local.js
