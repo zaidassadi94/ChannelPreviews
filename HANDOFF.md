@@ -275,20 +275,83 @@ prematurely close the script — this bit us once in the gmail tool).
 (notify). Channel Studio design across all three tools, 6 templates × channel ×
 (sub)industry, DIY block builders, Simulate, US locale, digital-aware confirmations,
 dark mode removed, real Pexels photos live (56) with illustration fallback, no-terminal
-`setup.html` resolver, unified 6-channel dropdown wired across all tools, and a
-**screen recorder** (record just the device view) in all three tools.
+`setup.html` resolver, unified 6-channel dropdown, a **screen recorder** with a **review
+studio** (filmstrip trim + WebM/GIF export) in all three tools, touch-orb recording
+cursor, and the Gmail desktop reading-pane scroll fix.
 
-**Open / possible next (not started):**
-- Gmail email body could become the same **drag-and-drop block builder** (currently
-  sender/subject fields + HTML upload/paste/plain + the 6 templates).
-- Review the `family` photo (telecom) per the demographic ask; swap if needed.
-- Optional: more channels (Instagram DM, Viber), more templates, `orientation`/`size`
-  knobs for the resolver, or pinning exact photo IDs for specific products.
-- README lists WhatsApp "light/dark" in a table row — dark mode is gone; tidy if
-  touched.
+**UI conventions (keep consistent):** collapse chevrons are the solid `▼` at 11.5px
+(rotate −90° when `.collapsed`); groups default **expanded** (no initial `collapsed`
+class); the "Clear & start blank" reset button uses `.btn.reset` (soft-red) in every tool.
+
+**NEXT (agreed, phased, no-build): the refactor — see §11.** The three tools duplicate
+~1,000 lines each of the same foundations (design-system CSS, `INDUSTRIES`/`PACKS`,
+image system, block builder, device frame + export, dropdown nav). The owner approved a
+**phased extraction into shared files** (like `recorder.js`/`images.js` already are),
+**staying no-build** (plain `.css`/`.js` via `<link>`/`<script>`, no bundler/framework).
+
+**Smaller cleanups to fold in:** Gmail state still has a stale `"Social Development Bank"`
+default (harmless — overwritten by the first template on load, but should become a generic
+brand); messaging vs notify `IMGKW`/`PACKS` have minor drift. The Gmail email body could
+later become the same block builder. Review the `family` photo (telecom) per the "US, no
+Indians" ask.
 
 **Cross-repo note:** This project was first built by mistake inside
 `zaidassadi94/SamuhaWorldCup` on branch `claude/gmail-preview-tool-2pg33e`, then moved
 here. That branch was reset to match `main` (content removed) but the empty branch
 **ref still exists** (the git proxy blocks ref deletion) — harmless; the owner can
 delete it via GitHub's UI. Nothing about SamuhaWorldCup is relevant to this repo.
+
+---
+
+## 11. Refactor plan (agreed 2026-07-15 — phased, no-build)
+
+**Why:** the 3 tools each re-implement the same foundations, so a change (industry,
+photo keyword, button style) means editing 3 files, and they've **drifted** (chevrons,
+Gmail's missing clear button, stale defaults). Goal: one source of truth per concern.
+
+**Hard constraints (owner-approved):** stay **no-build** — shared plain `.css`/`.js`
+loaded via `<link>`/`<script>`, **no bundler, no framework, no npm step**. URLs, deploy
+(push `main` → Vercel), look, and behavior must stay **identical**. Do it **in phases,
+one tool at a time, verifying pixel-identical rendering** (screenshot `#capture` + the
+sidebar before/after and compare) and committing per step. Push to `main` (owner's
+workflow — fast-forward from the working branch; they've said "push to main").
+
+**Key finding — the tools diverged in names, not just values.** Canonical = the
+messaging/notify convention (2 of 3 already use it). Gmail must be renamed onto it:
+- tokens: gmail `--text`→`--ink`, `--muted`→`--muted` (ok), `--border`→`--line`,
+  `--panel-2`→`--panel-2` (ok), `--accent`→`--accent` (ok; gmail accent is Gmail-blue
+  `#1a73e8` for its *preview* — keep those under scoped `--g-*`/`--gm-*`, only the
+  **sidebar/chrome** tokens are shared).
+- classes: gmail `.group-head`→`.ghead`, `.group-body`→`.gbody`, `.field`→`.f`,
+  `.btn-mini`→`.link-btn`, `.seg2`→`.seg`, etc. (rename in gmail markup **and** its JS
+  selectors). Also reconcile small drift when extracting: `.notch` top (messaging `0`
+  vs notify `11px`), `.sim-on .clickable` radius, `.home-ind.dk` opacity — pick one.
+
+**Phase 1 — `channel-studio.css`** (the shared design system: `:root` sidebar tokens,
+`.app` grid, `.editor/.brand/.ctx/.sel-wrap/select.sel`, `.group/.ghead/.chev/.gbody`,
+`.f`+inputs/`.toggle-row/.switch`, `.drop/.logo-prev/.link-btn`, `.tpl*`, `.btn`(+`.reset`),
+`.blk*` block-builder, `.imgf`, `.stage-wrap/.topbar/.seg/.topcap`, `.stage`, `.phone/
+.screen/.notch/.punch/.statusbar/.home-ind`, `.clickable/.sim-badge`, `.toast`, mobile
+media query). Each tool keeps ONLY its channel-specific styles inline (wa/gm/ios chat;
+pn-ios/pn-and/ls/appbd/ia/shade; gmail `.gm*`/`.browser`/`.iphone`). Migrate messaging →
+notify → gmail, screenshot-diff each.
+
+**Phase 2 — `content.js`** (`INDUSTRIES`, `PACKS`, `CONFIRM`, `ctxId()`, `ecx()`, `cap`)
+one source of truth; gmail's email packs either merge in or extend it. **`image-system.js`**
+(`hueOf`, `escXml`, `tile`, `ILLUS`, `ILMAP`, `illusFor`, `photo`, `phGrad`, `phGray`,
+`KW`, `IMGKW`, `kwFor`; gmail's `ePhoto` folds in). `images.js` stays **data only**. The
+`IMGKW`/`KW` maps then live in ONE place — keep `setup.html` + `resolve-images.js` query
+maps in sync with it (that sync is the whole point).
+
+**Phase 3 — `blocks.js`** (`serRows`/`parseRows`/`imageField`/`buildBlocks`), **`device.js`**
+(`fitDevice`, `capture()`/html2canvas export, copy, statusBar icons), **`nav.js`** (channel
+dropdown population + cross-tool routing). After this each tool ≈ its render functions +
+state + template archetypes only.
+
+**Load order per tool** (scripts, after `channel-studio.css` `<link>`): `images.js`,
+`image-system.js`, `content.js`, `blocks.js`, `device.js`, `gif-encoder.js`, `recorder.js`,
+`nav.js`, then the tool's own inline `<script>`. Keep the `onerror` stub on `images.js`.
+
+**Verify each step** with the Playwright harness (§8): no `pageerror`, `#capture` renders,
+6 templates × 15 combos, dropdown routes correctly, Record button present, and a
+before/after screenshot of `#capture` + `.editor` that must match. Commit per tool/phase.

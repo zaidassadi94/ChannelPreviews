@@ -80,8 +80,12 @@ Templates pre-fill these so you can see the format.
 
 ## Notes
 
-- Each tool is one self-contained HTML file. The hub (`index.html`) simply embeds
-  the selected tool in an iframe, so hosting the whole folder Just Works.
+- Each tool is a static HTML file; a few shared files at the repo root (`images.js`,
+  `recorder.js`, `gif-encoder.js`) are loaded via `<script>`. The root `index.html`
+  redirects into the messaging tool; switch tools/channels from the **Channel** dropdown.
+- **Record** captures the device view to `.webm`, then a review panel lets you **trim**
+  and export **WebM** or **GIF** (GIF encoded in-browser via the bundled `gif-encoder.js`).
+  Recording needs Chrome/Edge (Region Capture); other browsers record the whole tab.
 - PNG export uses [html2canvas](https://html2canvas.hertzen.com/) from a CDN. For a
   **fully offline** build, drop `html2canvas.min.js` next to the tool and repoint the
   `<script src="…">` tag. If a remote image ever blocks cross-origin capture, the
