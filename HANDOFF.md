@@ -26,7 +26,13 @@ Product name in the UI: **Channel Studio**.
 index.html                      # root — redirects to messaging-preview-tool/?channel=whatsapp
 setup.html                      # no-terminal Pexels photo resolver (see §6)
 resolve-images.js               # Node CLI resolver (alt to setup.html; user is non-technical so prefer setup.html)
-images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos)
+images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos; DATA ONLY)
+channel-studio.css              # shared design system (sidebar/topbar/frame/toast) — see §11 Phase 1
+content.js                      # shared INDUSTRIES / PACKS / CONFIRM (+push/email variants) — §11 Phase 2
+image-system.js                 # shared tile/photo/ePhoto/KW/IMGKW/kwFor image system — §11 Phase 2
+blocks.js                       # shared DIY block builder (serRows/parseRows/imageField/buildBlocks) — §11 Phase 3
+device.js                       # shared fitDevice / statusBarHTML / captureDevice (html2canvas) — §11 Phase 3
+nav.js                          # shared channel-dropdown routing (initChannelNav) — §11 Phase 3
 recorder.js                     # shared screen recorder + review studio (trim, export WebM/GIF)
 gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc (used by recorder.js)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
@@ -36,10 +42,13 @@ README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
 
-Both tools are ~single-file apps (~100KB messaging, ~75KB gmail). They are edited
-heavily via `python3` string-replacement in Bash (the files are large; targeted
-replaces + asserts are the established pattern). Verify changes by driving them in
-headless Chromium via the global Playwright at
+Each tool's index.html holds only its channel-specific CSS + render functions +
+state + template archetypes; everything else is shared via the root .css/.js files
+(load order per tool: channel-studio.css link, then images.js → image-system.js →
+content.js → blocks.js → device.js → gif-encoder.js → recorder.js → nav.js → the
+tool's inline script). Files are edited via `python3` string-replacement in Bash
+(targeted replaces + asserts are the established pattern). Verify changes by driving
+them in headless Chromium via the global Playwright at
 `/opt/node22/lib/node_modules/playwright` (import as CJS default; see §9).
 
 ---
@@ -283,7 +292,7 @@ cursor, and the Gmail desktop reading-pane scroll fix.
 (rotate −90° when `.collapsed`); groups default **expanded** (no initial `collapsed`
 class); the "Clear & start blank" reset button uses `.btn.reset` (soft-red) in every tool.
 
-**NEXT (agreed, phased, no-build): the refactor — see §11.** The three tools duplicate
+**DONE (2026-07-15): the §11 refactor — all 3 phases shipped.** The three tools duplicate
 ~1,000 lines each of the same foundations (design-system CSS, `INDUSTRIES`/`PACKS`,
 image system, block builder, device frame + export, dropdown nav). The owner approved a
 **phased extraction into shared files** (like `recorder.js`/`images.js` already are),
@@ -334,7 +343,19 @@ intended diffs = the §10 IMGKW drift-bug fix ('Live comedy'/'Tech' carousel car
 media/ott + media/news now resolve to microphone/laptop instead of a generic box).
 `setup.html` + `resolve-images.js` queries gained `stockmarket` (kwFor('Business'));
 'product' is deliberately query-less (generic placeholder → illustration by design).
-Only Phase 3 below remains.
+
+**Progress: Phase 3 DONE (2026-07-15).** `blocks.js` (splitResp/parse*/serRows/
+parseRows/pickImage/imageField/buildBlocks — buildBlocks now takes `onChange` since
+tools' render() lives inside their IIFEs; messaging passes `render`), `device.js`
+(fitDevice + resize listener, statusBarHTML(device,lt) + the 3 status icons —
+messaging/notify keep a 1-line `statusBar` glue; gmail keeps its own iPhone statusbar
+— and captureDevice({background,toast,h2c}) wrapping html2canvas; gmail passes its
+iframe-swap `onclone` via h2c), `nav.js` (initChannelNav(localChannels,onLocal) —
+messaging local=[whatsapp,rcs,sms], notify local=[push] (inapp reloads with ?channel=
+like before), gmail local=[gmail]). Verified: 540 content fingerprints + all
+screenshots identical (modulo known jitter), export behavior identical under a stubbed
+html2canvas (same options/transform/toast), block-builder add/edit/remove + imageField
+interactions green in both tools. The refactor is COMPLETE — all three phases live.
 
 **Why:** the 3 tools each re-implement the same foundations, so a change (industry,
 photo keyword, button style) means editing 3 files, and they've **drifted** (chevrons,

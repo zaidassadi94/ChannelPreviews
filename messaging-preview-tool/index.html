@@ -253,8 +253,11 @@
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
 <script src="../image-system.js"></script>
 <script src="../content.js"></script>
+<script src="../blocks.js"></script>
+<script src="../device.js"></script>
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
+<script src="../nav.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -308,17 +311,9 @@
     verifWA:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.6-1 2.8 1 2.8-2.6 1.6-1 2.8-3-.2L12 22l-2.4-1.8-3 .2-1-2.8L3 14.2l1-2.8-1-2.8 2.6-1.6 1-2.8 3 .2z" fill="#25d366"/><path d="M8.5 12.5l2.2 2.2 4.8-4.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     verifG:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 1.7 2.8-.2.9 2.6 2.4 1.5-.9 2.6.9 2.6-2.4 1.5-.9 2.6-2.8-.2L12 22l-2.2-1.7-2.8.2-.9-2.6L3.7 16.4l.9-2.6-.9-2.6 2.4-1.5.9-2.6 2.8.2z"/><path d="M8.5 12.3l2.2 2.2 4.6-4.6" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     tick:'<svg viewBox="0 0 24 24" fill="none"><path d="M1.5 13l4 4 8-9M9.5 17l1 0 8-9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
-    batt:'<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor"/><rect x="21" y="10" width="1.6" height="4" rx=".8" fill="currentColor"/></svg>',
-    cell:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg>',
   };
   const btnIcon=t=> t==='call'?IC.phone : t==='url'?IC.link : t==='map'?IC.map : t==='copy'?IC.copy : IC.reply;
 
-  function splitResp(l){ const rr=l.split('>>'); if(rr.length>1) return [rr[0].trim(), rr.slice(1).join('>>').trim()]; return [l.trim(),'']; }
-  function parseButtons(raw){ return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const [m,response]=splitResp(l); const p=m.split('|').map(x=>x.trim()); let type=(p[1]||'reply').toLowerCase(); if(!['reply','url','call','map','copy'].includes(type)) type='reply'; return {label:p[0]||'Button', type, value:p[2]||'', response}; }); }
-  function parseCards(raw){ return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const p=l.split('|').map(x=>x.trim()); return {img:p[0]||'', title:p[1]||'', sub:p[2]||'', btn:p[3]||'', val:p[4]||''}; }); }
-  function parseListItems(raw){ return (raw||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const [m,response]=splitResp(l); const p=m.split('|').map(x=>x.trim()); return {t:p[0]||'', d:p[1]||'', response}; }); }
-  function parseChips(raw){ if(!raw) return []; const src=raw.indexOf('\n')>=0?raw.split('\n'):raw.split(','); return src.map(x=>x.trim()).filter(Boolean).map(l=>{ const [m,response]=splitResp(l); return {label:m, response}; }); }
 
   function optAttr(o){ if(!state.play) return ''; return ` data-opt="1" data-kind="${esc(o.kind)}" data-reply="${esc(o.reply||'')}" data-resp="${esc(o.response||'')}" data-val="${esc(o.value||'')}"`; }
   const ck=on=> (state.play&&on)?' clickable':'';
@@ -380,7 +375,7 @@
     return (ARCH[state.channel]||[]).map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, build:()=>({biz:p.brand, status, msgs:a.build(p)}) }));
   }
 
-  function statusBar(lt){ const r=state.device==='android'?`${IC.wifi}${IC.cell}${IC.batt}`:`${IC.cell}${IC.wifi}${IC.batt}`; return `<div class="statusbar ${lt?'lt':''}"><span>9:41</span><div class="r">${r}</div></div>`; }
+  const statusBar=lt=>statusBarHTML(state.device,lt);
   function waTail(color){ return `<svg class="tail" viewBox="0 0 9 13" fill="none"><path d="M9 0C4 0 0 0 0 0v13C0 6 4 0 9 0z" fill="${color}"/></svg>`; }
 
   // ---------- WhatsApp ----------
@@ -510,10 +505,6 @@
     cap.innerHTML=`${head}${badge}<div class="screen" style="${state.theme==='dark'?'background:#000':''}">${sb}${screen}<div class="home-ind ${state.theme==='dark'?'dk':''}"></div></div>`;
     bindOpts(); fitDevice();
   }
-  function fitDevice(){ const cap=$('#capture'); if(!cap) return; cap.style.transform='none'; cap.style.marginBottom='';
-    const availH=stage.clientHeight-40, availW=stage.clientWidth-24, h=cap.offsetHeight, w=cap.offsetWidth;
-    const k=Math.min(1, availH/h, availW/w); if(k<1){ cap.style.transformOrigin='top center'; cap.style.transform='scale('+k+')'; cap.style.marginBottom=(-(h*(1-k)))+'px'; } }
-  window.addEventListener('resize', fitDevice);
 
   function bindOpts(){
     if(!state.play) return;
@@ -552,81 +543,6 @@
   }
 
   // ---------- DIY block builders ----------
-  function serRows(key,rows){
-    if(key==='buttons') return rows.map(r=>{ const tp=r.type||'reply'; let a=[r.label||'',tp]; if(tp!=='reply'&&r.value) a.push(r.value); let s=a.join(' | '); if(tp==='reply'&&r.reply) s+=' >> '+r.reply; return s; }).join('\n');
-    if(key==='items') return rows.map(r=>{ let s=r.t||''; if(r.d) s+=' | '+r.d; if(r.reply) s+=' >> '+r.reply; return s; }).join('\n');
-    if(key==='chips') return rows.map(r=>{ let s=r.label||''; if(r.reply) s+=' >> '+r.reply; return s; }).join('\n');
-    if(key==='cards') return rows.map(r=>[r.img||'',r.title||'',r.sub||'',r.btn||'',r.val||''].join(' | ')).join('\n');
-    return '';
-  }
-  function parseRows(key,val){
-    if(key==='buttons') return parseButtons(val).map(b=>({label:b.label,type:b.type,value:b.value,reply:b.response}));
-    if(key==='items') return parseListItems(val).map(i=>({t:i.t,d:i.d,reply:i.response}));
-    if(key==='chips') return parseChips(val).map(c=>({label:c.label,reply:c.response}));
-    if(key==='cards') return parseCards(val).map(c=>({img:c.img,title:c.title,sub:c.sub,btn:c.btn,val:c.val}));
-    return [];
-  }
-  function imageField(get,set,phTitle){
-    const row=document.createElement('div'); row.className='imgf';
-    const prev=document.createElement('img'); prev.className='prev';
-    const setPrev=()=>{ const v=get(); prev.src = v || phGray(120,90); };
-    const col=document.createElement('div'); col.className='col';
-    const up=document.createElement('button'); up.type='button'; up.className='up'; up.textContent='⬆ Upload image';
-    const url=document.createElement('input'); url.type='text'; url.placeholder='…or paste an image URL';
-    const cur=get(); url.value=(cur && !/^data:/.test(cur))?cur:'';
-    up.onclick=()=>pickImage(d=>{ set(d); url.value=''; setPrev(); });
-    url.addEventListener('input',()=>{ set(url.value.trim()); setPrev(); });
-    col.appendChild(up); col.appendChild(url); row.appendChild(prev); row.appendChild(col);
-    setPrev(); return row;
-  }
-  function buildBlocks(msg,key,host){
-    let rows=parseRows(key,msg[key]||'');
-    const commit=()=>{ msg[key]=serRows(key,rows); render(); };
-    const NAMES={buttons:'Button',items:'Item',chips:'Reply',cards:'Product'};
-    const ADD={buttons:'+ Add button',items:'+ Add item',chips:'+ Add reply chip',cards:'+ Add product'};
-    const NEW={buttons:()=>({label:'Button',type:'reply',value:'',reply:''}),items:()=>({t:'Option',d:'',reply:''}),chips:()=>({label:'Reply',reply:''}),cards:()=>({img:'',title:'Product',sub:'',btn:'Shop',val:''})};
-    function fld(blk,label,el){ const l=document.createElement('label'); l.className='mini'; l.textContent=label; blk.appendChild(l); blk.appendChild(el); }
-    function inp(val,ph,on){ const i=document.createElement('input'); i.type='text'; i.value=val||''; if(ph)i.placeholder=ph; i.addEventListener('input',()=>on(i.value)); return i; }
-    function ta(val,ph,on){ const t=document.createElement('textarea'); t.value=val||''; if(ph)t.placeholder=ph; t.addEventListener('input',()=>on(t.value)); return t; }
-    function replyBox(blk,row){ const rb=document.createElement('div'); rb.className='blk-reply'; const l=document.createElement('label'); l.className='mini'; l.textContent='↳ Auto-reply when tapped (optional)'; rb.appendChild(l); rb.appendChild(ta(row.reply,'What the business replies…',v=>{row.reply=v;commit();})); blk.appendChild(rb); }
-    function draw(){
-      host.innerHTML='';
-      rows.forEach((row,ri)=>{
-        const blk=document.createElement('div'); blk.className='blk';
-        const head=document.createElement('div'); head.className='blk-h';
-        const t=document.createElement('span'); t.className='t'; t.textContent=NAMES[key]+' '+(ri+1); head.appendChild(t);
-        const x=document.createElement('button'); x.className='x'; x.type='button'; x.textContent='✕'; x.onclick=()=>{ rows.splice(ri,1); commit(); draw(); }; head.appendChild(x);
-        blk.appendChild(head);
-        if(key==='buttons'){
-          fld(blk,'Button text',inp(row.label,'e.g. Shop now',v=>{row.label=v;commit();}));
-          const sel=document.createElement('select'); [['reply','Quick reply'],['url','Link (opens URL)'],['call','Call number'],['copy','Copy code']].forEach(o=>{const op=document.createElement('option');op.value=o[0];op.textContent=o[1];if((row.type||'reply')===o[0])op.selected=true;sel.appendChild(op);}); sel.addEventListener('change',()=>{row.type=sel.value;commit();draw();}); fld(blk,'Button type',sel);
-          const tp=row.type||'reply';
-          if(tp==='url') fld(blk,'Link URL',inp(row.value,'https://…',v=>{row.value=v;commit();}));
-          else if(tp==='call') fld(blk,'Phone number',inp(row.value,'+1 555…',v=>{row.value=v;commit();}));
-          else if(tp==='copy') fld(blk,'Code to copy',inp(row.value,'e.g. NOVA10',v=>{row.value=v;commit();}));
-          else replyBox(blk,row);
-        } else if(key==='items'){
-          fld(blk,'Title',inp(row.t,'e.g. Track my order',v=>{row.t=v;commit();}));
-          fld(blk,'Description',inp(row.d,'optional',v=>{row.d=v;commit();}));
-          replyBox(blk,row);
-        } else if(key==='chips'){
-          fld(blk,'Reply text',inp(row.label,'e.g. Confirm',v=>{row.label=v;commit();}));
-          replyBox(blk,row);
-        } else if(key==='cards'){
-          const il=document.createElement('label'); il.className='mini'; il.textContent='Image'; blk.appendChild(il);
-          blk.appendChild(imageField(()=>row.img,v=>{row.img=v;commit();},row.title));
-          fld(blk,'Title',inp(row.title,'Product name',v=>{row.title=v;commit();}));
-          fld(blk,'Subtitle / price',inp(row.sub,'e.g. $149',v=>{row.sub=v;commit();}));
-          fld(blk,'Button label',inp(row.btn,'e.g. Shop',v=>{row.btn=v;commit();}));
-          fld(blk,'Button link',inp(row.val,'https://…',v=>{row.val=v;commit();}));
-        }
-        host.appendChild(blk);
-      });
-      const add=document.createElement('button'); add.type='button'; add.className='blk-add'; add.textContent=ADD[key];
-      add.onclick=()=>{ rows.push(NEW[key]()); commit(); draw(); }; host.appendChild(add);
-    }
-    draw();
-  }
 
   const FIELDS={
     text:[['text','Message text','ta'],['buttons','Buttons','blk','wa,rcs'],['chips','Suggested replies (tap to branch)','blk','rcs']],
@@ -660,7 +576,7 @@
       card.querySelector('[data-up-btn]').addEventListener('click',()=>{ if(idx>0){ [state.messages[idx-1],state.messages[idx]]=[state.messages[idx],state.messages[idx-1]]; renderMsgList(); render(); } });
       card.querySelector('[data-down-btn]').addEventListener('click',()=>{ if(idx<state.messages.length-1){ [state.messages[idx+1],state.messages[idx]]=[state.messages[idx],state.messages[idx+1]]; renderMsgList(); render(); } });
       card.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('input',()=>{ msg[inp.dataset.k]=inp.value; render(); updateSms(); }));
-      card.querySelectorAll('.blkz').forEach(ph=>buildBlocks(msg, ph.dataset.bk, ph));
+      card.querySelectorAll('.blkz').forEach(ph=>buildBlocks(msg, ph.dataset.bk, ph,render));
       card.querySelectorAll('.imgz').forEach(ph=>{ const k=ph.dataset.ik; ph.appendChild(imageField(()=>msg[k], v=>{ msg[k]=v; render(); }, msg.title||'Image')); });
       wrap.appendChild(card);
     });
@@ -672,7 +588,6 @@
     const txt=state.messages.filter(x=>x.from==='business').map(x=>x.text||x.caption||'').join(' '); const len=txt.length; const uni=/[^\x00-\x7f]/.test(txt);
     const per=uni?70:160, mp=uni?67:153; const seg=len<=per?1:Math.ceil(len/mp); el.innerHTML=`SMS length — <b>${len}</b> chars · <b>${seg}</b> segment${seg>1?'s':''} · ${uni?'Unicode':'GSM-7'}`; }
 
-  function pickImage(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
 
   function bindText(id,key){ const el=$('#'+id); el.addEventListener('input',()=>{ state[key]=el.value; render(); }); }
   bindText('bizName','bizName'); bindText('bizSub','bizSub'); bindText('bizPhone','bizPhone'); bindText('bizDesc','bizDesc'); bindText('dateChip','dateChip');
@@ -694,7 +609,7 @@
   function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
   segBind('#deviceSeg','device');
 
-  $('#selChannel').addEventListener('change',e=>{ const v=e.target.value; if(v==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; } if(v==='push'||v==='inapp'){ location.href='../notify-preview-tool/index.html?channel='+v; return; } state.channel=v; onChannelChange(); render(); });
+  initChannelNav(['whatsapp','rcs','sms'], v=>{ state.channel=v; onChannelChange(); render(); });
   $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
   $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
 
@@ -722,13 +637,7 @@
   $('#btnReset').addEventListener('click',()=>{ state.played=[]; render(); });
 
   let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
-  async function capture(){ const node=$('#capture'); if(!node) return null;
-    if(window.__noH2C||typeof html2canvas==='undefined'){ toast('Screenshot library offline — use OS screenshot (Cmd/Win+Shift+S)'); return null; }
-    const t=node.style.transform, m=node.style.marginBottom; node.style.transform='none'; node.style.marginBottom='';
-    const wasSim=stage.classList.contains('sim-on'); stage.classList.remove('sim-on'); const badge=node.querySelector('.sim-badge'); if(badge) badge.style.display='none';
-    try{ return await html2canvas(node,{ backgroundColor: state.theme==='dark'?'#1c1e24':'#eef0f5', scale:2, useCORS:true, allowTaint:false, logging:false }); }
-    finally{ node.style.transform=t; node.style.marginBottom=m; if(wasSim) stage.classList.add('sim-on'); if(badge) badge.style.display=''; }
-  }
+  async function capture(){ return captureDevice({ background: state.theme==='dark'?'#1c1e24':'#eef0f5', toast }); }
   $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`${state.channel}-${state.industry}-${state.device}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — remote images may block capture; try OS screenshot'); } });
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
 

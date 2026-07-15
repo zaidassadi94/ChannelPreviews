@@ -283,8 +283,11 @@
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
 <script src="../image-system.js"></script>
 <script src="../content.js"></script>
+<script src="../blocks.js"></script>
+<script src="../device.js"></script>
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
+<script src="../nav.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -314,9 +317,6 @@
   const appName=()=>state.push.appName;
 
   const IC={
-    wifi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM5 12a10 10 0 0114 0l-2 2a7 7 0 00-10 0l-2-2zM1.5 8.5a15 15 0 0121 0l-2 2a12 12 0 00-17 0l-2-2z"/></svg>',
-    batt:'<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="9" width="12" height="6" rx="1" fill="currentColor"/><rect x="21" y="10" width="1.6" height="4" rx=".8" fill="currentColor"/></svg>',
-    cell:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg>',
     lock:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V8a6 6 0 0112 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V8a4 4 0 00-8 0v2z"/></svg>',
     flash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6l-1 7h4l-9 13 2-9H7z"/></svg>',
     cam:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.9"/></svg>',
@@ -346,7 +346,7 @@
   function pushActions(){ return (state.push.actions||'').split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3); }
 
   // ---------- Status bar ----------
-  function statusBar(lt){ const r=state.device==='android'?`${IC.wifi}${IC.cell}${IC.batt}`:`${IC.cell}${IC.wifi}${IC.batt}`; return `<div class="statusbar ${lt?'lt':''}"><span>9:41</span><div class="r">${r}</div></div>`; }
+  const statusBar=lt=>statusBarHTML(state.device,lt);
 
   // ---------- iOS notification card ----------
   function pushCardIOS(){
@@ -463,10 +463,6 @@
     cap.innerHTML=`${head}${badge}<div class="screen">${inner}</div>`;
     bindOpts(); fitDevice();
   }
-  function fitDevice(){ const cap=$('#capture'); if(!cap) return; cap.style.transform='none'; cap.style.marginBottom='';
-    const availH=stage.clientHeight-40, availW=stage.clientWidth-24, h=cap.offsetHeight, w=cap.offsetWidth;
-    const k=Math.min(1, availH/h, availW/w); if(k<1){ cap.style.transformOrigin='top center'; cap.style.transform='scale('+k+')'; cap.style.marginBottom=(-(h*(1-k)))+'px'; } }
-  window.addEventListener('resize', fitDevice);
   function bindOpts(){ if(!state.play) return; stage.querySelectorAll('[data-opt]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); const r=el.dataset.reply||''; toast('▸ '+(r?('“'+r+'” → opens '+state.push.appName):('Opens '+state.push.appName))); })); }
 
   // ======================================================================
@@ -570,20 +566,6 @@
   }
 
   // ---------- image field ----------
-  function pickImage(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
-  function imageField(get,set){
-    const row=document.createElement('div'); row.className='imgf';
-    const prev=document.createElement('img'); prev.className='prev';
-    const setPrev=()=>{ const v=get(); prev.src = v || phGray(120,90); };
-    const col=document.createElement('div'); col.className='col';
-    const up=document.createElement('button'); up.type='button'; up.className='up'; up.textContent='⬆ Upload image';
-    const url=document.createElement('input'); url.type='text'; url.placeholder='…or paste an image URL';
-    const cur=get(); url.value=(cur && !/^data:/.test(cur))?cur:'';
-    up.onclick=()=>pickImage(d=>{ set(d); url.value=''; setPrev(); });
-    url.addEventListener('input',()=>{ set(url.value.trim()); setPrev(); });
-    col.appendChild(up); col.appendChild(url); row.appendChild(prev); row.appendChild(col);
-    setPrev(); return row;
-  }
 
   // ---------- editor sync ----------
   function syncEditor(){
@@ -676,12 +658,7 @@
   function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
   segBind('#deviceSeg','device',()=>{ fillSurface(); syncAppearance(); });
 
-  $('#selChannel').addEventListener('change',e=>{ const v=e.target.value;
-    if(v==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; }
-    if(v==='whatsapp'||v==='rcs'||v==='sms'){ location.href='../messaging-preview-tool/index.html?channel='+v; return; }
-    if(v==='inapp'){ location.href='./index.html?channel=inapp'; return; }
-    state.channel=v; onChannelChange(); render();
-  });
+  initChannelNav(['push'], v=>{ state.channel=v; onChannelChange(); render(); });
   $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
   $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
 
@@ -705,13 +682,7 @@
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the action buttons':'Back to editing'); });
 
   let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
-  async function capture(){ const node=$('#capture'); if(!node) return null;
-    if(window.__noH2C||typeof html2canvas==='undefined'){ toast('Screenshot library offline — use OS screenshot (Cmd/Win+Shift+S)'); return null; }
-    const t=node.style.transform, m=node.style.marginBottom; node.style.transform='none'; node.style.marginBottom='';
-    const wasSim=stage.classList.contains('sim-on'); stage.classList.remove('sim-on'); const badge=node.querySelector('.sim-badge'); if(badge) badge.style.display='none';
-    try{ return await html2canvas(node,{ backgroundColor:'#eef0f5', scale:2, useCORS:true, allowTaint:false, logging:false }); }
-    finally{ node.style.transform=t; node.style.marginBottom=m; if(wasSim) stage.classList.add('sim-on'); if(badge) badge.style.display=''; }
-  }
+  async function capture(){ return captureDevice({ background:'#eef0f5', toast }); }
   $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); const nm=state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}`; a.download=`${nm}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
 

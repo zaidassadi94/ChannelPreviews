@@ -366,8 +366,11 @@
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
 <script src="../image-system.js"></script>
 <script src="../content.js"></script>
+<script src="../blocks.js"></script>
+<script src="../device.js"></script>
 <script src="../gif-encoder.js"></script>
 <script src="../recorder.js"></script>
+<script src="../nav.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -755,15 +758,6 @@
     }
     fitDevice();
   }
-  function fitDevice(){
-    const cap=document.getElementById('capture'); if(!cap) return;
-    cap.style.transform='none'; cap.style.marginBottom='';
-    const availH=stage.clientHeight-40, availW=stage.clientWidth-24;
-    const h=cap.offsetHeight, w=cap.offsetWidth;
-    const k=Math.min(1, availH/h, availW/w);
-    if(k<1){ cap.style.transformOrigin='top center'; cap.style.transform='scale('+k+')'; cap.style.marginBottom=(-(h*(1-k)))+'px'; }
-  }
-  window.addEventListener('resize', fitDevice);
 
   // ---------- Toast ----------
   let toastT;
@@ -838,31 +832,17 @@
 
   // ---------- Export ----------
   async function capture(){
-    const node=document.getElementById('capture');
-    if(window.__noH2C || typeof html2canvas==='undefined'){
-      toast('Screenshot library offline — use your OS screenshot (Cmd/Win+Shift+S)');
-      return null;
-    }
-    const _t=node.style.transform, _m=node.style.marginBottom;
-    node.style.transform='none'; node.style.marginBottom='';
-    const _restore=()=>{ node.style.transform=_t; node.style.marginBottom=_m; };
-    const bodyHTML = bodyForFrame();
-    return await html2canvas(node,{
-      backgroundColor: state.theme==='dark'?'#20232a':'#eef1f5',
-      scale: 2, useCORS:true, allowTaint:false, logging:false,
-      onclone: (doc)=>{
-        // Replace live iframe with inline body so it captures reliably
-        const fr = doc.getElementById('emailFrame');
-        if(fr){
-          const w = fr.getBoundingClientRect ? fr.offsetWidth : 360;
-          const div = doc.createElement('div');
-          div.style.width = (fr.style.width||'100%');
-          div.innerHTML = resolveBody();
-          div.querySelectorAll('img').forEach(im=>im.setAttribute('crossorigin','anonymous'));
-          fr.replaceWith(div);
-        }
+    return captureDevice({ background: state.theme==='dark'?'#20232a':'#eef1f5', toast, h2c:{ onclone:(doc)=>{
+      // Replace the live iframe with the inline email body so it captures reliably
+      const fr = doc.getElementById('emailFrame');
+      if(fr){
+        const div = doc.createElement('div');
+        div.style.width = (fr.style.width||'100%');
+        div.innerHTML = resolveBody();
+        div.querySelectorAll('img').forEach(im=>im.setAttribute('crossorigin','anonymous'));
+        fr.replaceWith(div);
       }
-    }).then(c=>{ _restore(); return c; }, e=>{ _restore(); throw e; });
+    } } });
   }
   $('#btnExport').addEventListener('click', async ()=>{
     toast('Rendering…');
@@ -889,7 +869,7 @@
 
   function gClear(){ state.subject='(No subject)'; state.snippet=''; state.htmlBody=''; state.bodyMode='upload'; var si=document.getElementById('subject'); if(si) si.value='(No subject)'; render(); toast('Cleared — start blank'); }
   (function(){ var b=document.getElementById('gClearBtn'); if(b) b.addEventListener('click', gClear); })();
-  $('#selChannel').addEventListener('change',function(e){ const v=e.target.value; if(v==='push'||v==='inapp'){ location.href='../notify-preview-tool/index.html?channel='+v; return; } if(v!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+v; });
+  initChannelNav(['gmail']);
   $('#selIndustry').addEventListener('change',function(e){ state.industry=e.target.value; gFillSubs(); gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
   $('#selSub').addEventListener('change',function(e){ state.sub=e.target.value; gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
   gFillIndustries(); gFillSubs(); gRenderTemplates();
