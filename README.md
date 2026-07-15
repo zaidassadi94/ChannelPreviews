@@ -1,9 +1,10 @@
 # Channel Studio
 
 Realistic, self-contained **channel mockup tools** for building marketing/campaign
-previews to drop into decks and screenshots — no backend, no build step, no AI.
-Everything runs in the browser. Built for producing MoEngage-style creative mocks
-across email and messaging channels.
+previews to drop into decks and screenshots — no build step; everything runs in the
+browser. Built for producing MoEngage-style creative mocks across email and messaging
+channels. An **optional** AI generator (a tiny serverless function, off unless you add
+a key) can draft a message for you — see "Generate with AI" below.
 
 Open **`index.html`** (it opens the studio), or open any tool folder directly —
 each is a standalone single HTML file you can host anywhere static (Vercel,

@@ -1,6 +1,6 @@
 # Channel Studio — Handoff / Full Context
 
-Last updated: 2026-07-14. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, static — no build step).
+Last updated: 2026-07-15. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + two optional serverless functions under `api/`).
 
 This doc gives a new session everything needed to continue without re-reading the
 whole history. Read this first.
@@ -27,6 +27,7 @@ index.html                      # root — redirects to messaging-preview-tool/?
 setup.html                      # no-terminal Pexels photo resolver (see §6)
 resolve-images.js               # Node CLI resolver (alt to setup.html; user is non-technical so prefer setup.html)
 images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos; DATA ONLY)
+favicon.svg                     # brand mark (speech-bubble + AI sparkle squircle) — linked from every page
 channel-studio.css              # shared design system (sidebar/topbar/frame/toast) — see §11 Phase 1
 content.js                      # shared INDUSTRIES / PACKS / CONFIRM (+push/email variants) — §11 Phase 2
 image-system.js                 # shared tile/photo/ePhoto/KW/IMGKW/kwFor image system — §11 Phase 2
@@ -294,6 +295,23 @@ dark mode removed, real Pexels photos live (56) with illustration fallback, no-t
 `setup.html` resolver, unified 6-channel dropdown, a **screen recorder** with a **review
 studio** (filmstrip trim + WebM/GIF export) in all three tools, touch-orb recording
 cursor, and the Gmail desktop reading-pane scroll fix.
+
+**Done 2026-07-15 (this session):**
+- **The §11 refactor — all 3 phases shipped** (`channel-studio.css`, `content.js` +
+  `image-system.js`, `blocks.js` + `device.js` + `nav.js`). Each tool is now just its
+  channel-specific CSS + render fns + state + template archetypes; foundations live once.
+- **Notify app backdrop** rebuilt into a realistic, vertical-aware app home (§4).
+- **AI generate (Phase 4)** — shared `ai.js` "✨ AI" right-hand panel → `api/generate.js`
+  (multi-provider: **Groq** preferred, Gemini fallback; schema-locked, key server-side)
+  → per-tool `applyAI()` through the normal template path. Images always resolve via
+  `ChannelStudioAI.photoFor` (pre-resolved → live Pexels `api/photo.js` → illustration),
+  defaulting to the vertical keyword so a real photo shows even with no `PEXELS_KEY`.
+- **UI**: sidebar sections **collapsed by default**, new brand mark + `favicon.svg`,
+  header-row polish.
+- **Env vars (owner-set, in Vercel):** `GROQ_API_KEY` (recommended) or `GEMINI_API_KEY`
+  for AI copy; `PEXELS_KEY` (optional) for live photo lookup of arbitrary AI keywords.
+  All optional — with none set, the core tools are unchanged and the ✨ button shows a
+  friendly "add a key" note.
 
 **UI conventions (keep consistent):** collapse chevrons are the solid `▼` (rotate −90°
 when `.collapsed`; accent-coloured when a group is open); sidebar groups now default
