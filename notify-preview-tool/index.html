@@ -401,6 +401,7 @@
       <span class="topcap" id="chanCap"></span>
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
+      <button class="btn ghost" id="btnRecord"></button>
       <button class="btn ghost" id="btnCopy">Copy</button>
       <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
     </div>
@@ -410,6 +411,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../recorder.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -681,7 +683,10 @@
     stage.className='stage'+(state.play?' sim-on':'');
     const badge=state.play?`<div class="sim-badge">● Simulate — tap the buttons</div>`:'';
     const inner=state.channel==='inapp'?renderInApp():renderPush();
-    stage.innerHTML=`<div class="phone ${android?'android':''}" id="capture">${head}${badge}<div class="screen">${inner}</div></div>`;
+    let cap=document.getElementById('capture');
+    if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
+    cap.className='phone'+(android?' android':'');
+    cap.innerHTML=`${head}${badge}<div class="screen">${inner}</div>`;
     bindOpts(); fitDevice();
   }
   function fitDevice(){ const cap=$('#capture'); if(!cap) return; cap.style.transform='none'; cap.style.marginBottom='';
@@ -935,6 +940,8 @@
   }
   $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); const nm=state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}`; a.download=`${nm}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
   $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
+
+  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=> state.channel==='inapp'?`inapp-${state.industry}-${state.inapp.type}`:`push-${state.industry}-${state.device}-${state.surface}` });
 
   // ---------- Init ----------
   const qp=new URLSearchParams(location.search); const qc=(qp.get('channel')||'').toLowerCase();

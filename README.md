@@ -57,6 +57,11 @@ any specific image. Anything not resolved falls back to the illustration.
   message bubbles, set each bubble's type and who it's from), logo, verified
   badge, timestamps, theme.
 - **Export** — one-click **PNG** (2×) or **copy to clipboard**, ready for a slide.
+- **Record** — capture a **screen recording of just the device** (mobile or desktop
+  view — no sidebar or browser chrome) as a `.webm`. Click **Record**, approve the
+  one-time "share this tab" prompt, demo your flow (scroll, tap Simulate buttons…),
+  then click **Stop** to download. Uses the browser's Region Capture API — works in
+  **Chrome or Edge**; other browsers record the whole tab instead.
 
 ### Message types supported
 

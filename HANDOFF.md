@@ -27,6 +27,7 @@ index.html                      # root — redirects to messaging-preview-tool/?
 setup.html                      # no-terminal Pexels photo resolver (see §6)
 resolve-images.js               # Node CLI resolver (alt to setup.html; user is non-technical so prefer setup.html)
 images.js                       # window.__PXIMG = { keyword: pexelsCdnUrl }  (the resolved real photos)
+recorder.js                     # shared screen recorder (records only #capture → .webm)
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
 notify-preview-tool/index.html      # Push + In-App  (notifications tool)
@@ -121,6 +122,23 @@ headless Chromium via the global Playwright at
   and blew up the card height. Card app-name is `.appn`. Also give notification images a
   **fixed `height`** (not `max-height`) + `object-fit:cover` so they don't collapse to
   0px while a remote photo is still loading/blocked (sandbox) — `.pn-ios/.pn-and .big`.
+
+### Screen recorder (`recorder.js`, shared)
+- Root `recorder.js` (loaded by all three tools via `<script src="../recorder.js">`)
+  adds a **Record** button next to Export that records **only the device/desktop view**
+  (`#capture`) — not the sidebar or browser chrome. Uses the Chromium **Region Capture**
+  API: `getDisplayMedia({preferCurrentTab:true})` → `CropTarget.fromElement(#capture)` →
+  `track.cropTo(...)` → `MediaRecorder` → downloads a `.webm`. Where Region Capture is
+  absent (Safari/Firefox) it records the whole tab with a toast note. `ChannelStudioRecorder
+  .init({button, getEl, filename, toast})`; the button self-manages idle/recording state
+  and a live timer. Self-contained, no libraries; sandbox can't run the real tab-share so
+  it's verified by mocking `getDisplayMedia` with a canvas stream.
+- **Critical dependency:** each tool's `render()` now **reuses a persistent `#capture`
+  element** (updates its `className` + `innerHTML`) instead of replacing the node. This is
+  what keeps a mid-recording crop alive across re-renders (template switch, Simulate tap,
+  field edit). If you ever go back to `stage.innerHTML = '<div id="capture">…'`, recording
+  will break on the first re-render. Verified by asserting `#capture` node identity is
+  stable across a render.
 
 ---
 
@@ -242,13 +260,10 @@ prematurely close the script — this bit us once in the gmail tool).
 (notify). Channel Studio design across all three tools, 6 templates × channel ×
 (sub)industry, DIY block builders, Simulate, US locale, digital-aware confirmations,
 dark mode removed, real Pexels photos live (56) with illustration fallback, no-terminal
-`setup.html` resolver, unified 6-channel dropdown wired across all tools.
+`setup.html` resolver, unified 6-channel dropdown wired across all tools, and a
+**screen recorder** (record just the device view) in all three tools.
 
 **Open / possible next (not started):**
-- **Screen recording** (asked about 2026-07-14): record just the device view. Recommended
-  approach is Chromium Region Capture (`getDisplayMedia` + `CropTarget.fromElement` →
-  `track.cropTo` → `MediaRecorder` → `.webm`), reusing the `#capture`/`fitDevice` plumbing.
-  Medium effort; Chromium-only + one tab-share click + `.webm` output are the caveats.
 - Gmail email body could become the same **drag-and-drop block builder** (currently
   sender/subject fields + HTML upload/paste/plain + the 6 templates).
 - Review the `family` photo (telecom) per the demographic ask; swap if needed.

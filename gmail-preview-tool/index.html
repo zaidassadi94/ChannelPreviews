@@ -477,6 +477,7 @@
         <button data-view="open">Open email</button>
       </div>
       <div class="grow"></div>
+      <button class="btn ghost" id="btnRecord"></button>
       <button class="btn ghost" id="btnCopy">⧉ Copy</button>
       <button class="btn primary" id="btnExport">⬇ Export PNG</button>
     </div>
@@ -486,6 +487,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../recorder.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
 <script>
 (function(){
@@ -913,16 +915,21 @@
 
   // ---------- Render dispatch ----------
   function render(){
-    let inner='';
+    let cls='', inner='';
     if(state.skin==='mobile'){
       const screen = state.view==='inbox'? mobileInbox() : mobileOpen();
-      inner = `<div class="iphone capture-target" id="capture"><div class="notch"></div><div class="iphone-screen ${state.theme==='dark'?'dark':''}">${statusBar()}${screen}<div class="home-ind ${state.theme==='dark'?'dk':''}"></div></div></div>`;
+      cls='iphone capture-target';
+      inner = `<div class="notch"></div><div class="iphone-screen ${state.theme==='dark'?'dark':''}">${statusBar()}${screen}<div class="home-ind ${state.theme==='dark'?'dk':''}"></div></div>`;
     } else {
       const screen = state.view==='inbox'? desktopInbox() : desktopOpen();
-      inner = `<div class="browser capture-target" id="capture"><div class="browser-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="url-pill">🔒 mail.google.com/mail/u/0/#inbox</div></div>${screen}</div>`;
+      cls='browser capture-target';
+      inner = `<div class="browser-bar"><div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="url-pill">🔒 mail.google.com/mail/u/0/#inbox</div></div>${screen}`;
     }
     stage.className = 'stage' + (state.theme==='dark'?' dark-stage':'');
-    stage.innerHTML = inner;
+    let cap=document.getElementById('capture');
+    if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
+    cap.className=cls;
+    cap.innerHTML=inner;
     // Fill the email iframe (open view only)
     if(state.view==='open'){
       const f = document.getElementById('emailFrame');
@@ -1062,6 +1069,8 @@
       });
     }catch(e){ toast('Copy failed — try Export PNG'); }
   });
+
+  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:()=>`gmail-${state.industry}-${state.skin}` });
 
   $('#selChannel').addEventListener('change',function(e){ const v=e.target.value; if(v==='push'||v==='inapp'){ location.href='../notify-preview-tool/index.html?channel='+v; return; } if(v!=='gmail') location.href='../messaging-preview-tool/index.html?channel='+v; });
   $('#selIndustry').addEventListener('change',function(e){ state.industry=e.target.value; gFillSubs(); gRenderTemplates(); var l=templatesForGmail(); if(l.length) applyEmailTemplate(l[0]); });
