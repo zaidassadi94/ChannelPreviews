@@ -40,8 +40,11 @@
   // Real brand logo (Logo.dev → favicon fallback), returned as a data: URI. Cached
   // per domain. Returns a URL or null; on any failure the caller keeps the generated mark.
   const logoMem = {};
+  function cleanDomain(d) {
+    return (d || '').toLowerCase().trim().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').replace(/[^a-z0-9.\-]/g, '');
+  }
   async function resolveLogo(domain) {
-    domain = (domain || '').toLowerCase().trim();
+    domain = cleanDomain(domain);
     if (!domain || domain.indexOf('.') < 1) return null;
     if (domain in logoMem) return logoMem[domain];
     let cached = null; try { cached = localStorage.getItem('cs-logo:' + domain); } catch (e) {}
@@ -54,6 +57,30 @@
       try { localStorage.setItem('cs-logo:' + domain, url || '0'); } catch (e) {}
       return url;
     } catch (e) { return (logoMem[domain] = null); }
+  }
+  // An explicit domain typed in the brief (e.g. "onboarding for nobero.com").
+  const DOMAIN_RE = /\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|net|org|io|co|ai|app|shop|store|in|us|uk|de|fr|es|it|nl|ca|au|xyz|dev|me|tech|fashion|clothing))\b/i;
+  function domainInBrief(t) { const m = (t || '').toLowerCase().match(DOMAIN_RE); return m ? m[1] : null; }
+  // A best-guess domain from a brand name ("Nobero" -> "nobero.com").
+  function guessDomain(brand) {
+    const slug = (brand || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+    return slug.length >= 2 ? slug + '.com' : null;
+  }
+  // Resolve a brand logo from several signals, strongest first: a domain typed
+  // in the brief, the model's domain, then a domain guessed from the brand name.
+  // The /api/logo endpoint fails gracefully (logo.dev -> favicons -> nothing), so
+  // a guess only ever upgrades a monogram to a real logo, never breaks anything.
+  async function resolveBrandLogo(o) {
+    o = o || {};
+    const cands = [domainInBrief(o.brief), o.domain, guessDomain(o.brand)].map(cleanDomain);
+    const seen = {};
+    for (const c of cands) {
+      if (!c || c.indexOf('.') < 1 || seen[c]) continue;
+      seen[c] = 1;
+      const u = await resolveLogo(c);
+      if (u) return u;
+    }
+    return null;
   }
 
   // One live Pexels lookup for a search phrase, at a given orientation. Cached
@@ -224,7 +251,9 @@
         // --- switch the sidebar identity to match what the AI wrote (brief wins) ---
         if (msg.industry && setIndustry) setIndustry(msg.industry);
         if (msg.brand && setBrand) setBrand(msg.brand);
-        if (setLogo) setLogo(msg.domain ? await resolveLogo(msg.domain) : null);  // real logo, else generated mark
+        // Real logo from the brief's domain, the model's domain, or a guess from
+        // the brand name (in that order); falls back to the generated monogram.
+        if (setLogo) setLogo(await resolveBrandLogo({ brief, domain: msg.domain, brand: msg.brand }));
         // the adapter owns image resolution (via ChannelStudioAI.photoFor); the
         // brief lets it fall back to the message's own subject, not the vertical.
         await apply(msg, { brief });
@@ -248,5 +277,5 @@
     } catch (e) {}
   }
 
-  window.ChannelStudioAI = { init, API, resolvePhoto, livePhoto, photoFor, resolveLogo, detectChannel, autogen: b => _autogen && _autogen(b) };
+  window.ChannelStudioAI = { init, API, resolvePhoto, livePhoto, photoFor, resolveLogo, resolveBrandLogo, detectChannel, autogen: b => _autogen && _autogen(b) };
 })();
