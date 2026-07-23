@@ -836,14 +836,36 @@
   document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
 
   // ---------- Export ----------
+  // Remote CDN images (e.g. Pexels hero photos) taint / CORS-fail inside
+  // html2canvas, which is why the email image dropped out of PNG export & copy.
+  // Inline them as same-origin data: URIs first; anything that can't be fetched
+  // keeps its URL and falls back to the previous crossorigin attempt.
+  const _imgURICache = {};
+  async function imgToDataURI(url){
+    if(url in _imgURICache) return _imgURICache[url];
+    try{
+      const r = await fetch(url, { mode:'cors' });
+      if(!r.ok) throw 0;
+      const blob = await r.blob();
+      const data = await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(blob); });
+      return (_imgURICache[url] = data);
+    }catch(e){ return (_imgURICache[url] = null); }
+  }
+  async function inlineImages(html){
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const imgs = Array.from(doc.querySelectorAll('img')).filter(im=>/^https?:/i.test(im.getAttribute('src')||''));
+    await Promise.all(imgs.map(async im=>{ const d = await imgToDataURI(im.getAttribute('src')); if(d) im.setAttribute('src', d); }));
+    return doc.body.innerHTML;
+  }
   async function capture(){
+    const bodyHTML = await inlineImages(resolveBody());
     return captureDevice({ background: state.theme==='dark'?'#20232a':'#eef1f5', toast, h2c:{ onclone:(doc)=>{
-      // Replace the live iframe with the inline email body so it captures reliably
+      // Replace the live iframe with the (image-inlined) email body so it captures reliably
       const fr = doc.getElementById('emailFrame');
       if(fr){
         const div = doc.createElement('div');
         div.style.width = (fr.style.width||'100%');
-        div.innerHTML = resolveBody();
+        div.innerHTML = bodyHTML;
         div.querySelectorAll('img').forEach(im=>im.setAttribute('crossorigin','anonymous'));
         fr.replaceWith(div);
       }
