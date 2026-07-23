@@ -100,9 +100,11 @@ and redeploy. Results are cached in the visitor's browser, so each phrase is fet
 most once — Pexels is barely touched. Without `PEXELS_KEY` set, subjects fall back to the
 pre-resolved keyword photo, then a clean illustration; nothing breaks.
 
-**Brand logos:** every business gets an auto-generated monogram logo (no setup). When the AI
-recognizes a **real** brand it also returns its domain, and `api/logo.js` fetches the real
-logo. Clearbit's old keyless API is gone, so this uses **[Logo.dev](https://logo.dev)** (free
+**Brand logos:** every business gets an auto-generated monogram logo (no setup). For a **real**
+brand the studio finds its logo from the domain you name in the brief, the domain the AI
+returns, or a domain guessed from the brand name — and `api/logo.js` fetches the real logo (so
+lesser-known brands get one too, not just household names). Clearbit's old keyless API is gone,
+so this uses **[Logo.dev](https://logo.dev)** (free
 tier 500k/month) — add its **publishable** token as `LOGODEV_KEY` in Vercel for crisp logos.
 With no key it still falls back to **keyless favicons** (so real brands get an icon), and
 otherwise the generated monogram is used.

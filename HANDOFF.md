@@ -1,6 +1,6 @@
 # Channel Studio — Handoff / Full Context
 
-Last updated: 2026-07-15. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + two optional serverless functions under `api/`).
+Last updated: 2026-07-23. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + two optional serverless functions under `api/`).
 
 This doc gives a new session everything needed to continue without re-reading the
 whole history. Read this first.
@@ -219,7 +219,10 @@ irrelevant/weird photos) → **Pexels resolved-once + illustration fallback** (c
   photos** (resolved 2026-07-14). A stub `window.__PXIMG={}` is the fallback if the
   file is missing.
 - **Why this design:** loading a Pexels CDN image is NOT an API call → zero rate-limit
-  cost regardless of traffic. Pexels images are CORS-safe (export works). No API key
+  cost regardless of traffic. Pexels images are CORS-safe so html2canvas export works
+  when the image is **inline in the captured DOM** (messaging/notify). **Exception:** the
+  Gmail email body renders in an `<iframe>`, which html2canvas can't read — that path
+  inlines remote images to `data:` URIs at capture time (see §10, 2026-07-23). No API key
   ships in the app. Research confirmed there is **no keyless keyword-photo API** and
   Google Images can't be hotlinked, so "resolve once, then serve static URLs" is the
   only clean path for a static site.
@@ -289,6 +292,41 @@ prematurely close the script — this bit us once in the gmail tool).
 ---
 
 ## 10. Status & possible next steps
+
+**Done 2026-07-23 (brand name + logo reliability, Gmail & gamification capture):**
+- **Brand names no longer truncate.** The AI sometimes returned an abbreviated/invented
+  variant of a real brand (brief "birkenstock" → header "Birki"). `api/generate.js`
+  `brandField` + the identity line of `systemPrompt` now require the real company's
+  **full, correct name** and forbid inventing a shortened variant.
+- **Logos resolve for more than famous names.** The old flow only showed a logo when the
+  model emitted a `domain`, gated on "real, **well-known** company", so mid-size brands
+  (e.g. **Nobero** — logo.dev has it) fell back to the monogram. Two changes: (1) loosened
+  the `domain` field/prompt to any identifiable/guessable real brand; (2) `ai.js` new
+  `resolveBrandLogo({brief,domain,brand})` resolves from **the brief's own domain → the
+  model's domain → a domain guessed from the brand name** ("Nobero"→nobero.com), strongest
+  first. `/api/logo` already degrades gracefully (logo.dev → DuckDuckGo/Google favicon →
+  none), so a guess only ever upgrades a monogram to a real logo. Old `resolveLogo(domain)`
+  kept for compat; `resolveBrandLogo` is the entry point `setLogo` now uses.
+- **Gmail export/copy now includes the email image.** The email body renders in a sandboxed
+  `<iframe>` (arbitrary/pasted HTML needs style isolation — see §Gmail), and html2canvas
+  can't see into iframes, so capture swaps the iframe for an inline div. The hero was a
+  **remote Pexels URL** that taints/CORS-fails inside html2canvas and dropped out. Fix:
+  `gmail-preview-tool` `capture()` now pre-inlines the body's remote images as same-origin
+  `data:` URIs (`imgToDataURI`/`inlineImages`) before rasterising; best-effort — anything
+  that can't be fetched keeps its URL + the prior `crossorigin` fallback.
+- **In-App Gamification copy/export fixed.** The `.gm` game CSS used `color-mix()` (6
+  places, incl. `.gm::before` present in *every* game). **html2canvas 1.4.1 throws on
+  `color-mix()`**, rejecting the whole capture → Copy/Export failed on all four games.
+  Replaced each with `rgba(var(--gm-accent-rgb), a)`; new `hexRgb()` helper sets a
+  `--gm-accent-rgb` channel triplet in `renderGame`. Renders identically (verified computed
+  colours match). Same failure class as the wheel-is-SVG-not-conic-gradient note below.
+- The **recorder** (WebM/GIF) uses screen capture, not html2canvas, so it was unaffected by
+  both capture bugs. Verified offline in Playwright (computed colours, clean page init,
+  DOM-inlining logic); the live html2canvas capture + Pexels CORS can't be exercised in the
+  Claude sandbox (html2canvas CDN + images.pexels.com are firewalled — see §env notes), so
+  do a quick real-browser sanity check on the Vercel deploy.
+- Added **`CLAUDE.md`** at repo root recording the owner's standing preference: always
+  commit + push finished work to `main`.
 
 **Done 2026-07-15 (brief-authoritative AI routing + auto logos):** The sidebar used to
 *constrain* the AI (brand/industry injected into the prompt), so a jeans brief on the Travel
