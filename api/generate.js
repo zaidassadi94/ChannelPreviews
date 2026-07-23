@@ -29,6 +29,7 @@ const CHANNELS = {
   inapp:    ['modal', 'banner', 'full', 'sheet', 'image'],
   game:     ['scratch', 'wheel', 'box', 'slots'],
   gmail:    ['email'],
+  instagram: ['story', 'feed'],
 };
 
 // A curated keyword vocabulary the image system resolves to real photos.
@@ -86,6 +87,13 @@ function schemaFor(channel) {
       label: STR, style: S('STRING', { enum: ['primary', 'secondary', 'text'] }) }, required: ['label'] }) }),
     close: S('BOOLEAN'),
   }, required: ['brand', 'industry', 'type', 'headline'] });
+  if (channel === 'instagram') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
+    type: S('STRING', { enum: CHANNELS.instagram, description: 'story = full-screen 9:16 story ad; feed = in-feed post ad' }),
+    headline: STR, body: STR,
+    cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Watch More', 'Contact Us'] }),
+    imageKeyword: kwEnum, imageQuery: imgQuery,
+  }, required: ['brand', 'industry', 'type', 'body'] });
   if (channel === 'game') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.game }),
@@ -114,6 +122,7 @@ const CHANNEL_VOICE = {
   inapp: 'In-app voice: the user is already inside the app, so skip the intro. Headline is a bold promise; body is one supportive line; the primary CTA is a confident verb.',
   gmail: 'Email voice: a subject line that earns the open (specific and curious, <=7 words) and a snippet that COMPLEMENTS the subject rather than repeating it. The heading + body carry the story; the button is one clear next step.',
   game: 'Reward voice: celebratory and a little thrilling, never cheesy. The headline announces the moment ("You unlocked a spin", "A little something for you"), the prize feels genuinely worth it, and the CTA claims it now.',
+  instagram: 'Instagram ad voice: thumb-stopping and native to the feed — sound like a creator or a friend, not a billboard. The body is the caption: one or two sharp lines that earn the tap, a little personality, 1-3 tasteful emoji. Pick the CTA that matches the intent (Shop Now for products, Sign Up / Learn More for lead-gen, Install Now for apps). The image is the whole ad, so imageQuery must nail the hero visual.',
 };
 
 function systemPrompt(ctx) {

@@ -42,6 +42,7 @@ gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
 notify-preview-tool/index.html      # Push + In-App + In-App Gamification  (notifications tool)
+social-preview-tool/index.html      # Instagram Ads — Story + Feed  (social ads tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -68,10 +69,12 @@ them in headless Chromium via the global Playwright at
   - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`;
     pick Push/In-App → `../notify-preview-tool/index.html?channel=push|inapp`
   - notify → pick Gmail / WA·RCS·SMS → routes back to those tools; Push↔In-App stay local
-- The **three tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
-  Gmail, notify = Push/In-App) but all share the same dropdown so it feels like one app.
+- The **four tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
+  Gmail, notify = Push/In-App/Game, social = Instagram) but all share the same dropdown
+  so it feels like one app. `nav.js` routes `instagram` → `../social-preview-tool/`.
 - There is **one top bar**. Root `index.html` just redirects into the messaging tool.
-- `?channel=sms|rcs|whatsapp` deep-links messaging; `?channel=push|inapp` deep-links notify.
+- `?channel=sms|rcs|whatsapp` deep-links messaging; `?channel=push|inapp` deep-links notify;
+  `social-preview-tool/?format=story|feed` deep-links the Instagram tool's format.
 
 ---
 
@@ -142,6 +145,34 @@ them in headless Chromium via the global Playwright at
   and blew up the card height. Card app-name is `.appn`. Also give notification images a
   **fixed `height`** (not `max-height`) + `object-fit:cover` so they don't collapse to
   0px while a remote photo is still loading/blocked (sandbox) — `.pn-ios/.pn-and .big`.
+
+### social-preview-tool (Instagram Ads — Story / Feed)
+- Same Channel Studio shell + Industry/Sub dropdowns + 6-templates-per-vertical model +
+  `imageField`/`photo()`/`kwFor()` image system + iPhone/Android frames + `fitDevice()` +
+  html2canvas export + recorder as the other tools. **One channel** (`instagram`) with a
+  topbar **format seg** (`#formatSeg`, `FORMATS`): **Story / Feed** — the way notify hosts
+  Push surfaces. `state.ig={brand,handle,verified,media,caption,cta,likes,comments,time}` +
+  `state.brandLogo` (advertiser profile photo, AI/real-logo or `brandMark` monogram).
+- **Story ad (`renderStory` / `.igs`):** full-screen 9:16 takeover — progress bars, header
+  (avatar + handle + verified badge + "Sponsored" + short time + ⋯ + ✕), full-bleed media
+  with top/bottom scrims, a bottom **swipe-up CTA pill** (chevron-up + label), and a
+  "Send message" reply bar with heart/share. Caption is NOT shown (story ads are pure
+  creative) — the `#igCapWrap` + `.fmt-feed` groups hide on Story.
+- **Feed ad (`renderFeed` / `.igf`):** in-feed post inside a mini Instagram home (wordmark
+  top bar + bottom tab nav + a faint next-post peek). Post = header, 1:1 media, a **CTA
+  action bar** (`Shop Now ›`), the like/comment/share + save action row, likes count,
+  `<b>handle</b> caption`, "View all N comments", and an uppercase timestamp.
+- **CTA** is a `<select>` of 10 real Instagram CTAs (`IG_CTAS`: Shop Now, Learn More, Sign
+  Up, Install Now, Get Offer, …). **Verified** badge is the blue seal SVG (`VBADGE`),
+  toggleable. Handle auto-derives from the business name (`handleFromBrand`) until edited.
+- **Templates** = `IG_ARCH` (6: Product launch / Flash sale / App install / Sign-up-lead /
+  Social proof / Retargeting) × `PACKS` — format-agnostic content that renders in whichever
+  format is selected. **Simulate** makes the CTA tappable (toast). **AI** wired via
+  `applyAI` (reads `type:story|feed` to switch format, maps `headline+body`→caption,
+  `cta`→button, resolves media via `ChannelStudioAI.photoFor` portrait-for-story). Server
+  schema added in `api/generate.js` (`CHANNELS.instagram=['story','feed']` + `schemaFor` +
+  `CHANNEL_VOICE.instagram`); `ai.js` routing added (`TOOL_CHANNELS.social`, `toolUrl`,
+  `CH_LABEL`, and a `CH_WORDS` entry so "an instagram story for…" hands off here).
 
 ### Screen recorder (`recorder.js`, shared)
 - Root `recorder.js` (loaded by all three tools via `<script src="../recorder.js">`)
@@ -292,6 +323,20 @@ prematurely close the script — this bit us once in the gmail tool).
 ---
 
 ## 10. Status & possible next steps
+
+**Done 2026-07-23 (Instagram Ads — a new channel + tool):** Added a **fourth tool**,
+`social-preview-tool/index.html`, hosting the **Instagram Ads** channel with two formats,
+**Story** and **Feed** (topbar format seg) — see §4 for the full description. Wired into
+every tool's channel dropdown + `nav.js` (`instagram` → social tool), and into the AI
+generator (`ai.js` routing/detection + `api/generate.js` schema/voice) for full parity with
+the other channels. Verified headless (Playwright, over http for the AI path): both formats
+render with no `pageerror`, 6 templates/vertical, industry switching, Simulate CTA,
+iPhone/Android frames, export path, cross-tool routing from all three other tools, and an
+end-to-end AI generate (brief → format switch + brand/handle/logo/caption/CTA). Remote
+Pexels photos + html2canvas CDN stay firewalled in-sandbox (illustration fallback) as with
+every tool — sanity-check real photos/export on the Vercel deploy. Channel count is now **9**
+across 4 tools. Note: this work was pushed to branch `claude/instagram-ads-channel-utiql5`
+(the session's designated branch), not `main`.
 
 **Done 2026-07-23 (brand name + logo reliability, Gmail & gamification capture):**
 - **Brand names no longer truncate.** The AI sometimes returned an abbreviated/invented

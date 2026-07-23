@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Channel Studio — Instagram Ads</title>
+<link rel="stylesheet" href="../channel-studio.css">
+<style>
+  /* channel-studio.css overrides — Instagram surfaces are full-bleed & app-native */
+  .logo-prev img{ object-fit:cover; }
+  .notch{ top:0; } .punch{ top:13px; }
+
+  /* verified seal (used in feed + story headers) */
+  .vb{ display:inline-block; vertical-align:-2px; margin-left:3px; }
+
+  /* small in-sidebar segmented control (matches notify's seg-in) */
+  .seg-in{ display:flex; background:#fff; border:1px solid var(--line); border-radius:8px; padding:3px; gap:3px; }
+  .seg-in button{ flex:1; border:0; background:none; padding:7px; font-size:12px; font-weight:600; color:var(--muted); border-radius:5px; cursor:pointer; font-family:inherit; }
+  .seg-in button.on{ background:var(--accent-weak); color:var(--accent-ink); }
+
+  /* ===================== Instagram FEED ad ===================== */
+  .igf{ flex:1; display:flex; flex-direction:column; min-height:0; background:#fff; color:#000; }
+  .ig-appbar{ height:46px; flex:none; display:flex; align-items:center; padding:0 14px; border-bottom:1px solid #efefef; }
+  .ig-wm{ font-family:'Grand Hotel','Snell Roundhand','Segoe Script','Bradley Hand',cursive; font-size:27px; line-height:1; font-weight:500; color:#000; letter-spacing:.2px; flex:1; }
+  .ig-abr{ display:flex; gap:18px; color:#000; } .ig-abr svg{ width:24px; height:24px; }
+  .ig-feed{ flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; }
+  .ig-post{ flex:none; }
+  .ig-post-h{ display:flex; align-items:center; gap:10px; padding:9px 12px 8px; }
+  .ig-post-h .av{ width:34px; height:34px; border-radius:50%; object-fit:cover; flex:none; box-shadow:0 0 0 1px #efefef; }
+  .ig-post-h .pn{ flex:1; min-width:0; line-height:1.2; }
+  .ig-post-h .nm{ font-size:13.5px; font-weight:600; color:#000; display:flex; align-items:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ig-post-h .sp{ font-size:11.5px; color:#737373; margin-top:1px; }
+  .ig-post-h .more{ color:#000; flex:none; } .ig-post-h .more svg{ width:22px; height:22px; }
+  .ig-media{ width:100%; aspect-ratio:1/1; background:#efefef; overflow:hidden; }
+  .ig-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ig-cta-bar{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#fafafa; border-top:1px solid #efefef; border-bottom:1px solid #efefef; }
+  .ig-cta-bar span{ font-size:14px; font-weight:600; color:#000; } .ig-cta-bar svg{ width:18px; height:18px; color:#8e8e8e; }
+  .ig-actions{ display:flex; align-items:center; justify-content:space-between; padding:9px 12px 4px; }
+  .ig-actions .l{ display:flex; gap:15px; } .ig-actions svg{ width:25px; height:25px; color:#000; }
+  .ig-likes{ font-size:13.5px; font-weight:600; padding:2px 14px; }
+  .ig-cap{ font-size:13.5px; line-height:1.4; padding:3px 14px 0; color:#000; }
+  .ig-cap b{ font-weight:600; }
+  .ig-cmt{ font-size:13.5px; color:#737373; padding:5px 14px 0; }
+  .ig-time{ font-size:10.5px; color:#8e8e8e; text-transform:uppercase; letter-spacing:.02em; padding:6px 14px 0; }
+  /* faint peek of the next post to sell the "feed" */
+  .ig-peek{ margin-top:12px; border-top:1px solid #efefef; padding:9px 12px 0; display:flex; align-items:center; gap:10px; opacity:.55; }
+  .ig-peek .av{ width:34px; height:34px; border-radius:50%; flex:none; }
+  .ig-peek .nm{ font-size:13.5px; font-weight:600; }
+  .ig-nav{ height:49px; flex:none; display:flex; align-items:center; justify-content:space-around; border-top:1px solid #efefef; background:#fff; }
+  .ig-nav svg{ width:25px; height:25px; color:#000; }
+  .ig-nav .pf{ width:25px; height:25px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 1.5px #000; }
+
+  /* ===================== Instagram STORY ad ===================== */
+  .igs{ position:relative; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; background:#000; }
+  .igs-media{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  .igs-scrim-t{ position:absolute; left:0; right:0; top:0; height:170px; z-index:1; background:linear-gradient(rgba(0,0,0,.42), transparent); pointer-events:none; }
+  .igs-scrim-b{ position:absolute; left:0; right:0; bottom:0; height:220px; z-index:1; background:linear-gradient(transparent, rgba(0,0,0,.55)); pointer-events:none; }
+  .igs .statusbar{ position:relative; z-index:3; }
+  .igs-top{ position:relative; z-index:3; }
+  .igs-bars{ display:flex; gap:3px; padding:8px 9px 0; }
+  .igs-bars .b{ flex:1; height:2.5px; border-radius:2px; background:rgba(255,255,255,.35); overflow:hidden; }
+  .igs-bars .b i{ display:block; height:100%; background:#fff; border-radius:2px; }
+  .igs-head{ display:flex; align-items:center; gap:8px; padding:11px 12px 0; }
+  .igs-head .av{ width:32px; height:32px; border-radius:50%; object-fit:cover; flex:none; box-shadow:0 0 0 1px rgba(255,255,255,.5); }
+  .igs-head .hn{ font-size:13.5px; font-weight:600; color:#fff; display:flex; align-items:center; text-shadow:0 1px 6px rgba(0,0,0,.4); }
+  .igs-head .sp{ font-size:12.5px; color:rgba(255,255,255,.82); text-shadow:0 1px 6px rgba(0,0,0,.4); }
+  .igs-head .tm{ font-size:12.5px; color:rgba(255,255,255,.82); margin-left:2px; text-shadow:0 1px 6px rgba(0,0,0,.4); }
+  .igs-head .dots{ margin-left:auto; color:#fff; } .igs-head .dots svg{ width:20px; height:20px; }
+  .igs-head .x{ color:#fff; } .igs-head .x svg{ width:22px; height:22px; }
+  .igs-spacer{ flex:1; min-height:0; }
+  .igs-cta{ position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:5px; padding-bottom:12px; }
+  .igs-cta .ch{ color:#fff; opacity:.95; animation:igbob 1.6s ease-in-out infinite; } .igs-cta .ch svg{ width:22px; height:22px; }
+  @keyframes igbob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
+  .igs-cta .pill{ background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1.5px solid rgba(255,255,255,.65); color:#fff; font-size:14.5px; font-weight:650; letter-spacing:-.1px; padding:10px 26px; border-radius:999px; box-shadow:0 4px 18px rgba(0,0,0,.25); }
+  .igs-bottom{ position:relative; z-index:3; display:flex; align-items:center; gap:13px; padding:2px 14px 8px; }
+  .igs-bottom .reply{ flex:1; height:42px; border:1.5px solid rgba(255,255,255,.7); border-radius:999px; color:rgba(255,255,255,.95); display:flex; align-items:center; padding:0 17px; font-size:13.5px; }
+  .igs-bottom .ic{ color:#fff; } .igs-bottom .ic svg{ width:25px; height:25px; }
+  .igs .home-ind{ position:relative; z-index:3; }
+</style>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="editor" id="editor">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff"/><path d="M11.8 7.6c.15 1.75.7 2.3 2.45 2.45-1.75.15-2.3.7-2.45 2.45-.15-1.75-.7-2.3-2.45-2.45 1.75-.15 2.3-.7 2.45-2.45z" fill="#7c6df6"/></svg></div>
+      <div><h1>Channel Studio</h1><small>Instagram ad mockups</small></div>
+    </div>
+
+    <div class="ctx">
+      <div class="sel-wrap"><label>Channel</label>
+        <select class="sel" id="selChannel">
+          <option value="gmail">Gmail</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="rcs">RCS</option>
+          <option value="sms">SMS</option>
+          <option value="push">Push</option>
+          <option value="inapp">In-App</option>
+          <option value="game">In-App Gamification</option>
+          <option value="instagram">Instagram Ads</option>
+        </select>
+      </div>
+      <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
+      <div class="sel-wrap" id="subWrap"><label>Sub-industry</label><select class="sel" id="selSub"></select></div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">Ready-made, industry-specific ad creative. They render in whichever <b>format</b> (Story / Feed) is selected up top.</div>
+        <div class="tpl-grid" id="tplGrid"></div>
+        <button class="btn reset block" id="clearMsgs" style="margin-top:11px;"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear &amp; start blank</button>
+      </div>
+    </div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Advertiser <span class="chev">▼</span></button>
+      <div class="gbody">
+        <label class="f"><span>Business name</span><input type="text" id="igBrand"></label>
+        <label class="f"><span>Handle (@username)</span><input type="text" id="igHandle"></label>
+        <div class="toggle-row"><span>Verified badge</span><label class="switch"><input type="checkbox" id="igVerified" checked><span class="slider"></span></label></div>
+        <label class="f"><span>Profile photo</span>
+          <div class="drop" id="avDrop"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2"/></svg> Upload photo (or use monogram)</div>
+          <input type="file" id="avInput" accept="image/*" hidden>
+          <div class="logo-prev" id="avPrev" style="display:none;"><img id="avImg"><button class="link-btn" id="avClear">Remove</button></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Creative <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="f"><span>Ad media (image)</span><div class="imgz" id="igMedia"></div></div>
+        <label class="f"><span>Call-to-action button</span>
+          <select class="sel" id="igCta"></select>
+        </label>
+        <label class="f" id="igCapWrap"><span>Caption (primary text)</span><textarea id="igCaption" placeholder="What the post says…"></textarea></label>
+      </div>
+    </div>
+
+    <div class="group collapsed fmt-feed" data-group>
+      <button class="ghead" data-head>Post details <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">Shown on the <b>Feed</b> ad — likes, comments and the timestamp.</div>
+        <div class="row2">
+          <label class="f"><span>Likes</span><input type="text" id="igLikes"></label>
+          <label class="f"><span>Comments</span><input type="text" id="igComments"></label>
+        </div>
+        <label class="f"><span>Timestamp</span><input type="text" id="igTime" value="2 hours ago"></label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage-wrap">
+    <div class="topbar">
+      <div class="seg" id="deviceSeg">
+        <button data-device="ios" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>iPhone</button>
+        <button data-device="android"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Android</button>
+      </div>
+      <div class="seg" id="formatSeg"></div>
+      <span class="topcap" id="chanCap"></span>
+      <div class="grow"></div>
+      <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
+      <button class="btn ghost" id="btnAI"></button>
+      <button class="btn ghost" id="btnRecord"></button>
+      <button class="btn ghost" id="btnCopy">Copy</button>
+      <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../image-system.js"></script>
+<script src="../content.js"></script>
+<script src="../blocks.js"></script>
+<script src="../device.js"></script>
+<script src="../gif-encoder.js"></script>
+<script src="../recorder.js"></script>
+<script src="../nav.js"></script>
+<script src="../ai.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmtLite=s=>esc(s).replace(/\*(.+?)\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+  function oneLine(s){ return (s||'').replace(/[*_~]/g,'').replace(/\s*\n\s*/g,' ').trim(); }
+  const AV=['#5b6abf','#e07a5f','#3aa99f','#d96a97','#7b68c9','#8a63d2','#2aa9c9','#5aab6a','#e0a34e','#a1887f','#4a90d9','#0b8043','#e26b3a'];
+  const avColor=n=>{ let h=0; const s=n||'?'; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return AV[h%AV.length]; };
+  const handleFromBrand=b=>(b||'brand').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'').slice(0,24)||'brand';
+
+  function ctxId(){ return state.sub || state.industry; }
+
+  // ---------- State ----------
+  const state={
+    channel:'instagram', device:'ios', format:'story', play:false,
+    industry:'ecom', sub:'fashion', brandLogo:null,
+    ig:{ brand:'Nova', handle:'nova', verified:true, media:'', caption:'',
+         cta:'Shop Now', likes:'2,438', comments:'86', time:'2 hours ago' },
+  };
+  const brandName=()=>state.ig.brand;
+
+  const IG_CTAS=['Shop Now','Learn More','Sign Up','Install Now','Get Offer','Book Now','Order Now','Download','Watch More','Contact Us'];
+
+  // ---------- Icons ----------
+  const IG_IC={
+    heart:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.35-9.5-8.5C1 8.5 2.5 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.5 0 5 3.5 3.5 6.5C19 15.65 12 20 12 20z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    comment:'<svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.5 8.5 0 01-11.9 7.8L3 21l1.7-5.6A8.5 8.5 0 1121 11.5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    share:'<svg viewBox="0 0 24 24" fill="none"><path d="M22 3L11 14M22 3l-7 19-4-8-8-4 19-7z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    save:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12a1 1 0 011 1v17l-7-4.5L5 21V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
+    dm:'<svg viewBox="0 0 24 24" fill="none"><path d="M22 3L11 14M22 3l-7 19-4-8-8-4 19-7z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+    x:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    chevR:'<svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chevUp:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    home:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-6.5L20 11M6 9.5V19a1 1 0 001 1h3v-5h4v5h3a1 1 0 001-1V9.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.9"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+    reels:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.9"/><path d="M3 8h18M8 3l2.5 5M14 3l2.5 5M10 12v5l4.5-2.5L10 12z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+    shop:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8h16l-1 12H5L4 8zM8 8V6a4 4 0 018 0v2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  const VBADGE='<svg class="vb" viewBox="0 0 24 24" width="13" height="13"><path fill="#3897f0" d="M12 1.2l2.5 1.9 3.1-.4 1.3 2.9 2.8 1.5-.9 3 .9 3-2.8 1.5-1.3 2.9-3.1-.4L12 22.8l-2.5-1.9-3.1.4-1.3-2.9L2.3 17l.9-3-.9-3 2.8-1.5 1.3-2.9 3.1.4L12 1.2z"/><path fill="#fff" d="M10.6 15.2L7.7 12.3l1.2-1.2 1.7 1.7 3.7-3.7 1.2 1.2-4.9 4.9z"/></svg>';
+
+  // ---------- Simulate affordance ----------
+  function optAttr(o){ if(!state.play) return ''; return ` data-opt="1" data-reply="${esc(o.reply||'')}"`; }
+  const ck=on=> (state.play&&on)?' clickable':'';
+
+  // ---------- Identity helpers ----------
+  function igAvatar(cls){ const nm=state.ig.brand; const src=state.brandLogo||brandMark(nm,96); return `<img class="${cls}" src="${src}" alt="${esc(nm)}">`; }
+  const statusBar=lt=>statusBarHTML(state.device,lt);
+  function shortTime(t){ const m=/(\d+)\s*(second|minute|hour|day|week)/i.exec(t||''); if(m){ return m[1]+(m[2][0].toLowerCase()); } return t||'2h'; }
+  function mediaSrc(){ return state.ig.media || photo(KW[ctxId()]||'product', 800, state.format==='story'?1400:1000); }
+  const mediaAlt=()=> kwFor(state.ig.caption)||KW[ctxId()]||'ad';
+
+  // ---------- FEED ad ----------
+  function igNav(){
+    const pf=state.brandLogo||brandMark(state.ig.brand,64);
+    return `${IG_IC.home}${IG_IC.search}${IG_IC.reels}${IG_IC.shop}<img class="pf" src="${pf}" alt="you">`;
+  }
+  function feedPeek(){
+    const nm=INDUSTRIES.find(i=>i.id===state.industry); const other=nm?nm.biz:'daily.feed';
+    return `<div class="ig-peek">${igAvatar('av')}<span class="nm">${esc(handleFromBrand(other))}</span></div>`;
+  }
+  function renderFeed(){
+    const g=state.ig;
+    return `<div class="igf">
+      ${statusBar(false)}
+      <div class="ig-appbar"><span class="ig-wm">Instagram</span><span class="ig-abr">${IG_IC.heart}${IG_IC.dm}</span></div>
+      <div class="ig-feed">
+        <div class="ig-post">
+          <div class="ig-post-h">
+            ${igAvatar('av')}
+            <div class="pn"><div class="nm">${esc(g.handle)}${g.verified?VBADGE:''}</div><div class="sp">Sponsored</div></div>
+            <span class="more">${IG_IC.dots}</span>
+          </div>
+          <div class="ig-media"><img src="${esc(mediaSrc())}" alt="${esc(mediaAlt())}"></div>
+          <div class="ig-cta-bar${ck(true)}"${optAttr({reply:g.cta})}><span>${esc(g.cta||'Shop Now')}</span>${IG_IC.chevR}</div>
+          <div class="ig-actions"><div class="l">${IG_IC.heart}${IG_IC.comment}${IG_IC.share}</div><div class="r">${IG_IC.save}</div></div>
+          ${g.likes?`<div class="ig-likes">${esc(g.likes)} likes</div>`:''}
+          ${g.caption?`<div class="ig-cap"><b>${esc(g.handle)}</b> ${fmtLite(g.caption)}</div>`:''}
+          ${g.comments?`<div class="ig-cmt">View all ${esc(g.comments)} comments</div>`:''}
+          <div class="ig-time">${esc(g.time||'2 hours ago')}</div>
+          ${feedPeek()}
+        </div>
+      </div>
+      <div class="ig-nav">${igNav()}</div>
+      <div class="home-ind"></div>
+    </div>`;
+  }
+
+  // ---------- STORY ad ----------
+  function renderStory(){
+    const g=state.ig;
+    return `<div class="igs">
+      <img class="igs-media" src="${esc(mediaSrc())}" alt="${esc(mediaAlt())}">
+      <div class="igs-scrim-t"></div><div class="igs-scrim-b"></div>
+      ${statusBar(true)}
+      <div class="igs-top">
+        <div class="igs-bars"><span class="b"><i style="width:42%"></i></span><span class="b"></span><span class="b"></span></div>
+        <div class="igs-head">
+          ${igAvatar('av')}
+          <span class="hn">${esc(g.handle)}${g.verified?VBADGE:''}</span>
+          <span class="sp">Sponsored</span><span class="tm">${esc(shortTime(g.time))}</span>
+          <span class="dots">${IG_IC.dots}</span><span class="x">${IG_IC.x}</span>
+        </div>
+      </div>
+      <div class="igs-spacer"></div>
+      <div class="igs-cta${ck(true)}"${optAttr({reply:g.cta})}><span class="ch">${IG_IC.chevUp}</span><span class="pill">${esc(g.cta||'Learn More')}</span></div>
+      <div class="igs-bottom"><div class="reply">Send message</div><span class="ic">${IG_IC.heart}</span><span class="ic">${IG_IC.share}</span></div>
+      <div class="home-ind dk"></div>
+    </div>`;
+  }
+
+  // ---------- Render ----------
+  const stage=$('#stage');
+  stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
+
+  function render(){
+    const android=state.device==='android';
+    const head=android?`<div class="punch"></div>`:`<div class="notch"></div>`;
+    stage.className='stage'+(state.play?' sim-on':'');
+    const badge=state.play?`<div class="sim-badge">● Simulate — tap the CTA</div>`:'';
+    const inner=state.format==='story'?renderStory():renderFeed();
+    let cap=document.getElementById('capture');
+    if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
+    cap.className='phone'+(android?' android':'');
+    cap.innerHTML=`${head}${badge}<div class="screen">${inner}</div>`;
+    bindOpts(); fitDevice();
+  }
+  function bindOpts(){ if(!state.play) return; stage.querySelectorAll('[data-opt]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); const r=el.dataset.reply||''; toast('▸ '+(r?('“'+r+'” → opens '+state.ig.brand):('Opens '+state.ig.brand))); })); }
+
+  // ======================================================================
+  //  TEMPLATES — 6 ad-creative presets per vertical (render in Story or Feed)
+  // ======================================================================
+  const IG_ARCH=[
+    {name:'Product launch',kind:'Promotional',icon:'🆕',desc:'Hero product + Shop Now',
+      build:p=>({caption:`New in: ${p.carousel&&p.carousel[0]?p.carousel[0][0]:'the drop'} just landed. ${oneLine(p.offer)} — tap to make it yours. ✨`,cta:'Shop Now',media:photo(p.kw,800,1000,2),likes:'3,204',comments:'128'})},
+    {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + offer',
+      build:p=>({caption:`${p.emoji||'🔥'} ${p.offer}. Today only.${p.code?` Use ${p.code} at checkout.`:''}`,cta:'Get Offer',media:photo(p.kw,800,1000,5),likes:'1,876',comments:'64'})},
+    {name:'App install',kind:'Transactional',icon:'📲',desc:'Drive installs',
+      build:p=>({caption:`Everything ${p.brand} in one app. Join the thousands already tapping in. 👇`,cta:'Install Now',media:photo(p.kw,800,1000,3),likes:'4,510',comments:'212'})},
+    {name:'Sign-up / lead',kind:'Flow',icon:'✍️',desc:'Lead-gen CTA',
+      build:p=>({caption:`Be first to know. Sign up for early access${p.code?` and grab ${p.code}`:''} — new drops before anyone else.`,cta:'Sign Up',media:photo(p.kw,800,1000,7),likes:'932',comments:'41'})},
+    {name:'Social proof',kind:'Promotional',icon:'⭐',desc:'Testimonial style',
+      build:p=>({caption:`“Honestly obsessed.” See why ${p.brand} is everyone's new favourite. ⭐️⭐️⭐️⭐️⭐️`,cta:'Learn More',media:photo(p.kw,800,1000,4),likes:'5,701',comments:'340'})},
+    {name:'Retargeting',kind:'Flow',icon:'🛒',desc:'Cart / win-back',
+      build:p=>({caption:oneLine(p.flow&&p.flow.intro)||`Still thinking it over? Your pick at ${p.brand} is waiting — and it's going fast.`,cta:'Shop Now',media:photo(p.kw,800,1000,6),likes:'688',comments:'23'})},
+  ];
+  function templatesFor(){
+    const base=PACKS[ctxId()]; if(!base) return [];
+    const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
+    return IG_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon,
+      build:()=>Object.assign({brand:p.brand, handle:handleFromBrand(p.brand), verified:true, time:'2 hours ago'}, a.build(p)) }));
+  }
+  function renderTemplates(){
+    const list=templatesFor(); const g=$('#tplGrid');
+    if(!list.length){ g.innerHTML=`<div class="tpl-empty">No preset for this combo — start blank below.</div>`; return; }
+    g.innerHTML=list.map((t,i)=>`<button class="tpl" data-i="${i}"><span class="ti">${t.icon}</span><span class="tc"><span class="tt">${esc(t.name)}${t.flow?'<span class="flow">FLOW</span>':''}</span><span class="td">${esc(t.desc)}</span></span></button>`).join('');
+    g.querySelectorAll('.tpl').forEach(b=>b.addEventListener('click',()=>applyTemplate(list[+b.dataset.i])));
+  }
+  function applyTemplate(t){
+    const f=t.build();
+    if(f.brand!=null){ state.ig.brand=f.brand; state.ig.handle=f.handle||handleFromBrand(f.brand); }
+    else if(f.handle!=null) state.ig.handle=f.handle;
+    if(f.verified!=null) state.ig.verified=f.verified;
+    state.ig.media=f.media||''; state.ig.caption=f.caption||''; state.ig.cta=f.cta||'Shop Now';
+    if(f.likes!=null) state.ig.likes=f.likes; if(f.comments!=null) state.ig.comments=f.comments;
+    if(f.time!=null) state.ig.time=f.time;
+    syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to tap the CTA':''));
+  }
+
+  // ---------- Industries ----------
+  function fillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
+  function fillSubs(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); const subs=ind?ind.subs:[];
+    if(!subs.length){ $('#subWrap').classList.add('hide'); state.sub=null; return; }
+    $('#subWrap').classList.remove('hide'); $('#selSub').innerHTML=subs.map(s=>`<option value="${s[0]}">${esc(s[1])}</option>`).join('');
+    if(!subs.find(s=>s[0]===state.sub)) state.sub=subs[0][0]; $('#selSub').value=state.sub; }
+  function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.ig.brand=ind.biz; state.ig.handle=handleFromBrand(ind.biz); } }
+
+  // ---------- Format segmented control ----------
+  const FORMATS=[['story','Story'],['feed','Feed']];
+  function fillFormatSeg(){ const seg=$('#formatSeg'); seg.innerHTML=FORMATS.map(o=>`<button data-format="${o[0]}" class="${state.format===o[0]?'on':''}">${o[1]}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.format=b.dataset.format; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); setFormatGroups(); render(); })); }
+  function setFormatGroups(){ document.querySelectorAll('.fmt-feed').forEach(g=>{ g.style.display = state.format==='feed'?'':'none'; });
+    $('#igCapWrap').style.display = state.format==='feed'?'':'none'; }
+
+  // ---------- CTA select ----------
+  function fillCtaSelect(){ const sel=$('#igCta'); sel.innerHTML=IG_CTAS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if(!IG_CTAS.includes(state.ig.cta)){ const o=document.createElement('option'); o.value=state.ig.cta; o.textContent=state.ig.cta; sel.appendChild(o); }
+    sel.value=state.ig.cta; }
+
+  // ---------- Editor sync ----------
+  function syncEditor(){
+    $('#igBrand').value=state.ig.brand||'';
+    $('#igHandle').value=state.ig.handle||'';
+    $('#igVerified').checked=!!state.ig.verified;
+    fillCtaSelect();
+    $('#igCaption').value=state.ig.caption||'';
+    $('#igLikes').value=state.ig.likes||'';
+    $('#igComments').value=state.ig.comments||'';
+    $('#igTime').value=state.ig.time||'';
+    const mi=$('#igMedia'); mi.innerHTML=''; mi.appendChild(imageField(()=>state.ig.media, v=>{ state.ig.media=v; render(); }));
+    setFormatGroups();
+  }
+
+  // ---------- Field bindings ----------
+  $('#igBrand').addEventListener('input',e=>{ const v=e.target.value; const auto=$('#igHandle').value===''||$('#igHandle').value===handleFromBrand(state.ig.brand); state.ig.brand=v; if(auto){ state.ig.handle=handleFromBrand(v); $('#igHandle').value=state.ig.handle; } render(); });
+  $('#igHandle').addEventListener('input',e=>{ state.ig.handle=e.target.value.replace(/^@+/,''); render(); });
+  $('#igVerified').addEventListener('change',e=>{ state.ig.verified=e.target.checked; render(); });
+  $('#igCta').addEventListener('change',e=>{ state.ig.cta=e.target.value; render(); });
+  $('#igCaption').addEventListener('input',e=>{ state.ig.caption=e.target.value; render(); });
+  $('#igLikes').addEventListener('input',e=>{ state.ig.likes=e.target.value; render(); });
+  $('#igComments').addEventListener('input',e=>{ state.ig.comments=e.target.value; render(); });
+  $('#igTime').addEventListener('input',e=>{ state.ig.time=e.target.value; render(); });
+
+  (function(){ const drop=$('#avDrop'),inp=$('#avInput');
+    const set=d=>{ state.brandLogo=d; $('#avImg').src=d; $('#avPrev').style.display='flex'; render(); };
+    drop.addEventListener('click',()=>inp.click());
+    inp.addEventListener('change',()=>{ const f=inp.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    $('#avClear').addEventListener('click',e=>{ e.stopPropagation(); state.brandLogo=null; $('#avPrev').style.display='none'; inp.value=''; render(); });
+  })();
+
+  function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
+  segBind('#deviceSeg','device');
+
+  initChannelNav(['instagram'], v=>{ state.channel=v; render(); });
+  $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
+  $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
+  function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
+
+  $('#clearMsgs').addEventListener('click',()=>{
+    state.ig={ brand:state.ig.brand, handle:state.ig.handle, verified:state.ig.verified, media:'', caption:state.format==='feed'?'Your caption here.':'', cta:'Shop Now', likes:'1,204', comments:'18', time:'2 hours ago' };
+    syncEditor(); render();
+  });
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+
+  $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the CTA':'Back to editing'); });
+
+  let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
+  async function capture(){ return captureDevice({ background:'#eef0f5', toast }); }
+  const exportName=()=>`instagram-${state.format}-${state.industry}`;
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`${exportName()}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
+  $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
+
+  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:exportName });
+
+  // ---------- AI generate: map one schema-locked message into an Instagram ad ----------
+  async function applyAI(m, opt){
+    const brief=(opt&&opt.brief)||'';
+    if(m.type==='story'||m.type==='feed'){ state.format=m.type; const seg=$('#formatSeg'); if(seg){ seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.format===state.format)); } setFormatGroups(); }
+    const copyText=[m.headline,m.body].filter(Boolean).join(' ');
+    const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
+    const portrait=state.format==='story';
+    const media=await ChannelStudioAI.photoFor(dkw(), 800, portrait?1400:1000, m.imageQuery);
+    const cta=IG_CTAS.includes(m.cta)?m.cta:(m.cta||'Shop Now');
+    const caption=(m.body&&m.headline)?`${m.headline} ${m.body}`:(m.body||m.headline||'');
+    applyTemplate({ build:()=>({ media, caption, cta, likes:state.ig.likes||'2,438', comments:state.ig.comments||'86', time:state.ig.time||'2 hours ago' }), flow:false });
+  }
+  if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    channels:['instagram'],
+    setChannel:ch=>{ if(ch==='instagram'){ state.channel=ch; $('#selChannel').value=ch; render(); } },
+    setBrand:name=>{ if(!name)return; state.ig.brand=name; state.ig.handle=handleFromBrand(name); const b=$('#igBrand'); if(b) b.value=name; const h=$('#igHandle'); if(h) h.value=state.ig.handle; render(); },
+    setIndustry:label=>{ const r=(typeof resolveIndustry==='function')&&resolveIndustry(label); if(!r)return; state.industry=r.industryId; $('#selIndustry').value=r.industryId; fillSubs(); if(r.subId){ state.sub=r.subId; $('#selSub').value=r.subId; } renderTemplates(); },
+    setLogo:url=>{ state.brandLogo=url||null; if(url){ $('#avImg').src=url; $('#avPrev').style.display='flex'; } render(); },
+    getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:'instagram', brand:brandName(), industry:ind?ind.name:state.industry }; } });
+
+  // ---------- Init ----------
+  $('#selChannel').value='instagram';
+  const qp=new URLSearchParams(location.search); const qf=(qp.get('format')||'').toLowerCase();
+  if(qf==='story'||qf==='feed') state.format=qf;
+  fillIndustries(); fillSubs(); fillFormatSeg(); fillCtaSelect(); setFormatGroups();
+  $('#chanCap').textContent='Instagram ads';
+  renderTemplates();
+  const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); }
+})();
+</script>
+</body>
+</html>
