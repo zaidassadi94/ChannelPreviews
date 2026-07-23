@@ -22,7 +22,8 @@ Gmail — from the **Channel** dropdown inside the app.
 | **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
 | **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | MoEngage-style in-app messages over a dimmed app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · 6 templates per vertical |
 | **In-App Gamification** | [`notify-preview-tool/?channel=game`](notify-preview-tool/index.html?channel=game) | Premium dark "reward moment" takeovers (CRED / Cult-UI style) · **Scratch card** · **Spin the wheel** · **Mystery box** · **Slot machine** · headline/sub/prize/CTA · **Simulate** to reveal the win (scratch fades, wheel spins, box opens, reels land) with confetti · editable wheel segments · 4 templates per vertical |
-| **Instagram Ads** | [`social-preview-tool/`](social-preview-tool/) | Sponsored **Story** (full-screen 9:16 · progress bar · swipe-up CTA · reply bar) and **Feed** (in-feed post · CTA action bar · like/comment/share/save · likes count · caption · "View all comments") ads · advertiser handle + verified badge + profile photo · 10 real Instagram CTAs · 6 templates per vertical |
+| **Instagram Ads** | [`social-preview-tool/`](social-preview-tool/) | Sponsored **Feed** (in-feed post · CTA action bar · like/comment/share/save · likes count · caption · "View all comments") and **Story** (full-screen 9:16 · progress bar · swipe-up CTA · reply bar) ads · advertiser handle + verified badge + profile photo · authentic Instagram mark · 10 real Instagram CTAs · 6 templates per vertical |
+| **Facebook Ads** | [`facebook-preview-tool/`](facebook-preview-tool/) | Sponsored **Feed** (News Feed post · primary text · link module with URL/headline/description + CTA button · reactions/comments/shares bar · Like/Comment/Share) and **Story** (full-screen 9:16 · CTA button · reply bar) ads · Page name + verified badge + photo · 10 real Facebook CTAs · 6 templates per vertical |
 
 
 ## Real product photos (one-time setup)
@@ -140,11 +141,16 @@ otherwise the generated monogram is used.
   premium dark reward takeover with headline/sub/prize/CTA; **Simulate** to play (tap to
   reveal the prize) with confetti; wheel segments editable (one per line, `*` marks the
   winning wedge)
-- **Instagram Ads** — sponsored **Story** (full-screen 9:16 with progress bar, header,
-  swipe-up CTA pill, reply bar) and **Feed** (in-feed post with CTA action bar, like/
-  comment/share/save, likes count, caption, comments) formats; advertiser handle,
-  verified badge, profile photo, ad media, and one of 10 real Instagram CTAs; **Simulate**
-  to tap the CTA
+- **Instagram Ads** — sponsored **Feed** (in-feed post with CTA action bar, like/
+  comment/share/save, likes count, caption, comments) and **Story** (full-screen 9:16 with
+  progress bar, header, swipe-up CTA pill, reply bar) formats; advertiser handle, verified
+  badge, profile photo, ad media, and one of 10 real Instagram CTAs; **Simulate** to tap
+  the CTA
+- **Facebook Ads** — sponsored **Feed** (News Feed post with primary text, the link module
+  — display URL, headline, description + CTA button — and the reactions/comments/shares +
+  Like/Comment/Share bar) and **Story** (full-screen 9:16 with CTA button and reply bar)
+  formats; Page name, verified badge, page photo, ad media, and one of 10 real Facebook
+  CTAs; **Simulate** to tap the CTA
 
 Buttons use a simple one-per-line format: `Label | reply|url|call | value`.
 Carousel cards: `imageURL | title | subtitle | buttonLabel | buttonValue` per line.

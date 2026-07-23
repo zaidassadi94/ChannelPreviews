@@ -42,7 +42,8 @@ gif-encoder.js                  # vendored gifenc v1.0.3 (MIT) → window.gifenc
 messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
 notify-preview-tool/index.html      # Push + In-App + In-App Gamification  (notifications tool)
-social-preview-tool/index.html      # Instagram Ads — Story + Feed  (social ads tool)
+social-preview-tool/index.html      # Instagram Ads — Feed + Story  (social ads tool)
+facebook-preview-tool/index.html    # Facebook Ads — Feed + Story  (facebook ads tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -69,9 +70,10 @@ them in headless Chromium via the global Playwright at
   - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`;
     pick Push/In-App → `../notify-preview-tool/index.html?channel=push|inapp`
   - notify → pick Gmail / WA·RCS·SMS → routes back to those tools; Push↔In-App stay local
-- The **four tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
-  Gmail, notify = Push/In-App/Game, social = Instagram) but all share the same dropdown
-  so it feels like one app. `nav.js` routes `instagram` → `../social-preview-tool/`.
+- The **five tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
+  Gmail, notify = Push/In-App/Game, social = Instagram, facebook = Facebook) but all share
+  the same dropdown so it feels like one app. `nav.js` routes `instagram` →
+  `../social-preview-tool/` and `facebook` → `../facebook-preview-tool/`.
 - There is **one top bar**. Root `index.html` just redirects into the messaging tool.
 - `?channel=sms|rcs|whatsapp` deep-links messaging; `?channel=push|inapp` deep-links notify;
   `social-preview-tool/?format=story|feed` deep-links the Instagram tool's format.
@@ -173,6 +175,30 @@ them in headless Chromium via the global Playwright at
   schema added in `api/generate.js` (`CHANNELS.instagram=['story','feed']` + `schemaFor` +
   `CHANNEL_VOICE.instagram`); `ai.js` routing added (`TOOL_CHANNELS.social`, `toolUrl`,
   `CH_LABEL`, and a `CH_WORDS` entry so "an instagram story for…" hands off here).
+
+### facebook-preview-tool (Facebook Ads — Feed / Story)
+- Same shell/foundations as the other tools (content packs, image system, imageField,
+  device frame, export, recorder, AI, unified `#topVar` top-bar dropdown). One channel
+  (`facebook`) with **Feed / Story** formats. `state.fb={page,verified,media,primary,
+  headline,desc,url,cta,reactions,comments,shares,time}` + `state.brandLogo`.
+- **Feed (`renderFeed` / `.fbf`):** an in-feed News Feed post inside a mini Facebook home
+  (blue `facebook` wordmark bar + bottom nav). Post = header (page avatar, name + verified,
+  "Sponsored · 🌐 globe", ⋯ ✕), **primary text above the image**, 1:1 media, the signature
+  **link module** (`.fb-link`: uppercase display URL, bold headline, description, + a grey
+  CTA button), then the reactions row (blue-thumb + red-heart cluster `.fb-rc` + count,
+  "N comments · N shares") and the Like / Comment / Share action bar. This is what makes FB
+  visually distinct from IG — the link module + reaction bar.
+- **Story (`renderStory` / `.fbs`):** full-screen 9:16 like the IG story, but with a solid
+  white FB CTA button (`.fbs-cta`) and FB-blue verified seal. Caption not shown (story ads
+  are pure creative).
+- **CTA** is a `<select>` of 10 real Facebook CTAs (`FB_CTAS`). The `facebook` "f" logo and
+  the FB-blue verified seal are export-safe inline SVGs. **Templates** = `FB_ARCH` (6, same
+  archetypes as IG but producing primary/headline/desc/url) × `PACKS`. **AI** wired via
+  `applyAI` (`type:feed|story` switches format; `body`→primary text, `headline`→link
+  headline, `desc`→link description). Server schema in `api/generate.js`
+  (`CHANNELS.facebook=['feed','story']` + `schemaFor` + `CHANNEL_VOICE.facebook`); `ai.js`
+  routing added (`TOOL_CHANNELS.facebook`, `toolUrl`, `CH_LABEL`, a `CH_WORDS` entry placed
+  BEFORE Instagram's so "a facebook feed ad…" wins over IG's generic "…feed ad" match).
 
 ### Screen recorder (`recorder.js`, shared)
 - Root `recorder.js` (loaded by all three tools via `<script src="../recorder.js">`)
@@ -323,6 +349,23 @@ prematurely close the script — this bit us once in the gmail tool).
 ---
 
 ## 10. Status & possible next steps
+
+**Done 2026-07-23 (Facebook Ads — a new channel + tool; Instagram polish):** Added a
+**fifth tool**, `facebook-preview-tool/index.html`, hosting the **Facebook Ads** channel
+with **Feed + Story** formats (see §4). Wired into every tool's channel dropdown + `nav.js`
+(`facebook` → facebook tool) and the AI generator (`ai.js` routing/detection with the FB
+`CH_WORDS` entry ordered before Instagram's generic match, + `api/generate.js` schema/voice).
+Facebook's Feed is deliberately distinct from Instagram's: primary text above the image, the
+grey **link module** (display URL + headline + description + CTA button) below it, and the
+reactions/Like-Comment-Share bar. Also polished Instagram: replaced the cursive-font
+wordmark with an authentic **gradient camera glyph + wordmark** inline-SVG mark (export-safe),
+and made **Feed the default** format (was Story). Verified headless: both FB formats render
+with no `pageerror`, 6 templates/vertical, industry switching, Simulate CTA, iPhone/Android
+frames, Export never clipped, cross-tool routing from all four other tools, and AI detection
+(`facebook` for FB briefs, `instagram` still correct). Channel count is now **10** across 5
+tools. Note: Facebook is its own tool folder (isolated from the working Instagram tool);
+Instagram lives in `social-preview-tool` for historical reasons — both could later merge
+under one "social" shell, but they work independently today.
 
 **Done 2026-07-23 (unified top bar across all 4 tools):** The per-channel variant
 selector used to be a row of segmented buttons in the top bar (In-App's 5-button

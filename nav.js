@@ -11,6 +11,7 @@ function initChannelNav(localChannels, onLocal){
     if(localChannels.includes(v)){ if(onLocal) onLocal(v); return; }
     if(v==='gmail'){ location.href='../gmail-preview-tool/index.html'; return; }
     if(v==='instagram'){ location.href='../social-preview-tool/index.html'; return; }
+    if(v==='facebook'){ location.href='../facebook-preview-tool/index.html'; return; }
     if(v==='push'||v==='inapp'||v==='game'){ location.href='../notify-preview-tool/index.html?channel='+v; return; }
     location.href='../messaging-preview-tool/index.html?channel='+v;
   });

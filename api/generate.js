@@ -30,6 +30,7 @@ const CHANNELS = {
   game:     ['scratch', 'wheel', 'box', 'slots'],
   gmail:    ['email'],
   instagram: ['story', 'feed'],
+  facebook: ['feed', 'story'],
 };
 
 // A curated keyword vocabulary the image system resolves to real photos.
@@ -94,6 +95,13 @@ function schemaFor(channel) {
     cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Watch More', 'Contact Us'] }),
     imageKeyword: kwEnum, imageQuery: imgQuery,
   }, required: ['brand', 'industry', 'type', 'body'] });
+  if (channel === 'facebook') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
+    type: S('STRING', { enum: CHANNELS.facebook, description: 'feed = in-feed News Feed post ad; story = full-screen 9:16 story ad' }),
+    body: STR, headline: STR, desc: STR,
+    cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Send Message', 'Contact Us'] }),
+    imageKeyword: kwEnum, imageQuery: imgQuery,
+  }, required: ['brand', 'industry', 'type', 'body'] });
   if (channel === 'game') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.game }),
@@ -122,6 +130,7 @@ const CHANNEL_VOICE = {
   inapp: 'In-app voice: the user is already inside the app, so skip the intro. Headline is a bold promise; body is one supportive line; the primary CTA is a confident verb.',
   gmail: 'Email voice: a subject line that earns the open (specific and curious, <=7 words) and a snippet that COMPLEMENTS the subject rather than repeating it. The heading + body carry the story; the button is one clear next step.',
   game: 'Reward voice: celebratory and a little thrilling, never cheesy. The headline announces the moment ("You unlocked a spin", "A little something for you"), the prize feels genuinely worth it, and the CTA claims it now.',
+  facebook: 'Facebook ad voice: clear and benefit-led for a broad audience. The "body" is the primary text above the image (1-2 lines, a hook + the offer); the "headline" is the short bold line in the link module under the image (<=5 words); "desc" is one supporting line. Pick the CTA that matches intent. The image is the scroll-stopper, so imageQuery must name the exact hero visual.',
   instagram: 'Instagram ad voice: thumb-stopping and native to the feed — sound like a creator or a friend, not a billboard. The body is the caption: one or two sharp lines that earn the tap, a little personality, 1-3 tasteful emoji. Pick the CTA that matches the intent (Shop Now for products, Sign Up / Learn More for lead-gen, Install Now for apps). The image is the whole ad, so imageQuery must nail the hero visual.',
 };
 
