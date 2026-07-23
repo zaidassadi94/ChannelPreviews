@@ -128,7 +128,18 @@
   .seg button svg{ width:15px; height:15px; }
   .seg button.on{ background:#14151a; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28); }
   .seg button:disabled{ opacity:.4; cursor:not-allowed; }
-  .topcap{ font-size:11px; color:var(--muted-2); font-weight:600; letter-spacing:.02em; padding-left:2px; white-space:nowrap; }
+  /* unified top bar: device seg + one compact variant dropdown on the left,
+     action buttons pinned on the right so Export never clips. */
+  .topbar .seg{ flex:none; }
+  .topbar .btn{ flex:none; }
+  .topsel{ flex:none; appearance:none; -webkit-appearance:none; background-color:var(--panel-2);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%236b7180' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 11px center; border:1px solid var(--line); border-radius:10px;
+    padding:9px 32px 9px 14px; font-size:12.5px; font-weight:600; color:var(--ink-2); font-family:inherit; cursor:pointer; letter-spacing:-.1px; }
+  .topsel:hover{ border-color:#d7d9e3; }
+  .topsel:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); }
+  /* the old channel caption is redundant with the sidebar Channel selector — hidden, one place of truth */
+  .topcap{ display:none; }
 
   .stage{ flex:1; min-height:0; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:38px 24px; background:
       radial-gradient(120% 120% at 15% 0%, #eef0f6 0%, transparent 45%),
@@ -157,4 +168,18 @@
   /* toast */
   .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(80px); background:#14151a; color:#fff; padding:11px 18px; border-radius:10px; font-size:12.5px; box-shadow:0 10px 30px rgba(0,0,0,.3); opacity:0; transition:.3s cubic-bezier(.2,.8,.2,1); z-index:200; font-weight:500; max-width:80%; text-align:center; }
   .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+  /* mid-width laptops: tighten the top bar so the action cluster (incl. Export) always fits */
+  @media (max-width:1200px){
+    .topbar{ gap:6px; padding:0 10px; }
+    .topbar .btn{ padding:8px 10px; font-size:12px; gap:5px; }
+    .topbar .btn svg{ width:14px; height:14px; }
+    .topsel{ padding:8px 26px 8px 10px; font-size:12px; }
+    .topbar .seg button{ padding:6px 9px; font-size:12px; }
+    .topbar .seg button svg{ width:14px; height:14px; }
+  }
+  /* very narrow windows (before the 920px mobile collapse): device toggle goes icon-only */
+  @media (max-width:1080px){
+    .topbar .seg button{ font-size:0; padding:6px 8px; gap:0; }
+    .topbar .seg button svg{ width:16px; height:16px; }
+  }
   @media (max-width:920px){ .app{ grid-template-columns:1fr; } .editor{ display:none; } }

@@ -324,6 +324,26 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
+**Done 2026-07-23 (unified top bar across all 4 tools):** The per-channel variant
+selector used to be a row of segmented buttons in the top bar (In-App's 5-button
+Modal/Banner/Full/Sheet/Image, Push's device-aware surface seg, Game's 4 types,
+Instagram's Story/Feed, Gmail's Inbox/Open) — its width swung wildly per channel and,
+combined with the redundant channel caption and unpinned actions, shoved **Export off
+the right edge** on In-App. Fixed by unifying the bar: every tool is now
+`[device seg] [one compact #topVar dropdown] … [Simulate] [AI] [Record] [Copy] [Export]`.
+Changes: `channel-studio.css` pins `.topbar .btn`/`.seg` (`flex:none` so Export never
+clips), adds a `.topsel` dropdown style, hides the redundant `.topcap` caption, and adds
+two responsive tiers (≤1200 tightens spacing; ≤1080 makes the device toggle icon-only) so
+it holds from ~1440 down to ~1024. Each tool swapped its variant seg(s) for one `#topVar`
+`<select>`: notify has a single `fillTopVar()` that populates surfaces/types/games by
+channel (its old `fillSurface/fillInappSeg/fillGameSeg` now delegate to it); social's
+format seg and gmail's view seg became selects too; gmail's `⧉ Copy`/`⬇ Export PNG` were
+normalized to `Copy`/`Export` (shared icon) to match. Messaging keeps just the device seg
+(SMS/RCS/WhatsApp have no preview sub-variant). Gmail has no Simulate (email isn't
+interactive) — a genuine capability difference. Verified headless: no `pageerror`, correct
+dropdown options per channel/device, variant switching re-renders, and Export stays fully
+visible for every channel at 1440/1280/1120/1024.
+
 **Done 2026-07-23 (Instagram Ads — a new channel + tool):** Added a **fourth tool**,
 `social-preview-tool/index.html`, hosting the **Instagram Ads** channel with two formats,
 **Story** and **Feed** (topbar format seg) — see §4 for the full description. Wired into

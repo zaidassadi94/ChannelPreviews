@@ -414,10 +414,7 @@
         <button data-device="ios" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>iPhone</button>
         <button data-device="android"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Android</button>
       </div>
-      <div class="seg" id="surfaceSeg"></div>
-      <div class="seg" id="inappSeg" style="display:none;"></div>
-      <div class="seg" id="gameSeg" style="display:none;"></div>
-      <span class="topcap" id="chanCap"></span>
+      <select class="topsel" id="topVar"></select>
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
       <button class="btn ghost" id="btnAI"></button>
@@ -885,7 +882,7 @@
     applyGameFieldVis();
   }
   function applyGameFieldVis(){ $('#grpWheel').style.display = (state.channel==='game'&&state.game.type==='wheel')?'':'none'; }
-  function fillGameSeg(){ const seg=$('#gameSeg'); seg.innerHTML=GM_TYPES.map(o=>`<button data-gmtype="${o[0]}" class="${state.game.type===o[0]?'on':''}">${o[1]}</button>`).join(''); seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.game.type=b.dataset.gmtype; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); applyGameFieldVis(); render(); })); }
+  function fillGameSeg(){ fillTopVar(); }
 
   // ---------- industries ----------
   function fillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
@@ -896,24 +893,31 @@
 
   // ---------- surface segmented control ----------
   const SURFACES={ ios:[['lock','Lock Screen'],['banner','Banner']], android:[['heads','Heads-up'],['shade','Shade']] };
-  function fillSurface(){
-    const opts=SURFACES[state.device];
-    if(!opts.find(o=>o[0]===state.surface)) state.surface=opts[0][0];
-    const seg=$('#surfaceSeg');
-    seg.innerHTML=opts.map(o=>`<button data-surface="${o[0]}" class="${state.surface===o[0]?'on':''}">${o[1]}</button>`).join('');
-    seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.surface=b.dataset.surface; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); syncAppearance(); render(); }));
+  // Unified top-bar variant dropdown: Push→surfaces (device-aware), In-App→types, Game→games.
+  function fillTopVar(){
+    const sel=$('#topVar'); if(!sel) return; const ch=state.channel; let opts, cur;
+    if(ch==='inapp'){ opts=IATYPES; cur=state.inapp.type; }
+    else if(ch==='game'){ opts=GM_TYPES; cur=state.game.type; }
+    else { opts=SURFACES[state.device]; if(!opts.find(o=>o[0]===state.surface)) state.surface=opts[0][0]; cur=state.surface; }
+    sel.innerHTML=opts.map(o=>`<option value="${o[0]}">${esc(o[1])}</option>`).join('');
+    sel.value=cur;
   }
+  $('#topVar').addEventListener('change',e=>{ const v=e.target.value, ch=state.channel;
+    if(ch==='inapp'){ state.inapp.type=v; applyInappFieldVis(); }
+    else if(ch==='game'){ state.game.type=v; applyGameFieldVis(); }
+    else { state.surface=v; syncAppearance(); }
+    render();
+  });
+  function fillSurface(){ fillTopVar(); }
   function syncAppearance(){ const wp = state.channel==='push' && ((state.device==='ios'&&state.surface==='lock')||(state.device==='android'&&state.surface==='shade')); $('#grpAppearance').style.display = wp?'':'none'; }
   const IATYPES=[['modal','Modal'],['banner','Banner'],['full','Full'],['sheet','Sheet'],['image','Image']];
-  function fillInappSeg(){ const seg=$('#inappSeg'); seg.innerHTML=IATYPES.map(o=>`<button data-iatype="${o[0]}" class="${state.inapp.type===o[0]?'on':''}">${o[1]}</button>`).join(''); seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.type=b.dataset.iatype; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); applyInappFieldVis(); render(); })); }
+  function fillInappSeg(){ fillTopVar(); }
   function setChannelGroups(){
     const ch=state.channel;
     document.querySelectorAll('.chan-push').forEach(g=>{ g.style.display = ch==='push'?'':'none'; });
     document.querySelectorAll('.chan-inapp').forEach(g=>{ g.style.display = ch==='inapp'?'':'none'; });
     document.querySelectorAll('.chan-game').forEach(g=>{ g.style.display = ch==='game'?'':'none'; });
-    $('#surfaceSeg').style.display = ch==='push'?'flex':'none';
-    $('#inappSeg').style.display = ch==='inapp'?'flex':'none';
-    $('#gameSeg').style.display = ch==='game'?'flex':'none';
+    fillTopVar();
     if(ch==='game') applyGameFieldVis();
     syncAppearance();
   }
@@ -967,8 +971,7 @@
   function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
   function onChannelChange(){
     const ch=state.channel;
-    $('#chanCap').textContent = ch==='game'?'In-App gamification':(ch==='inapp'?'In-App messages':'Push notifications');
-    setChannelGroups(); if(ch==='inapp') fillInappSeg(); if(ch==='game') fillGameSeg();
+    setChannelGroups();
     renderTemplates(); const list=templatesFor();
     if(list.length){ applyTemplate(list[0]); } else { syncEditor(); render(); }
   }

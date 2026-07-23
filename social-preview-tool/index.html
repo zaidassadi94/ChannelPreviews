@@ -160,8 +160,7 @@
         <button data-device="ios" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>iPhone</button>
         <button data-device="android"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Android</button>
       </div>
-      <div class="seg" id="formatSeg"></div>
-      <span class="topcap" id="chanCap"></span>
+      <select class="topsel" id="topVar"></select>
       <div class="grow"></div>
       <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
       <button class="btn ghost" id="btnAI"></button>
@@ -363,9 +362,9 @@
   function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.ig.brand=ind.biz; state.ig.handle=handleFromBrand(ind.biz); } }
 
   // ---------- Format segmented control ----------
-  const FORMATS=[['story','Story'],['feed','Feed']];
-  function fillFormatSeg(){ const seg=$('#formatSeg'); seg.innerHTML=FORMATS.map(o=>`<button data-format="${o[0]}" class="${state.format===o[0]?'on':''}">${o[1]}</button>`).join('');
-    seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.format=b.dataset.format; seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); setFormatGroups(); render(); })); }
+  const FORMATS=[['story','Story ad'],['feed','Feed ad']];
+  function fillFormatSeg(){ const sel=$('#topVar'); sel.innerHTML=FORMATS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join(''); sel.value=state.format; }
+  $('#topVar').addEventListener('change',e=>{ state.format=e.target.value; setFormatGroups(); render(); });
   function setFormatGroups(){ document.querySelectorAll('.fmt-feed').forEach(g=>{ g.style.display = state.format==='feed'?'':'none'; });
     $('#igCapWrap').style.display = state.format==='feed'?'':'none'; }
 
@@ -435,7 +434,7 @@
   // ---------- AI generate: map one schema-locked message into an Instagram ad ----------
   async function applyAI(m, opt){
     const brief=(opt&&opt.brief)||'';
-    if(m.type==='story'||m.type==='feed'){ state.format=m.type; const seg=$('#formatSeg'); if(seg){ seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.format===state.format)); } setFormatGroups(); }
+    if(m.type==='story'||m.type==='feed'){ state.format=m.type; const seg=$('#topVar'); if(seg) seg.value=state.format; setFormatGroups(); }
     const copyText=[m.headline,m.body].filter(Boolean).join(' ');
     const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
     const portrait=state.format==='story';
@@ -457,7 +456,6 @@
   const qp=new URLSearchParams(location.search); const qf=(qp.get('format')||'').toLowerCase();
   if(qf==='story'||qf==='feed') state.format=qf;
   fillIndustries(); fillSubs(); fillFormatSeg(); fillCtaSelect(); setFormatGroups();
-  $('#chanCap').textContent='Instagram ads';
   renderTemplates();
   const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); }
 })();

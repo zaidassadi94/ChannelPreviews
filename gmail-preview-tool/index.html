@@ -352,15 +352,15 @@
         <button data-skin="mobile" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>Mobile</button>
         <button data-skin="desktop"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Desktop</button>
       </div>
-      <div class="seg" id="viewSeg">
-        <button data-view="inbox" class="on">Inbox list</button>
-        <button data-view="open">Open email</button>
-      </div>
+      <select class="topsel" id="topVar">
+        <option value="inbox">Inbox list</option>
+        <option value="open">Open email</option>
+      </select>
       <div class="grow"></div>
       <button class="btn ghost" id="btnAI"></button>
       <button class="btn ghost" id="btnRecord"></button>
-      <button class="btn ghost" id="btnCopy">⧉ Copy</button>
-      <button class="btn primary" id="btnExport">⬇ Export PNG</button>
+      <button class="btn ghost" id="btnCopy">Copy</button>
+      <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
     </div>
     <div class="stage" id="stage"></div>
   </div>
@@ -831,7 +831,7 @@
       b.classList.add('on'); const v=b.dataset[key]; state[key]=v; if(cb)cb(v); render();
     }));
   }
-  segBind('#skinSeg','skin'); segBind('#viewSeg','view');
+  segBind('#skinSeg','skin'); $('#topVar').addEventListener('change',e=>{ state.view=e.target.value; render(); }); $('#topVar').value=state.view;
 
   // ---------- Collapsible groups ----------
   document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
