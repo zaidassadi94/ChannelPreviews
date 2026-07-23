@@ -31,6 +31,7 @@ const CHANNELS = {
   gmail:    ['email'],
   instagram: ['story', 'feed'],
   facebook: ['feed', 'story', 'marketplace'],
+  osm: ['popup', 'bannerTop', 'bannerBottom', 'nudge', 'full', 'survey'],
 };
 
 // A curated keyword vocabulary the image system resolves to real photos.
@@ -95,6 +96,15 @@ function schemaFor(channel) {
     cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Watch More', 'Contact Us'] }),
     imageKeyword: kwEnum, imageQuery: imgQuery,
   }, required: ['brand', 'industry', 'type', 'body'] });
+  if (channel === 'osm') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
+    type: S('STRING', { enum: CHANNELS.osm, description: 'popup = center modal; bannerTop/bannerBottom = sticky website banner (headline only, keep it to one line); nudge = small corner slide-in; full = full-screen takeover; survey = emoji-rating feedback popup' }),
+    headline: STR, body: STR,
+    cta: STR, cta2: STR, code: STR,
+    input: S('BOOLEAN', { description: 'true for an email-capture / lead-gen popup (adds an email input next to the button)' }),
+    countdown: S('STRING', { description: 'a countdown for urgency as HH:MM:SS (e.g. "05:59:59"), or empty for none — only for popups, banners, and full-screen' }),
+    imageKeyword: kwEnum, imageQuery: imgQuery,
+  }, required: ['brand', 'industry', 'type', 'headline'] });
   if (channel === 'facebook') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.facebook, description: 'feed = in-feed News Feed post ad; story = full-screen 9:16 story ad; marketplace = a listing-style ad card in the Marketplace grid (headline = the short listing title)' }),
@@ -130,6 +140,7 @@ const CHANNEL_VOICE = {
   inapp: 'In-app voice: the user is already inside the app, so skip the intro. Headline is a bold promise; body is one supportive line; the primary CTA is a confident verb.',
   gmail: 'Email voice: a subject line that earns the open (specific and curious, <=7 words) and a snippet that COMPLEMENTS the subject rather than repeating it. The heading + body carry the story; the button is one clear next step.',
   game: 'Reward voice: celebratory and a little thrilling, never cheesy. The headline announces the moment ("You unlocked a spin", "A little something for you"), the prize feels genuinely worth it, and the CTA claims it now.',
+  osm: 'Onsite messaging voice: the visitor is already ON the website, so be immediate and useful. Popups earn the interruption with a real offer; banners are one tight line (great with a countdown); nudges are a soft, friendly aside; surveys ask ONE clear question. The CTA is a confident verb ("Claim my code", "Subscribe", "Return to cart"). Set input=true for email capture, and a countdown for time-boxed offers.',
   facebook: 'Facebook ad voice: clear and benefit-led for a broad audience. The "body" is the primary text above the image (1-2 lines, a hook + the offer); the "headline" is the short bold line in the link module under the image (<=5 words); "desc" is one supporting line. Pick the CTA that matches intent. The image is the scroll-stopper, so imageQuery must name the exact hero visual.',
   instagram: 'Instagram ad voice: thumb-stopping and native to the feed — sound like a creator or a friend, not a billboard. The body is the caption: one or two sharp lines that earn the tap, a little personality, 1-3 tasteful emoji. Pick the CTA that matches the intent (Shop Now for products, Sign Up / Learn More for lead-gen, Install Now for apps). The image is the whole ad, so imageQuery must nail the hero visual.',
 };

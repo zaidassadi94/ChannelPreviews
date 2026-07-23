@@ -21,14 +21,15 @@
   // ---- brief-driven channel routing ------------------------------------------
   // Which tool owns which channel (matches nav.js). The brief can ask for a
   // channel in another tool; we hand the brief off and re-generate there.
-  const TOOL_CHANNELS = { messaging: ['sms', 'rcs', 'whatsapp'], notify: ['push', 'inapp', 'game'], gmail: ['gmail'], social: ['instagram'], facebook: ['facebook'] };
-  const CH_LABEL = { sms: 'SMS', rcs: 'RCS', whatsapp: 'WhatsApp', push: 'Push', inapp: 'In-App', game: 'In-App Gamification', gmail: 'Gmail', instagram: 'Instagram Ads', facebook: 'Facebook Ads' };
+  const TOOL_CHANNELS = { messaging: ['sms', 'rcs', 'whatsapp'], notify: ['push', 'inapp', 'game'], gmail: ['gmail'], social: ['instagram'], facebook: ['facebook'], osm: ['osm'] };
+  const CH_LABEL = { sms: 'SMS', rcs: 'RCS', whatsapp: 'WhatsApp', push: 'Push', inapp: 'In-App', game: 'In-App Gamification', gmail: 'Gmail', instagram: 'Instagram Ads', facebook: 'Facebook Ads', osm: 'Onsite Messaging' };
   function toolOf(ch) { for (const t in TOOL_CHANNELS) if (TOOL_CHANNELS[t].indexOf(ch) >= 0) return t; return null; }
-  function toolUrl(ch) { const t = toolOf(ch); if (t === 'gmail') return '../gmail-preview-tool/index.html'; if (t === 'social') return '../social-preview-tool/index.html'; if (t === 'facebook') return '../facebook-preview-tool/index.html'; if (t === 'notify') return '../notify-preview-tool/index.html?channel=' + ch; return '../messaging-preview-tool/index.html?channel=' + ch; }
+  function toolUrl(ch) { const t = toolOf(ch); if (t === 'gmail') return '../gmail-preview-tool/index.html'; if (t === 'social') return '../social-preview-tool/index.html'; if (t === 'facebook') return '../facebook-preview-tool/index.html'; if (t === 'osm') return '../osm-preview-tool/index.html'; if (t === 'notify') return '../notify-preview-tool/index.html?channel=' + ch; return '../messaging-preview-tool/index.html?channel=' + ch; }
   // Detect an explicitly-requested channel in the brief (order matters: specific first).
   const CH_WORDS = [
     [/\bfacebook\b|\bfb\s*(ad|ads|feed|story|stories|post)\b/, 'facebook'],
     [/\b(instagram|insta)\b|\big\s*(ad|ads|story|stories|feed|post)\b|\b(story|feed)\s*ad\b|\bsponsored\s*(post|ad)\b/, 'instagram'],
+    [/\b(osm|onsite|on-site|website\s*(popup|banner|message)|web\s*popup|exit[\s-]?intent|cookie\s*consent)\b/, 'osm'],
     [/\b(in[\s-]?app|inapp)\b/, 'inapp'],
     [/\b(scratch\s*card|spin\s*the\s*wheel|spin\s*wheel|slot\s*machine|mystery\s*box|gamif\w*|reward\s*(game|wheel))\b/, 'game'],
     [/\b(push|lock[\s-]?screen)\b/, 'push'],

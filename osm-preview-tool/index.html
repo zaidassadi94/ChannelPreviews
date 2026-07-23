@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Channel Studio — Onsite Messaging</title>
+<link rel="stylesheet" href="../channel-studio.css">
+<style>
+  /* OSM = web onsite messaging: a website (desktop browser or mobile web) with the
+     message overlaid. The frame is a browser, not a phone. */
+  .notch{ top:0; } .punch{ top:13px; }
+
+  /* ---------- desktop browser window ---------- */
+  .osm-win{ width:1040px; background:#fff; border-radius:14px; overflow:hidden; box-shadow:var(--shadow-lg); }
+  .osm-chrome{ height:44px; background:#e9ebf0; display:flex; align-items:center; gap:14px; padding:0 16px; border-bottom:1px solid #dfe2e8; }
+  .osm-dots{ display:flex; gap:8px; } .osm-dots i{ width:12px; height:12px; border-radius:50%; display:block; }
+  .osm-dots .r{ background:#ff5f57; } .osm-dots .y{ background:#febc2e; } .osm-dots .g{ background:#28c840; }
+  .osm-addr{ flex:1; height:28px; background:#fff; border-radius:8px; display:flex; align-items:center; gap:8px; padding:0 12px; color:#5b6070; font-size:13px; max-width:560px; margin:0 auto; }
+  .osm-addr svg{ width:13px; height:13px; color:#37b24d; flex:none; }
+  .osm-chrome .sp{ width:52px; flex:none; }
+  .osm-view{ position:relative; height:624px; overflow:hidden; background:#fff; }
+
+  /* ---------- mobile web (inside the phone frame) ---------- */
+  .osm-mbar{ height:38px; flex:none; display:flex; align-items:center; gap:8px; padding:0 12px; background:#f2f3f5; border-bottom:1px solid #e3e5ea; }
+  .osm-mbar .u{ flex:1; height:26px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:6px; color:#5b6070; font-size:12.5px; }
+  .osm-mbar .u svg{ width:12px; height:12px; color:#37b24d; }
+  .osm-mview{ flex:1; position:relative; overflow:hidden; background:#fff; min-height:0; }
+
+  /* ---------- branded website backdrop ---------- */
+  .site{ position:absolute; inset:0; overflow:hidden; display:flex; flex-direction:column; background:#fff; color:#141519; }
+  .site-nav{ height:56px; flex:none; display:flex; align-items:center; gap:20px; padding:0 26px; border-bottom:1px solid #eef0f4; }
+  .site-nav .lg{ display:flex; align-items:center; gap:9px; }
+  .site-nav .lg img{ width:26px; height:26px; border-radius:7px; object-fit:cover; }
+  .site-nav .lg b{ font-size:17px; font-weight:800; letter-spacing:-.4px; }
+  .site-nav .links{ display:flex; gap:19px; font-size:13.5px; color:#4a4f5c; font-weight:600; }
+  .site-nav .links a:first-child{ color:var(--bc,#111); }
+  .site-nav .act{ margin-left:auto; display:flex; gap:15px; color:#3a3f4c; } .site-nav .act svg{ width:19px; height:19px; }
+  .site-hero{ flex:none; margin:20px 26px 0; border-radius:18px; padding:34px 36px; color:#fff; position:relative; overflow:hidden; min-height:196px; display:flex; flex-direction:column; justify-content:center; background-image:linear-gradient(135deg,rgba(255,255,255,.16),rgba(0,0,0,.26)); }
+  .site-hero .ey{ font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; opacity:.92; }
+  .site-hero .hl{ font-size:32px; font-weight:850; letter-spacing:-.8px; line-height:1.08; margin-top:8px; max-width:60%; }
+  .site-hero .cta{ display:inline-block; margin-top:18px; background:rgba(255,255,255,.96); color:#14151a; font-size:13.5px; font-weight:750; padding:11px 20px; border-radius:9px; width:max-content; }
+  .site-hero .orb{ position:absolute; right:-60px; top:-60px; width:230px; height:230px; border-radius:50%; background:rgba(255,255,255,.12); }
+  .site-hero .orb.two{ right:16%; top:auto; bottom:-90px; width:150px; height:150px; background:rgba(0,0,0,.08); }
+  .site-sec{ display:flex; align-items:baseline; justify-content:space-between; margin:22px 26px 0; }
+  .site-sec .t{ font-size:17px; font-weight:800; letter-spacing:-.3px; } .site-sec .a{ font-size:13px; font-weight:600; color:#8b909c; }
+  .site-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:14px 26px 0; }
+  .site-card{ background:#fff; border:1px solid #eef0f4; border-radius:13px; overflow:hidden; box-shadow:0 1px 2px rgba(16,18,30,.04); }
+  .site-card .ph{ display:block; width:100%; height:120px; object-fit:cover; background:#eef0f4; }
+  .site-card .mt{ padding:9px 12px 12px; } .site-card .nm{ font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .site-card .pr{ font-size:13px; font-weight:750; margin-top:2px; }
+  /* mobile variant of the site */
+  .site.mob .site-nav{ height:50px; padding:0 16px; gap:12px; }
+  .site.mob .site-nav .links{ display:none; }
+  .site.mob .site-hero{ margin:14px 14px 0; padding:22px; min-height:150px; } .site.mob .site-hero .hl{ font-size:23px; max-width:100%; }
+  .site.mob .site-grid{ grid-template-columns:1fr 1fr; margin:12px 14px 0; gap:12px; }
+  .site.mob .site-sec{ margin:16px 14px 0; }
+
+  /* ---------- neutral backdrop (no brand) ---------- */
+  .neu{ position:absolute; inset:0; background:#f4f5f8; display:flex; flex-direction:column; }
+  .neu-bar{ height:56px; flex:none; background:#fff; border-bottom:1px solid #e9ebf0; display:flex; align-items:center; gap:14px; padding:0 24px; }
+  .neu-bar .b1{ width:34px; height:12px; border-radius:6px; background:#e3e6ec; } .neu-bar .b2{ width:220px; height:10px; border-radius:6px; background:#eceef3; }
+  .neu-bar .b3{ margin-left:auto; width:80px; height:12px; border-radius:6px; background:#e3e6ec; }
+  .neu-hero{ margin:22px 24px 0; height:150px; border-radius:16px; background:linear-gradient(135deg,#e9ecf3,#dfe3ec); }
+  .neu-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:18px 24px; }
+  .neu-grid.mob{ grid-template-columns:1fr 1fr; }
+  .neu-cell{ height:132px; border-radius:12px; background:#e9ecf3; }
+
+  /* uploaded screenshot backdrop */
+  .shot{ position:absolute; inset:0; background-size:cover; background-position:top center; }
+
+  /* blur/dim wrapper for intrusive formats */
+  .osm-canvas{ position:absolute; inset:0; }
+  .osm-canvas.dim.blurred > *{ filter:blur(4px); transform:scale(1.02); }
+  .osm-scrim{ position:absolute; inset:0; background:rgba(10,12,20,.5); z-index:5; }
+
+  /* ---------- overlays: the OSM message ---------- */
+  .osm-brand{ --brand:#635bff; }
+  /* popup / survey center modal */
+  .osm-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:26px; z-index:20; }
+  .osm-modal{ width:420px; max-width:100%; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 30px 70px rgba(8,10,20,.4); position:relative; }
+  .osm-modal.sm{ width:380px; }
+  .osm-modal .img{ width:100%; height:180px; object-fit:cover; display:block; background:#e7e9ee; }
+  .osm-modal .bd{ padding:26px 28px 28px; text-align:center; }
+  .osm-modal .hl{ font-size:22px; font-weight:800; letter-spacing:-.5px; color:#14151a; line-height:1.18; }
+  .osm-modal .tx{ font-size:14px; color:#5b6070; line-height:1.55; margin-top:9px; }
+  .osm-x{ position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:50%; background:rgba(20,22,28,.4); color:#fff; display:flex; align-items:center; justify-content:center; z-index:3; cursor:default; }
+  .osm-x.dark{ background:#eef0f4; color:#5b6070; } .osm-x svg{ width:14px; height:14px; }
+  .osm-btn{ display:inline-block; background:var(--brand); color:#fff; font-size:14px; font-weight:700; padding:12px 22px; border-radius:10px; border:0; cursor:default; }
+  .osm-btn.block{ display:block; width:100%; }
+  .osm-btn2{ display:inline-block; background:none; color:#6b7180; font-size:13px; font-weight:600; margin-top:11px; cursor:default; }
+  .osm-input{ display:flex; gap:8px; margin-top:16px; }
+  .osm-input input{ flex:1; height:44px; border:1.5px solid #e2e5ec; border-radius:10px; padding:0 14px; font-size:14px; font-family:inherit; color:#14151a; }
+  .osm-input .osm-btn{ flex:none; }
+  .osm-code{ margin-top:16px; border:2px dashed var(--brand); border-radius:10px; padding:12px; font-size:19px; font-weight:800; letter-spacing:2px; color:var(--brand); background:rgba(99,91,255,.05); }
+
+  /* countdown */
+  .osm-cd-wrap{ display:flex; gap:8px; justify-content:center; margin-top:16px; }
+  .osm-cd-unit{ background:#14151a; color:#fff; border-radius:9px; padding:8px 11px; min-width:52px; text-align:center; }
+  .osm-cd-unit b{ font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.5px; display:block; line-height:1; }
+  .osm-cd-unit span{ font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; opacity:.7; margin-top:3px; display:block; }
+
+  /* banners (sticky top / bottom) */
+  .osm-banner{ position:absolute; left:0; right:0; z-index:20; background:var(--brand); color:#fff; display:flex; align-items:center; gap:16px; padding:13px 24px; box-shadow:0 6px 20px rgba(8,10,20,.16); }
+  .osm-banner.top{ top:0; } .osm-banner.bottom{ bottom:0; }
+  .osm-banner .msg{ flex:1; font-size:14.5px; font-weight:600; letter-spacing:-.1px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .osm-banner .msg b{ font-weight:800; }
+  .osm-banner .cta{ flex:none; background:rgba(255,255,255,.95); color:#14151a; font-size:13px; font-weight:750; padding:9px 16px; border-radius:8px; }
+  .osm-banner .bx{ flex:none; color:rgba(255,255,255,.85); cursor:default; } .osm-banner .bx svg{ width:16px; height:16px; }
+  .osm-banner .osm-cd-wrap{ margin:0; } .osm-banner .osm-cd-unit{ background:rgba(0,0,0,.22); padding:5px 8px; min-width:40px; }
+  .osm-banner .osm-cd-unit b{ font-size:16px; } .osm-banner .osm-cd-unit span{ display:none; }
+  /* consent banner (neutral, buttons) */
+  .osm-banner.consent{ background:#1d1f27; }
+  .osm-banner.consent .cta.ghost{ background:transparent; color:#fff; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4); }
+
+  /* nudge (corner slide-in) */
+  .osm-nudge{ position:absolute; right:22px; bottom:22px; width:340px; background:#fff; border-radius:15px; box-shadow:0 18px 44px rgba(8,10,20,.26); z-index:20; overflow:hidden; }
+  .osm-nudge .row{ display:flex; gap:13px; padding:15px; }
+  .osm-nudge .thumb{ width:62px; height:62px; border-radius:11px; object-fit:cover; flex:none; background:#e7e9ee; }
+  .osm-nudge .tx{ flex:1; min-width:0; } .osm-nudge .hl{ font-size:15px; font-weight:750; color:#14151a; letter-spacing:-.2px; line-height:1.25; }
+  .osm-nudge .bd{ font-size:12.5px; color:#5b6070; line-height:1.45; margin-top:3px; }
+  .osm-nudge .cta{ display:inline-block; margin-top:9px; background:var(--brand); color:#fff; font-size:12.5px; font-weight:700; padding:7px 13px; border-radius:8px; }
+  .osm-nudge .nx{ position:absolute; top:9px; right:10px; color:#adb2bf; cursor:default; } .osm-nudge .nx svg{ width:13px; height:13px; }
+
+  /* full-screen interstitial */
+  .osm-full{ position:absolute; inset:0; z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; background-size:cover; background-position:center; background-color:#20222c; }
+  .osm-full-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  .osm-full .scrim{ position:absolute; inset:0; background:linear-gradient(rgba(8,10,18,.5),rgba(8,10,18,.78)); z-index:1; }
+  .osm-full .in{ position:relative; z-index:2; color:#fff; max-width:520px; }
+  .osm-full .hl{ font-size:40px; font-weight:850; letter-spacing:-1px; line-height:1.06; text-shadow:0 2px 20px rgba(0,0,0,.35); }
+  .osm-full .tx{ font-size:16px; color:rgba(255,255,255,.92); line-height:1.55; margin-top:14px; }
+  .osm-full .osm-btn{ margin-top:22px; padding:14px 30px; font-size:15px; }
+  .osm-full .osm-x{ top:22px; right:22px; background:rgba(255,255,255,.16); }
+
+  /* survey emoji rating */
+  .osm-rate{ display:flex; justify-content:center; gap:10px; margin-top:18px; }
+  .osm-rate .e{ font-size:30px; line-height:1; cursor:default; filter:grayscale(.5); opacity:.7; transition:.14s; }
+  .osm-rate .e:hover,.osm-rate .e.on{ filter:none; opacity:1; transform:scale(1.18); }
+  .osm-scale{ display:flex; justify-content:space-between; font-size:11px; color:#8b909c; margin-top:8px; padding:0 4px; }
+
+  /* small in-sidebar segmented control */
+  .seg-in{ display:flex; background:#fff; border:1px solid var(--line); border-radius:8px; padding:3px; gap:3px; }
+  .seg-in button{ flex:1; border:0; background:none; padding:7px; font-size:12px; font-weight:600; color:var(--muted); border-radius:5px; cursor:pointer; font-family:inherit; }
+  .seg-in button.on{ background:var(--accent-weak); color:var(--accent-ink); }
+</style>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+</head>
+<body>
+<div class="app">
+  <aside class="editor" id="editor">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff"/><path d="M11.8 7.6c.15 1.75.7 2.3 2.45 2.45-1.75.15-2.3.7-2.45 2.45-.15-1.75-.7-2.3-2.45-2.45 1.75-.15 2.3-.7 2.45-2.45z" fill="#7c6df6"/></svg></div>
+      <div><h1>Channel Studio</h1><small>Onsite messaging mockups</small></div>
+    </div>
+
+    <div class="ctx">
+      <div class="sel-wrap"><label>Channel</label>
+        <select class="sel" id="selChannel">
+          <option value="gmail">Gmail</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="rcs">RCS</option>
+          <option value="sms">SMS</option>
+          <option value="push">Push</option>
+          <option value="inapp">In-App</option>
+          <option value="game">In-App Gamification</option>
+          <option value="osm">Onsite Messaging</option>
+          <option value="instagram">Instagram Ads</option>
+          <option value="facebook">Facebook Ads</option>
+        </select>
+      </div>
+      <div class="sel-wrap"><label>Industry</label><select class="sel" id="selIndustry"></select></div>
+      <div class="sel-wrap" id="subWrap"><label>Sub-industry</label><select class="sel" id="selSub"></select></div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">MoEngage-style onsite messages. Picking one sets the right <b>format</b> up top. Hit <b>Simulate</b> to try inputs, ratings &amp; the CTA.</div>
+        <div class="tpl-grid" id="tplGrid"></div>
+        <button class="btn reset block" id="clearMsgs" style="margin-top:11px;"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear &amp; start blank</button>
+      </div>
+    </div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Website / brand <span class="chev">▼</span></button>
+      <div class="gbody">
+        <label class="f"><span>Site / brand name</span><input type="text" id="osmSite"></label>
+        <label class="f"><span>Site URL</span><input type="text" id="osmUrl"></label>
+        <label class="f"><span>Logo</span>
+          <div class="drop" id="avDrop"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2"/></svg> Upload logo (or use monogram)</div>
+          <input type="file" id="avInput" accept="image/*" hidden>
+          <div class="logo-prev" id="avPrev" style="display:none;"><img id="avImg"><button class="link-btn" id="avClear">Remove</button></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Background <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">The page behind the message won't be your customer's real site — pick how to handle it.</div>
+        <div class="seg-in" id="bgSeg"><button data-bg="branded" class="on">Branded</button><button data-bg="upload">Upload</button><button data-bg="neutral">Neutral</button></div>
+        <div class="f" id="bgUpWrap" style="display:none;margin-top:10px;"><span>Screenshot of your site / app</span><div class="imgz" id="bgImg"></div></div>
+        <div class="toggle-row" style="margin-top:10px;"><span>Dim &amp; blur (intrusive formats)</span><label class="switch"><input type="checkbox" id="osmBlur" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <div class="group collapsed" data-group>
+      <button class="ghead" data-head>Message <span class="chev">▼</span></button>
+      <div class="gbody">
+        <label class="f" id="wHl"><span>Headline</span><input type="text" id="osmHl"></label>
+        <label class="f" id="wBody"><span>Body</span><textarea id="osmBody"></textarea></label>
+        <div class="f" id="wImg"><span>Image (optional)</span><div class="imgz" id="osmImg"></div></div>
+        <label class="f" id="wCta"><span>Primary button</span><input type="text" id="osmCta"></label>
+        <label class="f" id="wCta2"><span>Secondary link (optional)</span><input type="text" id="osmCta2"></label>
+        <label class="f" id="wCode"><span>Coupon code (optional)</span><input type="text" id="osmCode"></label>
+        <div class="toggle-row" id="wInput"><span>Email capture input</span><label class="switch"><input type="checkbox" id="osmInput"><span class="slider"></span></label></div>
+        <label class="f" id="wCd"><span>Countdown (HH:MM:SS, blank = off)</span><input type="text" id="osmCd" placeholder="05:59:59"></label>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stage-wrap">
+    <div class="topbar">
+      <div class="seg" id="deviceSeg">
+        <button data-device="desktop" class="on"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 20h8M12 16v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Desktop</button>
+        <button data-device="mobile"><svg viewBox="0 0 24 24" fill="none"><rect x="7" y="2" width="10" height="20" rx="3" stroke="currentColor" stroke-width="2"/></svg>Mobile</button>
+      </div>
+      <select class="topsel" id="topVar"></select>
+      <div class="grow"></div>
+      <button class="btn ghost" id="btnPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate</button>
+      <button class="btn ghost" id="btnAI"></button>
+      <button class="btn ghost" id="btnRecord"></button>
+      <button class="btn ghost" id="btnCopy">Copy</button>
+      <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Export</button>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../images.js" onerror="window.__PXIMG=window.__PXIMG||{}"></script>
+<script src="../image-system.js"></script>
+<script src="../content.js"></script>
+<script src="../blocks.js"></script>
+<script src="../device.js"></script>
+<script src="../gif-encoder.js"></script>
+<script src="../recorder.js"></script>
+<script src="../nav.js"></script>
+<script src="../ai.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="window.__noH2C=true"></script>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmtLite=s=>esc(s).replace(/\*(.+?)\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+  function oneLine(s){ return (s||'').replace(/[*_~]/g,'').replace(/\s*\n\s*/g,' ').trim(); }
+  const AV=['#5b6abf','#e07a5f','#3aa99f','#d96a97','#7b68c9','#8a63d2','#2aa9c9','#5aab6a','#e0a34e','#a1887f','#4a90d9','#0b8043','#e26b3a'];
+  const avColor=n=>{ let h=0; const s=n||'?'; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return AV[h%AV.length]; };
+
+  function ctxId(){ return state.sub || state.industry; }
+
+  const state={
+    channel:'osm', device:'desktop', format:'popup', play:false,
+    industry:'ecom', sub:'fashion', brandLogo:null,
+    osm:{ site:'Nova', url:'nova.shop', headline:'', body:'', image:'', cta:'Shop Now', cta2:'',
+          code:'', input:false, countdown:'', rating:3,
+          bg:'branded', bgImage:'', blur:true },
+  };
+  const siteName=()=>state.osm.site;
+
+  const IC={
+    menu:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    cart:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h2l2 12h10l2-8H7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="18" cy="20" r="1.4" fill="currentColor"/></svg>',
+    user:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.9"/><path d="M5 20a7 7 0 0114 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+    lock:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V8a6 6 0 0112 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V8a4 4 0 00-8 0v2z"/></svg>',
+    x:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  };
+
+  function optAttr(o){ if(!state.play) return ''; return ` data-opt="1" data-reply="${esc(o.reply||'')}"`; }
+  const ck=on=> (state.play&&on)?' clickable':'';
+  function logoImg(){ const nm=state.osm.site; return state.brandLogo||brandMark(nm,96); }
+  function mediaSrc(w,h){ return state.osm.image || photo(KW[ctxId()]||'product', w||700, h||460); }
+
+  // ================= website backdrop =================
+  function siteBackdrop(mobile){
+    const p=PACKS[ctxId()]||{}; const brand=state.osm.site; const bc=avColor(brand);
+    const cards=(p.carousel||[]).slice(0, mobile?2:4).map(pr=>
+      `<div class="site-card"><img class="ph" src="${esc(photo(kwFor(pr[0]),320,240))}" alt="${esc(kwFor(pr[0]))}"><div class="mt"><div class="nm">${esc(pr[0])}</div><div class="pr">${esc(pr[1]||'')}</div></div></div>`).join('');
+    return `<div class="site ${mobile?'mob':''}" style="--bc:${bc}">
+      <div class="site-nav"><div class="lg"><img src="${esc(logoImg())}" alt=""><b>${esc(brand)}</b></div>
+        <div class="links"><a>Shop</a><a>New</a><a>Sale</a><a>About</a></div>
+        <div class="act">${IC.search}${IC.user}${IC.cart}</div></div>
+      <div class="site-hero" style="background-color:${bc}"><span class="orb"></span><span class="orb two"></span>
+        <div class="ey">${esc(brand)}</div><div class="hl">${esc(cap(p.offer)||'New season, new arrivals')}</div><span class="cta">Shop now</span></div>
+      <div class="site-sec"><span class="t">Popular right now</span><span class="a">View all</span></div>
+      <div class="site-grid">${cards}</div>
+    </div>`;
+  }
+  function neutralBackdrop(mobile){
+    const cells=Array.from({length:mobile?4:8}).map(()=>`<div class="neu-cell"></div>`).join('');
+    return `<div class="neu"><div class="neu-bar"><div class="b1"></div><div class="b2"></div><div class="b3"></div></div>
+      <div class="neu-hero"></div><div class="neu-grid ${mobile?'mob':''}">${cells}</div></div>`;
+  }
+  function backdrop(mobile){
+    if(state.osm.bg==='upload' && state.osm.bgImage) return `<div class="shot" style="background-image:url('${state.osm.bgImage.replace(/'/g,"%27")}')"></div>`;
+    if(state.osm.bg==='neutral') return neutralBackdrop(mobile);
+    return siteBackdrop(mobile);
+  }
+
+  // ================= countdown =================
+  function cdSecs(){ const m=/(\d{1,2}):(\d{2}):(\d{2})/.exec(state.osm.countdown||''); if(!m) return null; return (+m[1])*3600+(+m[2])*60+(+m[3]); }
+  function cdHTML(secs){ const h=Math.floor(secs/3600), mn=Math.floor(secs%3600/60), s=secs%60; const pad=n=>String(n).padStart(2,'0');
+    return `<div class="osm-cd-wrap"><div class="osm-cd-unit"><b class="osm-cd" data-u="h">${pad(h)}</b><span>Hrs</span></div><div class="osm-cd-unit"><b class="osm-cd" data-u="m">${pad(mn)}</b><span>Min</span></div><div class="osm-cd-unit"><b class="osm-cd" data-u="s">${pad(s)}</b><span>Sec</span></div></div>`; }
+  let cdTimer=null, cdRemain=0;
+  function startCountdown(){ if(cdTimer){ clearInterval(cdTimer); cdTimer=null; } const s=cdSecs(); if(s==null) return; cdRemain=s;
+    cdTimer=setInterval(()=>{ cdRemain=Math.max(0,cdRemain-1); const h=Math.floor(cdRemain/3600),mn=Math.floor(cdRemain%3600/60),sc=cdRemain%60,pad=n=>String(n).padStart(2,'0');
+      stage.querySelectorAll('.osm-cd').forEach(el=>{ el.textContent = el.dataset.u==='h'?pad(h):el.dataset.u==='m'?pad(mn):pad(sc); });
+      if(cdRemain<=0){ clearInterval(cdTimer); cdTimer=null; } }, 1000); }
+
+  // ================= overlays =================
+  function xBtn(dark){ return `<div class="osm-x ${dark?'dark':''}${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div>`; }
+  function ctaBtn(cls){ const c=state.osm.cta; return c?`<button class="osm-btn ${cls||''}${ck(true)}"${optAttr({reply:c})}>${esc(c)}</button>`:''; }
+  function cta2Link(){ const c=state.osm.cta2; return c?`<div class="osm-btn2${ck(true)}"${optAttr({reply:c})}>${esc(c)}</div>`:''; }
+  function inputRow(){ const o=state.osm; if(!o.input) return ''; return `<div class="osm-input"><input type="text" placeholder="Enter your email" readonly>${o.cta?`<button class="osm-btn${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</button>`:''}</div>`; }
+  function codeBox(){ const c=state.osm.code; return c?`<div class="osm-code">${esc(c)}</div>`:''; }
+
+  function ovPopup(){ const o=state.osm; const img=o.image?`<img class="img" src="${esc(o.image)}" alt="${esc(kwFor(o.headline))}">`:'';
+    return `<div class="osm-center"><div class="osm-modal">${xBtn(!o.image)}${img}<div class="bd">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}${codeBox()}${o.countdown?cdHTML(cdSecs()||0):''}${o.input?inputRow():(o.cta?`<div style="margin-top:18px">${ctaBtn('block')}</div>`:'')}${cta2Link()}</div></div></div>`; }
+
+  function ovBanner(pos){ const o=state.osm; const consent=state.format==='__consent';
+    return `<div class="osm-banner ${pos}"><div class="msg">${o.headline?`<span>${fmtLite(o.headline)}</span>`:''}${o.countdown?cdHTML(cdSecs()||0):''}</div>${o.cta?`<div class="cta${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</div>`:''}${o.cta2?`<div class="cta ghost${ck(true)}"${optAttr({reply:o.cta2})}>${esc(o.cta2)}</div>`:''}<div class="bx${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div></div>`; }
+
+  function ovNudge(){ const o=state.osm; const img=o.image?`<img class="thumb" src="${esc(o.image)}" alt="${esc(kwFor(o.headline))}">`:'';
+    return `<div class="osm-nudge"><div class="nx${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div><div class="row">${img}<div class="tx">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="bd">${fmtLite(o.body)}</div>`:''}${o.cta?`<span class="cta${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</span>`:''}</div></div></div>`; }
+
+  function ovFull(){ const o=state.osm; const src=o.image||photo(KW[ctxId()]||'product',1200,900);
+    return `<div class="osm-full"><img class="osm-full-img" src="${esc(src)}" alt="${esc(kwFor(o.headline)||'promo')}"><div class="scrim"></div>${xBtn(false)}<div class="in">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}${o.countdown?cdHTML(cdSecs()||0):''}<div>${ctaBtn()}</div>${cta2Link()}</div></div>`; }
+
+  function ovSurvey(){ const o=state.osm; const emo=['😞','🙁','😐','🙂','😍'];
+    const rate=emo.map((e,i)=>`<span class="e${state.play&&i+1===o.rating?' on':''}${ck(true)}"${optAttr({reply:'Rated '+(i+1)+'/5'})}>${e}</span>`).join('');
+    return `<div class="osm-center"><div class="osm-modal sm">${xBtn(true)}<div class="bd">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}<div class="osm-rate">${rate}</div><div class="osm-scale"><span>Not likely</span><span>Very likely</span></div><div style="margin-top:20px">${ctaBtn('block')}</div></div></div></div>`; }
+
+  const INTRUSIVE={ popup:1, full:1, survey:1 };
+  function overlayHTML(){
+    const f=state.format;
+    if(f==='bannerTop') return ovBanner('top');
+    if(f==='bannerBottom') return ovBanner('bottom');
+    if(f==='nudge') return ovNudge();
+    if(f==='full') return ovFull();
+    if(f==='survey') return ovSurvey();
+    return ovPopup();
+  }
+  function stageInner(mobile){
+    const intrusive=!!INTRUSIVE[state.format];
+    const canvasCls='osm-canvas'+(intrusive?' dim'+(state.osm.blur?' blurred':''):'');
+    const scrim=intrusive?`<div class="osm-scrim"></div>`:'';
+    const brand=avColor(state.osm.site);
+    // full-screen paints its own backdrop; others show the site/neutral/upload
+    const base=state.format==='full'?'':`<div class="${canvasCls}">${backdrop(mobile)}</div>${scrim}`;
+    return `<div class="osm-brand" style="position:absolute;inset:0;--brand:${brand}">${base}${overlayHTML()}</div>`;
+  }
+
+  // ================= render =================
+  const stage=$('#stage');
+  stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
+
+  function render(){
+    stage.className='stage'+(state.play?' sim-on':'');
+    const badge=state.play?`<div class="sim-badge">● Simulate — try the message</div>`:'';
+    let cap=document.getElementById('capture');
+    if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
+    if(state.device==='mobile'){
+      cap.className='phone';
+      cap.innerHTML=`<div class="notch"></div>${badge}<div class="screen">${statusBarHTML('ios',false)}<div class="osm-mbar"><span>${IC.lock}</span><div class="u">${IC.lock}<span>${esc(state.osm.url||'example.com')}</span></div><span>${IC.menu}</span></div><div class="osm-mview">${stageInner(true)}</div><div class="home-ind"></div></div>`;
+    } else {
+      cap.className='osm-win';
+      cap.innerHTML=`${badge}<div class="osm-chrome"><div class="osm-dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="osm-addr">${IC.lock}<span>${esc(state.osm.url||'example.com')}</span></div><span class="sp"></span></div><div class="osm-view">${stageInner(false)}</div>`;
+    }
+    bindOpts(); startCountdown(); fitDevice();
+  }
+  function bindOpts(){ if(!state.play) return; stage.querySelectorAll('[data-opt]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); const r=el.dataset.reply||''; if(el.classList.contains('e')){ stage.querySelectorAll('.osm-rate .e').forEach(x=>x.classList.remove('on')); el.classList.add('on'); } toast('▸ '+(r?('“'+r+'”'):('Interacted'))); })); }
+
+  // ================= templates =================
+  const OSM_ARCH=[
+    {name:'Welcome offer',fmt:'popup',kind:'Promotional',icon:'👋',desc:'Popup + image',
+      build:p=>({headline:'Welcome — here’s 10% off',body:`A little hello from ${p.brand}. Use it on your first order.`,image:photo(p.kw,700,460,2),cta:'Claim my 10%',cta2:'No thanks',code:p.code||'WELCOME10',countdown:'',input:false})},
+    {name:'Email capture',fmt:'popup',kind:'Flow',icon:'✉️',desc:'Newsletter signup',
+      build:p=>({headline:'Get first dibs',body:'Join the list for early access to drops and members-only deals.',image:'',cta:'Subscribe',cta2:'Maybe later',code:'',input:true,countdown:''})},
+    {name:'Exit-intent discount',fmt:'popup',kind:'Flow',icon:'🚪',desc:'Wait, don’t leave',
+      build:p=>({headline:'Wait — don’t go!',body:`Here’s ${p.code?`code ${p.code}`:'15% off'} to finish your order at ${p.brand}.`,image:photo(p.kw,700,460,5),cta:'Apply & continue',cta2:'No, I’ll pay full price',code:p.code||'STAY15',input:false,countdown:''})},
+    {name:'Cart abandonment',fmt:'nudge',kind:'Flow',icon:'🛒',desc:'Slide-in reminder',
+      build:p=>({headline:'Left something behind?',body:oneLine(p.flow&&p.flow.intro)||'Your cart is waiting — complete it before it sells out.',image:photo(p.kw,200,200,7),cta:'Return to cart',cta2:'',code:'',input:false,countdown:''})},
+    {name:'Free shipping bar',fmt:'bannerTop',kind:'Promotional',icon:'🚚',desc:'Sticky top banner',
+      build:p=>({headline:'*Free shipping* on all orders over $50 — today only.',body:'',image:'',cta:'Shop now',cta2:'',code:'',input:false,countdown:''})},
+    {name:'Flash sale countdown',fmt:'bannerTop',kind:'Promotional',icon:'⏳',desc:'Banner + live timer',
+      build:p=>({headline:`*${cap(p.offer)||'Flash sale'}* ends in`,body:'',image:'',cta:'Shop the sale',cta2:'',code:'',input:false,countdown:'05:59:59'})},
+    {name:'Coupon reveal',fmt:'popup',kind:'Promotional',icon:'🎟️',desc:'Reveal a code',
+      build:p=>({headline:'Your reward is unlocked',body:`Copy your code and use it at checkout on ${p.brand}.`,image:'',cta:'Copy code & shop',cta2:'',code:p.code||'SAVE20',input:false,countdown:''})},
+    {name:'Back in stock',fmt:'nudge',kind:'Transactional',icon:'🔔',desc:'Restock nudge',
+      build:p=>({headline:'It’s back in stock',body:`The ${p.carousel&&p.carousel[0]?p.carousel[0][0]:'item'} you wanted just returned.`,image:photo(p.kw,200,200,3),cta:'Shop it now',cta2:'',code:'',input:false,countdown:''})},
+    {name:'NPS / feedback',fmt:'survey',kind:'Flow',icon:'⭐',desc:'Emoji rating survey',
+      build:p=>({headline:`How likely are you to recommend ${p.brand}?`,body:p.feedbackQ||'Your feedback helps us improve.',image:'',cta:'Submit',cta2:'',code:'',input:false,countdown:''})},
+    {name:'New feature / product',fmt:'nudge',kind:'Promotional',icon:'✨',desc:'Announcement nudge',
+      build:p=>({headline:'Just launched',body:cap(p.reminder)||`Something new landed at ${p.brand} — take a look.`,image:photo(p.kw,200,200,4),cta:'See what’s new',cta2:'',code:'',input:false,countdown:''})},
+    {name:'Limited-stock urgency',fmt:'full',kind:'Promotional',icon:'🔥',desc:'Full-screen takeover',
+      build:p=>({headline:'Almost gone',body:`${cap(p.offer)||'Our bestsellers'} are selling fast. Don’t miss out.`,image:photo(p.kw,1200,900,5),cta:'Shop before it’s gone',cta2:'Keep browsing',code:'',input:false,countdown:'01:59:59'})},
+    {name:'Cookie consent',fmt:'bannerBottom',kind:'Transactional',icon:'🍪',desc:'Consent bar',
+      build:p=>({headline:'We use cookies to improve your experience.',body:'',image:'',cta:'Accept all',cta2:'Reject',code:'',input:false,countdown:''})},
+  ];
+  function templatesFor(){
+    const base=PACKS[ctxId()]; if(!base) return [];
+    const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
+    return OSM_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon, fmt:a.fmt,
+      build:()=>Object.assign({site:p.brand, url:p.url||'', fmt:a.fmt}, a.build(p)) }));
+  }
+  function renderTemplates(){
+    const list=templatesFor(); const g=$('#tplGrid');
+    if(!list.length){ g.innerHTML=`<div class="tpl-empty">No preset for this combo — start blank below.</div>`; return; }
+    g.innerHTML=list.map((t,i)=>`<button class="tpl" data-i="${i}"><span class="ti">${t.icon}</span><span class="tc"><span class="tt">${esc(t.name)}${t.flow?'<span class="flow">FLOW</span>':''}</span><span class="td">${esc(t.desc)}</span></span></button>`).join('');
+    g.querySelectorAll('.tpl').forEach(b=>b.addEventListener('click',()=>applyTemplate(list[+b.dataset.i])));
+  }
+  function applyTemplate(t){
+    const f=t.build();
+    if(f.site!=null) state.osm.site=f.site; if(f.url!=null) state.osm.url=f.url;
+    if(f.fmt){ state.format=f.fmt; const sel=$('#topVar'); if(sel) sel.value=f.fmt; }
+    const o=state.osm;
+    o.headline=f.headline||''; o.body=f.body||''; o.image=f.image||''; o.cta=f.cta||''; o.cta2=f.cta2||'';
+    o.code=f.code||''; o.input=!!f.input; o.countdown=f.countdown||'';
+    applyFieldVis(); syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to try it':''));
+  }
+
+  // ================= industries / format / fields =================
+  function fillIndustries(){ $('#selIndustry').innerHTML=INDUSTRIES.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join(''); $('#selIndustry').value=state.industry; }
+  function fillSubs(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); const subs=ind?ind.subs:[];
+    if(!subs.length){ $('#subWrap').classList.add('hide'); state.sub=null; return; }
+    $('#subWrap').classList.remove('hide'); $('#selSub').innerHTML=subs.map(s=>`<option value="${s[0]}">${esc(s[1])}</option>`).join('');
+    if(!subs.find(s=>s[0]===state.sub)) state.sub=subs[0][0]; $('#selSub').value=state.sub; }
+  function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.osm.site=ind.biz; } }
+
+  const FORMATS=[['popup','Popup'],['bannerTop','Banner — top'],['bannerBottom','Banner — bottom'],['nudge','Nudge (slide-in)'],['full','Full screen'],['survey','Survey / Feedback']];
+  function fillFormatSeg(){ const sel=$('#topVar'); sel.innerHTML=FORMATS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join(''); sel.value=state.format; }
+  $('#topVar').addEventListener('change',e=>{ state.format=e.target.value; applyFieldVis(); render(); });
+
+  function applyFieldVis(){
+    const f=state.format, isBanner=(f==='bannerTop'||f==='bannerBottom'), isSurvey=f==='survey', isNudge=f==='nudge';
+    $('#wBody').style.display = 'block';
+    $('#wImg').style.display = (f==='popup'||f==='full'||isNudge)?'':'none';
+    $('#wCta2').style.display = (isSurvey)?'none':'';
+    $('#wCode').style.display = (f==='popup')?'':'none';
+    $('#wInput').style.display = (f==='popup')?'':'none';
+    $('#wCd').style.display = (f==='popup'||isBanner||f==='full')?'':'none';
+    $('#wCta').previousElementSibling; $('#wCta').querySelector('span').textContent = isBanner?'Primary button':'Button';
+    $('#wBody').querySelector('span').textContent = isBanner?'(unused for banners)':'Body';
+    $('#wBody').style.opacity = isBanner?'.5':'1';
+  }
+
+  // ================= editor =================
+  function syncEditor(){
+    const o=state.osm;
+    $('#osmSite').value=o.site||''; $('#osmUrl').value=o.url||'';
+    $('#osmHl').value=o.headline||''; $('#osmBody').value=o.body||''; $('#osmCta').value=o.cta||''; $('#osmCta2').value=o.cta2||'';
+    $('#osmCode').value=o.code||''; $('#osmInput').checked=!!o.input; $('#osmCd').value=o.countdown||''; $('#osmBlur').checked=!!o.blur;
+    const mi=$('#osmImg'); mi.innerHTML=''; mi.appendChild(imageField(()=>o.image, v=>{ o.image=v; render(); }));
+    const bi=$('#bgImg'); bi.innerHTML=''; bi.appendChild(imageField(()=>o.bgImage, v=>{ o.bgImage=v; render(); }));
+    document.querySelectorAll('#bgSeg button').forEach(b=>b.classList.toggle('on', b.dataset.bg===o.bg));
+    $('#bgUpWrap').style.display = o.bg==='upload'?'':'none';
+    applyFieldVis();
+  }
+
+  $('#osmSite').addEventListener('input',e=>{ state.osm.site=e.target.value; render(); });
+  $('#osmUrl').addEventListener('input',e=>{ state.osm.url=e.target.value; render(); });
+  $('#osmHl').addEventListener('input',e=>{ state.osm.headline=e.target.value; render(); });
+  $('#osmBody').addEventListener('input',e=>{ state.osm.body=e.target.value; render(); });
+  $('#osmCta').addEventListener('input',e=>{ state.osm.cta=e.target.value; render(); });
+  $('#osmCta2').addEventListener('input',e=>{ state.osm.cta2=e.target.value; render(); });
+  $('#osmCode').addEventListener('input',e=>{ state.osm.code=e.target.value; render(); });
+  $('#osmInput').addEventListener('change',e=>{ state.osm.input=e.target.checked; render(); });
+  $('#osmCd').addEventListener('input',e=>{ state.osm.countdown=e.target.value; render(); });
+  $('#osmBlur').addEventListener('change',e=>{ state.osm.blur=e.target.checked; render(); });
+  document.querySelectorAll('#bgSeg button').forEach(b=>b.addEventListener('click',()=>{ state.osm.bg=b.dataset.bg; document.querySelectorAll('#bgSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); $('#bgUpWrap').style.display=state.osm.bg==='upload'?'':'none'; render(); }));
+
+  (function(){ const drop=$('#avDrop'),inp=$('#avInput');
+    const set=d=>{ state.brandLogo=d; $('#avImg').src=d; $('#avPrev').style.display='flex'; render(); };
+    drop.addEventListener('click',()=>inp.click());
+    inp.addEventListener('change',()=>{ const f=inp.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f){ const r=new FileReader(); r.onload=()=>set(r.result); r.readAsDataURL(f);} });
+    $('#avClear').addEventListener('click',e=>{ e.stopPropagation(); state.brandLogo=null; $('#avPrev').style.display='none'; inp.value=''; render(); });
+  })();
+
+  function segBind(sel,key,cb){ document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; document.querySelectorAll(sel+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); state[key]=b.dataset[key]; if(cb)cb(); render(); })); }
+  segBind('#deviceSeg','device');
+
+  initChannelNav(['osm'], v=>{ state.channel=v; render(); });
+  $('#selIndustry').addEventListener('change',e=>{ state.industry=e.target.value; fillSubs(); onContextChange(); });
+  $('#selSub').addEventListener('change',e=>{ state.sub=e.target.value; onContextChange(); });
+  function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
+
+  $('#clearMsgs').addEventListener('click',()=>{
+    const o=state.osm; o.headline='Your headline'; o.body='Your message goes here.'; o.image=''; o.cta='Get started'; o.cta2=''; o.code=''; o.input=false; o.countdown='';
+    syncEditor(); render();
+  });
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+
+  $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — try the message':'Back to editing'); });
+
+  let tT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2600); }
+  async function capture(){ return captureDevice({ background:'#eef0f5', toast }); }
+  const exportName=()=>`osm-${state.format}-${state.industry}`;
+  $('#btnExport').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; const a=document.createElement('a'); a.download=`${exportName()}.png`; a.href=c.toDataURL('image/png'); a.click(); toast('PNG downloaded'); }catch(e){ console.error(e); toast('Export failed — try OS screenshot'); } });
+  $('#btnCopy').addEventListener('click',async()=>{ toast('Rendering…'); try{ const c=await capture(); if(!c)return; c.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }catch(e){ toast('Clipboard blocked — use Export'); } }); }catch(e){ toast('Copy failed — use Export'); } });
+
+  if(window.ChannelStudioRecorder) ChannelStudioRecorder.init({ button:$('#btnRecord'), getEl:()=>document.getElementById('capture'), toast:toast, filename:exportName });
+
+  // ================= AI =================
+  async function applyAI(m, opt){
+    const brief=(opt&&opt.brief)||'';
+    const fmts=['popup','bannerTop','bannerBottom','nudge','full','survey'];
+    if(fmts.includes(m.type)){ state.format=m.type; const sel=$('#topVar'); if(sel) sel.value=m.type; }
+    const copyText=[m.headline,m.body].filter(Boolean).join(' ');
+    const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
+    const wantsImg=['popup','full','nudge'].includes(state.format);
+    const media=wantsImg?await ChannelStudioAI.photoFor(dkw(), state.format==='full'?1200:600, state.format==='nudge'?200:460, m.imageQuery):'';
+    applyTemplate({ build:()=>({ headline:m.headline||'', body:m.body||'', image:media, cta:m.cta||'Learn more', cta2:m.cta2||'',
+      code:m.code||'', input:!!m.input, countdown:m.countdown||'', fmt:state.format }), flow:false });
+  }
+  if(window.ChannelStudioAI) ChannelStudioAI.init({ button:$('#btnAI'), toast:toast, apply:applyAI,
+    channels:['osm'],
+    setChannel:ch=>{ if(ch==='osm'){ state.channel=ch; $('#selChannel').value=ch; render(); } },
+    setBrand:name=>{ if(!name)return; state.osm.site=name; const b=$('#osmSite'); if(b) b.value=name; render(); },
+    setIndustry:label=>{ const r=(typeof resolveIndustry==='function')&&resolveIndustry(label); if(!r)return; state.industry=r.industryId; $('#selIndustry').value=r.industryId; fillSubs(); if(r.subId){ state.sub=r.subId; $('#selSub').value=r.subId; } renderTemplates(); },
+    setLogo:url=>{ state.brandLogo=url||null; if(url){ $('#avImg').src=url; $('#avPrev').style.display='flex'; } render(); },
+    getContext:()=>{ const ind=INDUSTRIES.find(i=>i.id===state.industry); return { channel:'osm', brand:siteName(), industry:ind?ind.name:state.industry }; } });
+
+  // ================= init =================
+  $('#selChannel').value='osm';
+  const qp=new URLSearchParams(location.search); const qf=(qp.get('format')||'');
+  if(FORMATS.some(o=>o[0]===qf)) state.format=qf;
+  fillIndustries(); fillSubs(); fillFormatSeg();
+  renderTemplates();
+  const list=templatesFor();
+  if(list.length){ let idx=0; if(qf){ const j=list.findIndex(t=>t.fmt===qf); if(j>=0) idx=j; } applyTemplate(list[idx]); }
+  else { applyIndustryDefaults(); syncEditor(); render(); }
+})();
+</script>
+</body>
+</html>

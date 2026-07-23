@@ -43,7 +43,8 @@ messaging-preview-tool/index.html   # SMS + RCS + WhatsApp  (the main tool)
 gmail-preview-tool/index.html       # Gmail (inbox + open-email)  (email tool)
 notify-preview-tool/index.html      # Push + In-App + In-App Gamification  (notifications tool)
 social-preview-tool/index.html      # Instagram Ads — Feed + Story  (social ads tool)
-facebook-preview-tool/index.html    # Facebook Ads — Feed + Story  (facebook ads tool)
+facebook-preview-tool/index.html    # Facebook Ads — Feed + Story + Marketplace  (facebook ads tool)
+osm-preview-tool/index.html         # Onsite Messaging — web popups/banners/nudges/etc.  (OSM tool)
 README.md                       # user-facing overview + photo setup
 HANDOFF.md                      # this file
 ```
@@ -70,10 +71,11 @@ them in headless Chromium via the global Playwright at
   - gmail → pick WhatsApp/RCS/SMS → `../messaging-preview-tool/index.html?channel=xxx`;
     pick Push/In-App → `../notify-preview-tool/index.html?channel=push|inapp`
   - notify → pick Gmail / WA·RCS·SMS → routes back to those tools; Push↔In-App stay local
-- The **five tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail =
-  Gmail, notify = Push/In-App/Game, social = Instagram, facebook = Facebook) but all share
-  the same dropdown so it feels like one app. `nav.js` routes `instagram` →
-  `../social-preview-tool/` and `facebook` → `../facebook-preview-tool/`.
+- The **six tools each own their channels** (messaging = SMS/RCS/WhatsApp, gmail = Gmail,
+  notify = Push/In-App/Game, social = Instagram, facebook = Facebook, osm = Onsite
+  Messaging) but all share the same dropdown so it feels like one app. `nav.js` routes
+  `instagram` → `../social-preview-tool/`, `facebook` → `../facebook-preview-tool/`, and
+  `osm` → `../osm-preview-tool/`.
 - There is **one top bar**. Root `index.html` just redirects into the messaging tool.
 - `?channel=sms|rcs|whatsapp` deep-links messaging; `?channel=push|inapp` deep-links notify;
   `social-preview-tool/?format=story|feed` deep-links the Instagram tool's format.
@@ -175,6 +177,33 @@ them in headless Chromium via the global Playwright at
   schema added in `api/generate.js` (`CHANNELS.instagram=['story','feed']` + `schemaFor` +
   `CHANNEL_VOICE.instagram`); `ai.js` routing added (`TOOL_CHANNELS.social`, `toolUrl`,
   `CH_LABEL`, and a `CH_WORDS` entry so "an instagram story for…" hands off here).
+
+### osm-preview-tool (Onsite Messaging — web)
+- MoEngage-style **web** onsite messaging. Unlike In-App (mobile app), OSM renders on a
+  **web browser frame**: `state.device` is `desktop` (a `.osm-win` browser window — traffic
+  lights + address bar) or `mobile` (the shared `.phone` frame + a mobile-browser `.osm-mbar`).
+  `state.osm={site,url,headline,body,image,cta,cta2,code,input,countdown,rating,bg,bgImage,blur}`.
+- **Formats** (`#topVar`): `popup` (center modal), `bannerTop` / `bannerBottom` (sticky
+  strip), `nudge` (corner slide-in), `full` (full-screen interstitial), `survey` (NPS emoji
+  rating). `INTRUSIVE={popup,full,survey}` — those dim+blur the page; banners/nudges leave it
+  clear. `applyFieldVis()` shows/hides editor fields per format (image only for popup/full/
+  nudge; code/input only for popup; countdown for popup/banner/full; etc.).
+- **Background system** (the "backdrop won't match the brand" fix, per the owner): a
+  `#bgSeg` control = **branded** (`siteBackdrop()` — a brand-adaptive website skeleton:
+  brand nav/logo, brand-colour hero from `p.offer`, product grid from `p.carousel`),
+  **upload** (`state.osm.bgImage` screenshot of the customer's real site via `imageField`),
+  or **neutral** (`neutralBackdrop()` — grey wireframe, no fake brand). A `blur` toggle
+  applies `filter:blur()` + a dark scrim on intrusive formats. **This same control should be
+  ported to In-App** (planned).
+- **Live countdown timer:** `startCountdown()` runs a single `setInterval` that decrements
+  and writes into `.osm-cd` spans in place (no full re-render), cleared/restarted each
+  render. `cdHTML()` renders the HH/MM/SS units. Used by flash-sale banner + urgency full.
+- **Templates** = `OSM_ARCH` (12: welcome, email-capture, exit-intent, cart, free-shipping,
+  flash-sale countdown, coupon reveal, back-in-stock, NPS, announcement, limited-stock,
+  cookie-consent) × `PACKS`; each sets its own `fmt`. **AI** wired via `applyAI` (its `type`
+  is the format); `api/generate.js` has `CHANNELS.osm` + `schemaFor` (fields incl. `input`,
+  `countdown`) + `CHANNEL_VOICE.osm`; `ai.js` routing + a `CH_WORDS` entry (osm / onsite /
+  exit-intent / cookie-consent / website popup).
 
 ### facebook-preview-tool (Facebook Ads — Feed / Story / Marketplace)
 - Same shell/foundations as the other tools (content packs, image system, imageField,
@@ -358,6 +387,19 @@ prematurely close the script — this bit us once in the gmail tool).
 ---
 
 ## 10. Status & possible next steps
+
+**Done 2026-07-23 (Onsite Messaging — a new WEB channel + tool):** Added a **sixth tool**,
+`osm-preview-tool/index.html`, hosting the **Onsite Messaging** channel — MoEngage-style web
+messages on a desktop-browser or mobile-web frame, with all six formats (Popup, Banner
+top/bottom, Nudge, Full-screen, Survey/Feedback), a live countdown timer, a 12-template
+library, and the **Background control** (branded skeleton / upload screenshot / neutral +
+blur-&-dim) that solves the "backdrop won't match the brand" problem (see §4). Wired into
+every tool's dropdown + `nav.js` + AI (`ai.js` routing/detection + `api/generate.js`
+schema/voice). Verified headless: all 6 formats render (desktop + mobile), no `pageerror`,
+12 templates, countdown ticks, all 3 background modes, Export not clipped, cross-tool
+routing, AI detection (osm vs in-app both correct). Channel count is now **11** across 6
+tools. **Next (planned): port the same Background control onto the In-App channel** in the
+notify tool.
 
 **Done 2026-07-23 (Facebook Marketplace format):** Added a third Facebook format,
 **Marketplace** — the ad shown as a listing card (media, price, title, "Sponsored" + CTA)
