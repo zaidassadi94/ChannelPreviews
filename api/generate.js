@@ -30,7 +30,7 @@ const CHANNELS = {
   game:     ['scratch', 'wheel', 'box', 'slots'],
   gmail:    ['email'],
   instagram: ['story', 'feed'],
-  facebook: ['feed', 'story'],
+  facebook: ['feed', 'story', 'marketplace'],
 };
 
 // A curated keyword vocabulary the image system resolves to real photos.
@@ -97,7 +97,7 @@ function schemaFor(channel) {
   }, required: ['brand', 'industry', 'type', 'body'] });
   if (channel === 'facebook') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
-    type: S('STRING', { enum: CHANNELS.facebook, description: 'feed = in-feed News Feed post ad; story = full-screen 9:16 story ad' }),
+    type: S('STRING', { enum: CHANNELS.facebook, description: 'feed = in-feed News Feed post ad; story = full-screen 9:16 story ad; marketplace = a listing-style ad card in the Marketplace grid (headline = the short listing title)' }),
     body: STR, headline: STR, desc: STR,
     cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Send Message', 'Contact Us'] }),
     imageKeyword: kwEnum, imageQuery: imgQuery,

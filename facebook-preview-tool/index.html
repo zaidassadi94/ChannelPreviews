@@ -74,6 +74,26 @@
   .fbs-bottom .reply{ flex:1; height:40px; border:1.5px solid rgba(255,255,255,.7); border-radius:999px; color:rgba(255,255,255,.95); display:flex; align-items:center; padding:0 16px; font-size:13.5px; }
   .fbs-bottom .ic{ color:#fff; } .fbs-bottom .ic svg{ width:24px; height:24px; }
   .fbs .home-ind{ position:relative; z-index:3; }
+
+  /* ===================== Facebook MARKETPLACE ad ===================== */
+  .fbm{ flex:1; display:flex; flex-direction:column; min-height:0; background:#fff; color:#050505; }
+  .fbm-head{ height:48px; flex:none; display:flex; align-items:center; gap:12px; padding:0 14px; }
+  .fbm-head .tl{ font-size:22px; font-weight:800; letter-spacing:-.5px; flex:1; }
+  .fbm-head .ic{ display:flex; gap:8px; }
+  .fbm-head .c{ width:34px; height:34px; border-radius:50%; background:#e4e6eb; display:flex; align-items:center; justify-content:center; color:#050505; }
+  .fbm-head svg{ width:19px; height:19px; }
+  .fbm-search{ margin:2px 12px 10px; height:38px; background:#f0f2f5; border-radius:999px; display:flex; align-items:center; gap:9px; padding:0 14px; color:#65676b; font-size:14px; flex:none; }
+  .fbm-search svg{ width:16px; height:16px; }
+  .fbm-sec{ font-size:16px; font-weight:800; letter-spacing:-.3px; padding:0 12px 9px; flex:none; }
+  .fbm-grid{ flex:1; min-height:0; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 12px 12px; align-content:start; }
+  .fbm-card{ min-width:0; }
+  .fbm-card .img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#e4e6eb; border-radius:10px; }
+  .fbm-card .pr{ font-size:15px; font-weight:700; margin-top:5px; }
+  .fbm-card .ti{ font-size:13px; color:#050505; line-height:1.25; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fbm-card .lo{ font-size:12px; color:#65676b; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fbm-card.ad .img{ box-shadow:0 0 0 1.5px #dadde1; }
+  .fbm-card.ad .sp{ font-size:12px; color:#65676b; margin-top:2px; font-weight:600; }
+  .fbm-card.ad .cta{ display:block; text-align:center; margin-top:7px; background:#e4e6eb; color:#050505; font-weight:700; font-size:13px; padding:8px; border-radius:7px; }
 </style>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
@@ -131,13 +151,12 @@
       <button class="ghead" data-head>Creative <span class="chev">▼</span></button>
       <div class="gbody">
         <div class="f"><span>Ad media (image)</span><div class="imgz" id="fbMedia"></div></div>
-        <label class="f"><span>Primary text</span><textarea id="fbPrimary" placeholder="The text above the image…"></textarea></label>
+        <label class="f" id="wPrimary"><span>Primary text</span><textarea id="fbPrimary" placeholder="The text above the image…"></textarea></label>
+        <label class="f" id="wHeadline"><span>Headline (link)</span><input type="text" id="fbHeadline"></label>
+        <label class="f" id="wPrice"><span>Price</span><input type="text" id="fbPrice"></label>
+        <label class="f" id="wDesc"><span>Link description</span><input type="text" id="fbDesc"></label>
+        <label class="f" id="wUrl"><span>Display URL</span><input type="text" id="fbUrl"></label>
         <label class="f"><span>Call-to-action button</span><select class="sel" id="fbCta"></select></label>
-        <div class="fmt-feed">
-          <label class="f"><span>Headline (link)</span><input type="text" id="fbHeadline"></label>
-          <label class="f"><span>Link description</span><input type="text" id="fbDesc"></label>
-          <label class="f"><span>Display URL</span><input type="text" id="fbUrl"></label>
-        </div>
       </div>
     </div>
 
@@ -202,7 +221,7 @@
     channel:'facebook', device:'ios', format:'feed', play:false,
     industry:'ecom', sub:'fashion', brandLogo:null,
     fb:{ page:'Nova', verified:true, media:'', primary:'', headline:'', desc:'', url:'nova.shop',
-         cta:'Shop Now', reactions:'1,204', comments:'86', shares:'32', time:'2h' },
+         price:'$89', cta:'Shop Now', reactions:'1,204', comments:'86', shares:'32', time:'2h' },
   };
   const pageName=()=>state.fb.page;
 
@@ -299,6 +318,25 @@
     </div>`;
   }
 
+  // ---------- MARKETPLACE ad ----------
+  const MKT_LOCS=['Miami, FL','Austin, TX','Denver, CO','Seattle, WA'];
+  function mktFiller(){
+    const p=PACKS[ctxId()]||{}; const cats=(p.carousel||[]).slice(0,3);
+    return cats.map((c,i)=>`<div class="fbm-card"><img class="img" src="${esc(photo(kwFor(c[0]),400,400))}" alt="${esc(kwFor(c[0]))}"><div class="pr">${esc(c[1]||'$—')}</div><div class="ti">${esc(c[0])}</div><div class="lo">${esc(MKT_LOCS[i%MKT_LOCS.length])}</div></div>`).join('');
+  }
+  function renderMkt(){
+    const f=state.fb;
+    const ad=`<div class="fbm-card ad"><img class="img" src="${esc(mediaSrc())}" alt="${esc(mediaAlt())}"><div class="pr">${esc(f.price||'')}</div><div class="ti">${esc(f.headline||f.page)}</div><div class="sp">Sponsored · ${esc(f.page)}</div><div class="cta${ck(true)}"${optAttr({reply:f.cta})}>${esc(f.cta||'Shop Now')}</div></div>`;
+    return `<div class="fbm">
+      ${statusBar(false)}
+      <div class="fbm-head"><span class="tl">Marketplace</span><span class="ic"><span class="c">${FB_IC.search}</span><span class="c">${FB_IC.menu}</span></span></div>
+      <div class="fbm-search">${FB_IC.search}<span>Search Marketplace</span></div>
+      <div class="fbm-sec">Today's picks</div>
+      <div class="fbm-grid">${ad}${mktFiller()}</div>
+      <div class="home-ind"></div>
+    </div>`;
+  }
+
   // ---------- Render ----------
   const stage=$('#stage');
   stage.addEventListener('error',function(e){ const t=e.target; if(t&&t.tagName==='IMG'&&!t.dataset.fb){ t.dataset.fb='1'; t.src=phGrad(hueOf((t.getAttribute('alt')||t.src||'x').slice(-24))); } },true);
@@ -308,7 +346,7 @@
     const head=android?`<div class="punch"></div>`:`<div class="notch"></div>`;
     stage.className='stage'+(state.play?' sim-on':'');
     const badge=state.play?`<div class="sim-badge">● Simulate — tap the CTA</div>`:'';
-    const inner=state.format==='story'?renderStory():renderFeed();
+    const inner=state.format==='story'?renderStory():(state.format==='marketplace'?renderMkt():renderFeed());
     let cap=document.getElementById('capture');
     if(!cap){ cap=document.createElement('div'); cap.id='capture'; stage.innerHTML=''; stage.appendChild(cap); }
     cap.className='phone'+(android?' android':'');
@@ -338,7 +376,7 @@
     const base=PACKS[ctxId()]; if(!base) return [];
     const p=Object.assign({}, base, {kw:KW[ctxId()]||'product'});
     return FB_ARCH.map(a=>({ name:a.name, desc:a.desc, kind:a.kind, flow:a.kind==='Flow', icon:a.icon,
-      build:()=>Object.assign({page:p.brand, verified:true, url:p.url||'', time:'2h'}, a.build(p)) }));
+      build:()=>Object.assign({page:p.brand, verified:true, url:p.url||'', time:'2h', price:(p.carousel&&p.carousel[0]?p.carousel[0][1]:'$49')}, a.build(p)) }));
   }
   function renderTemplates(){
     const list=templatesFor(); const g=$('#tplGrid');
@@ -351,7 +389,7 @@
     if(f.page!=null) state.fb.page=f.page;
     if(f.verified!=null) state.fb.verified=f.verified;
     state.fb.media=f.media||''; state.fb.primary=f.primary||''; state.fb.headline=f.headline||'';
-    state.fb.desc=f.desc||''; if(f.url!=null) state.fb.url=f.url; state.fb.cta=f.cta||'Shop Now';
+    state.fb.desc=f.desc||''; if(f.url!=null) state.fb.url=f.url; if(f.price!=null) state.fb.price=f.price; state.fb.cta=f.cta||'Shop Now';
     if(f.reactions!=null) state.fb.reactions=f.reactions; if(f.comments!=null) state.fb.comments=f.comments;
     if(f.shares!=null) state.fb.shares=f.shares; if(f.time!=null) state.fb.time=f.time;
     syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to tap the CTA':''));
@@ -366,10 +404,22 @@
   function applyIndustryDefaults(){ const ind=INDUSTRIES.find(i=>i.id===state.industry); if(ind){ state.fb.page=ind.biz; } }
 
   // ---------- Format dropdown (unified top bar) ----------
-  const FORMATS=[['feed','Feed ad'],['story','Story ad']];
+  const FORMATS=[['feed','Feed ad'],['story','Story ad'],['marketplace','Marketplace ad']];
   function fillFormatSeg(){ const sel=$('#topVar'); sel.innerHTML=FORMATS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join(''); sel.value=state.format; }
-  $('#topVar').addEventListener('change',e=>{ state.format=e.target.value; setFormatGroups(); render(); });
-  function setFormatGroups(){ document.querySelectorAll('.fmt-feed').forEach(g=>{ g.style.display = state.format==='feed'?'':'none'; }); }
+  $('#topVar').addEventListener('change',e=>{ state.format=e.target.value; applyFieldVis(); render(); });
+  // Editor fields shown per format: primary/desc/url + engagement are Feed-only;
+  // headline is Feed + Marketplace (as the listing title); price is Marketplace-only.
+  function applyFieldVis(){
+    const f=state.format;
+    $('#wPrimary').style.display = f==='feed'?'':'none';
+    $('#wHeadline').style.display = (f==='feed'||f==='marketplace')?'':'none';
+    $('#wHeadline span').textContent = f==='marketplace'?'Listing title':'Headline (link)';
+    $('#wDesc').style.display = f==='feed'?'':'none';
+    $('#wUrl').style.display = f==='feed'?'':'none';
+    $('#wPrice').style.display = f==='marketplace'?'':'none';
+    document.querySelectorAll('.fmt-feed').forEach(g=>{ g.style.display = f==='feed'?'':'none'; });
+  }
+  const setFormatGroups=applyFieldVis;
 
   // ---------- CTA select ----------
   function fillCtaSelect(){ const sel=$('#fbCta'); sel.innerHTML=FB_CTAS.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
@@ -383,6 +433,7 @@
     fillCtaSelect();
     $('#fbPrimary').value=state.fb.primary||'';
     $('#fbHeadline').value=state.fb.headline||'';
+    $('#fbPrice').value=state.fb.price||'';
     $('#fbDesc').value=state.fb.desc||'';
     $('#fbUrl').value=state.fb.url||'';
     $('#fbReactions').value=state.fb.reactions||'';
@@ -399,6 +450,7 @@
   $('#fbCta').addEventListener('change',e=>{ state.fb.cta=e.target.value; render(); });
   $('#fbPrimary').addEventListener('input',e=>{ state.fb.primary=e.target.value; render(); });
   $('#fbHeadline').addEventListener('input',e=>{ state.fb.headline=e.target.value; render(); });
+  $('#fbPrice').addEventListener('input',e=>{ state.fb.price=e.target.value; render(); });
   $('#fbDesc').addEventListener('input',e=>{ state.fb.desc=e.target.value; render(); });
   $('#fbUrl').addEventListener('input',e=>{ state.fb.url=e.target.value; render(); });
   $('#fbReactions').addEventListener('input',e=>{ state.fb.reactions=e.target.value; render(); });
@@ -425,7 +477,7 @@
   function onContextChange(){ renderTemplates(); const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); } }
 
   $('#clearMsgs').addEventListener('click',()=>{
-    state.fb={ page:state.fb.page, verified:state.fb.verified, media:'', primary:state.format==='feed'?'Your text here.':'', headline:'Your headline', desc:'', url:state.fb.url, cta:'Shop Now', reactions:'1,204', comments:'18', shares:'6', time:'2h' };
+    state.fb={ page:state.fb.page, verified:state.fb.verified, media:'', primary:state.format==='feed'?'Your text here.':'', headline:state.format==='marketplace'?'Your listing title':'Your headline', desc:'', url:state.fb.url, price:state.fb.price||'$89', cta:'Shop Now', reactions:'1,204', comments:'18', shares:'6', time:'2h' };
     syncEditor(); render();
   });
   document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
@@ -443,7 +495,7 @@
   // ---------- AI generate: map one schema-locked message into a Facebook ad ----------
   async function applyAI(m, opt){
     const brief=(opt&&opt.brief)||'';
-    if(m.type==='story'||m.type==='feed'){ state.format=m.type; const seg=$('#topVar'); if(seg) seg.value=state.format; setFormatGroups(); }
+    if(['story','feed','marketplace'].includes(m.type)){ state.format=m.type; const seg=$('#topVar'); if(seg) seg.value=state.format; applyFieldVis(); }
     const copyText=[m.headline,m.body].filter(Boolean).join(' ');
     const dkw=()=> m.imageKeyword || kwFromText(m.imageQuery) || kwFromText(copyText) || kwFromText(brief) || KW[ctxId()] || 'product';
     const portrait=state.format==='story';
@@ -463,7 +515,7 @@
   // ---------- Init ----------
   $('#selChannel').value='facebook';
   const qp=new URLSearchParams(location.search); const qf=(qp.get('format')||'').toLowerCase();
-  if(qf==='story'||qf==='feed') state.format=qf;
+  if(qf==='story'||qf==='feed'||qf==='marketplace') state.format=qf;
   fillIndustries(); fillSubs(); fillFormatSeg(); fillCtaSelect(); setFormatGroups();
   renderTemplates();
   const list=templatesFor(); if(list.length){ applyTemplate(list[0]); } else { applyIndustryDefaults(); syncEditor(); render(); }

@@ -176,11 +176,14 @@ them in headless Chromium via the global Playwright at
   `CHANNEL_VOICE.instagram`); `ai.js` routing added (`TOOL_CHANNELS.social`, `toolUrl`,
   `CH_LABEL`, and a `CH_WORDS` entry so "an instagram story for…" hands off here).
 
-### facebook-preview-tool (Facebook Ads — Feed / Story)
+### facebook-preview-tool (Facebook Ads — Feed / Story / Marketplace)
 - Same shell/foundations as the other tools (content packs, image system, imageField,
   device frame, export, recorder, AI, unified `#topVar` top-bar dropdown). One channel
-  (`facebook`) with **Feed / Story** formats. `state.fb={page,verified,media,primary,
-  headline,desc,url,cta,reactions,comments,shares,time}` + `state.brandLogo`.
+  (`facebook`) with **Feed / Story / Marketplace** formats. `state.fb={page,verified,media,
+  primary,headline,desc,url,price,cta,reactions,comments,shares,time}` + `state.brandLogo`.
+- Editor fields are shown per format by `applyFieldVis()` (not CSS classes): primary/desc/
+  url + the Engagement group are Feed-only; `headline` shows for Feed + Marketplace (label
+  becomes "Listing title" on Marketplace); `price` is Marketplace-only.
 - **Feed (`renderFeed` / `.fbf`):** an in-feed News Feed post inside a mini Facebook home
   (blue `facebook` wordmark bar + bottom nav). Post = header (page avatar, name + verified,
   "Sponsored · 🌐 globe", ⋯ ✕), **primary text above the image**, 1:1 media, the signature
@@ -191,6 +194,12 @@ them in headless Chromium via the global Playwright at
 - **Story (`renderStory` / `.fbs`):** full-screen 9:16 like the IG story, but with a solid
   white FB CTA button (`.fbs-cta`) and FB-blue verified seal. Caption not shown (story ads
   are pure creative).
+- **Marketplace (`renderMkt` / `.fbm`):** the ad shown in context inside the Marketplace
+  browse grid — a "Marketplace" header + search, "Today's picks", then a 2-col grid whose
+  FIRST card is the sponsored ad (media, `price`, title=`headline`, "Sponsored · Page", + a
+  CTA button); the remaining cards are filler listings built from `PACKS[ctx].carousel`
+  (`mktFiller()`, name/price/photo + a rotating city from `MKT_LOCS`). Only the ad card's
+  CTA is Simulate-tappable.
 - **CTA** is a `<select>` of 10 real Facebook CTAs (`FB_CTAS`). The `facebook` "f" logo and
   the FB-blue verified seal are export-safe inline SVGs. **Templates** = `FB_ARCH` (6, same
   archetypes as IG but producing primary/headline/desc/url) × `PACKS`. **AI** wired via
@@ -350,9 +359,17 @@ prematurely close the script — this bit us once in the gmail tool).
 
 ## 10. Status & possible next steps
 
+**Done 2026-07-23 (Facebook Marketplace format):** Added a third Facebook format,
+**Marketplace** — the ad shown as a listing card (media, price, title, "Sponsored" + CTA)
+inside the Marketplace browse grid among filler listings (see §4). New `price` field
+(Marketplace-only) and per-format field visibility via `applyFieldVis()`; format dropdown
+now Feed / Story / Marketplace; `api/generate.js` FB enum gained `marketplace`. Verified
+headless: renders with the ad card + 3 fillers, price/title/CTA correct, field show/hide
+per format, no `pageerror`.
+
 **Done 2026-07-23 (Facebook Ads — a new channel + tool; Instagram polish):** Added a
 **fifth tool**, `facebook-preview-tool/index.html`, hosting the **Facebook Ads** channel
-with **Feed + Story** formats (see §4). Wired into every tool's channel dropdown + `nav.js`
+with **Feed + Story** formats (Marketplace added same day — see above and §4). Wired into every tool's channel dropdown + `nav.js`
 (`facebook` → facebook tool) and the AI generator (`ai.js` routing/detection with the FB
 `CH_WORDS` entry ordered before Instagram's generic match, + `api/generate.js` schema/voice).
 Facebook's Feed is deliberately distinct from Instagram's: primary text above the image, the
