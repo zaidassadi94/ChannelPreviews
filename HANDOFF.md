@@ -398,8 +398,12 @@ every tool's dropdown + `nav.js` + AI (`ai.js` routing/detection + `api/generate
 schema/voice). Verified headless: all 6 formats render (desktop + mobile), no `pageerror`,
 12 templates, countdown ticks, all 3 background modes, Export not clipped, cross-tool
 routing, AI detection (osm vs in-app both correct). Channel count is now **11** across 6
-tools. **Next (planned): port the same Background control onto the In-App channel** in the
-notify tool.
+tools. The same **Background control (branded / upload / neutral + blur) was also
+retrofitted onto the notify tool's In-App channel** (`state.appBg`, `inappBackdrop()`,
+`neutralAppBackdrop()`, `.ia-bd`/`.napp` CSS, a `chan-inapp` "Background" group `#iaBgSeg`)
+so an In-App modal/sheet/image can sit over the customer's real uploaded app screenshot or a
+neutral wireframe instead of only the generic branded app home; the non-intrusive banner
+stays unblurred.
 
 **Done 2026-07-23 (Facebook Marketplace format):** Added a third Facebook format,
 **Marketplace** — the ad shown as a listing card (media, price, title, "Sponsored" + CTA)

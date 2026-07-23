@@ -84,6 +84,16 @@
   .abd-nav .it svg{ width:22px; height:22px; }
   .abd-nav .it.on{ color:#14151a; }
   .abd-scrim{ position:absolute; inset:0; background:rgba(8,10,16,.5); }
+  /* In-App background modes (branded skeleton / uploaded screenshot / neutral) + blur */
+  .ia-bd{ position:absolute; inset:0; }
+  .ia-bd.ia-blur > *{ filter:blur(4px); transform:scale(1.03); }
+  .ia-shot{ position:absolute; inset:0; background-size:cover; background-position:top center; }
+  .napp{ position:absolute; inset:0; background:#f4f5f7; display:flex; flex-direction:column; }
+  .napp-top{ height:50px; flex:none; background:#fff; border-bottom:1px solid #e9ebf0; margin:0; display:flex; align-items:center; gap:12px; padding:0 18px; }
+  .napp-top i{ display:block; } .napp-top .a{ width:26px; height:12px; border-radius:6px; background:#e3e6ec; } .napp-top .b{ width:130px; height:10px; border-radius:6px; background:#eceef3; } .napp-top .c{ margin-left:auto; width:64px; height:12px; border-radius:6px; background:#e3e6ec; }
+  .napp-hero{ margin:16px 16px 0; height:120px; border-radius:14px; background:linear-gradient(135deg,#e9ecf3,#dfe3ec); flex:none; }
+  .napp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 16px; }
+  .napp-grid i{ display:block; height:104px; border-radius:12px; background:#e9ecf3; }
 
   .ovl{ position:absolute; left:0; right:0; z-index:40; }
   .banner-top{ top:50px; padding:0 8px; }
@@ -386,6 +396,16 @@
       </div>
     </div>
 
+    <div class="group collapsed chan-inapp" data-group id="grpIaBg" style="display:none;">
+      <button class="ghead" data-head>Background <span class="chev">▼</span></button>
+      <div class="gbody">
+        <div class="hint">The app behind the message won't be your customer's real app — pick how to handle it.</div>
+        <div class="seg-in" id="iaBgSeg"><button data-bg="branded" class="on">Branded</button><button data-bg="upload">Upload</button><button data-bg="neutral">Neutral</button></div>
+        <div class="f" id="iaBgUpWrap" style="display:none;margin-top:10px;"><span>Screenshot of your app</span><div class="imgz" id="iaBgImg"></div></div>
+        <div class="toggle-row" style="margin-top:10px;"><span>Dim &amp; blur (except banner)</span><label class="switch"><input type="checkbox" id="iaBlur" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+
     <div class="group collapsed chan-game" data-group style="display:none;">
       <button class="ghead" data-head>Reward content <span class="chev">▼</span></button>
       <div class="gbody">
@@ -463,6 +483,7 @@
     appLogo:null, expanded:true, wallpaper:'aurora',
     push:{ appName:'Nova', title:'', body:'', image:'', actions:'', time:'now' },
     inapp:{ type:'modal', image:'', headline:'', body:'', ctas:'', close:true, bannerPos:'top' },
+    appBg:{ mode:'branded', image:'', blur:true },
     game:{ type:'scratch', eyebrow:'Exclusive reward', headline:'', sub:'', prize:'', prizeCap:'', cta:'', segments:'', close:true },
   };
   const appName=()=>state.push.appName;
@@ -594,14 +615,26 @@
   function iaSheet(){ const a=state.inapp; const img=a.image?`<img class="img" src="${esc(a.image)}" alt="${esc(kwFor(a.headline))}">`:''; return `<div class="ia-sheet">${iaX(true)}<div class="ia-grab"></div>${img}${a.headline?`<div class="hl">${esc(a.headline)}</div>`:''}${a.body?`<div class="tx">${fmtLite(a.body)}</div>`:''}${iaCtasHTML()}</div>`; }
   function iaFull(){ const a=state.inapp; const src=a.image||photo(KW[ctxId()]||'product',700,900); return `<div class="ia-full"><img class="ia-full-img" src="${esc(src)}" alt="${esc(kwFor(a.headline)||KW[ctxId()]||'promo')}">${iaX(false)}<div class="bd">${a.headline?`<div class="hl">${esc(a.headline)}</div>`:''}${a.body?`<div class="tx">${fmtLite(a.body)}</div>`:''}${iaCtasHTML()}</div></div>`; }
   function iaImage(){ const a=state.inapp; const src=a.image||photo(KW[ctxId()]||'product',600,760); return `<div class="ia-imgonly">${iaX(false)}<img src="${esc(src)}" alt="${esc(KW[ctxId()]||'product')}"></div>`; }
+  // Background modes for In-App: branded app home / uploaded screenshot / neutral wireframe.
+  // Blur+scale is applied for intrusive types (everything except the non-intrusive banner).
+  function neutralAppBackdrop(){
+    return `<div class="napp">${statusBar(false)}<div class="napp-top"><i class="a"></i><i class="b"></i><i class="c"></i></div><div class="napp-hero"></div><div class="napp-grid"><i></i><i></i><i></i><i></i></div><div class="home-ind"></div></div>`;
+  }
+  function inappBackdrop(intrusive){
+    const bg=state.appBg; let inner;
+    if(bg.mode==='upload' && bg.image) inner=`<div class="ia-shot" style="background-image:url('${String(bg.image).replace(/'/g,"%27")}')"></div>`;
+    else if(bg.mode==='neutral') inner=neutralAppBackdrop();
+    else inner=appBackdrop();
+    return `<div class="ia-bd${(intrusive&&bg.blur)?' ia-blur':''}">${inner}</div>`;
+  }
   function renderInApp(){
     const t=state.inapp.type; const brand=avColor(appName());
     let body;
     if(t==='full') body=iaFull();
-    else if(t==='banner') body=appBackdrop()+`<div class="ia-banner ${state.inapp.bannerPos}">${iaBanner()}</div>`;
-    else if(t==='sheet') body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-sheetwrap">${iaSheet()}</div>`;
-    else if(t==='image') body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-center">${iaImage()}</div>`;
-    else body=appBackdrop()+`<div class="abd-scrim"></div><div class="ia-center">${iaModal()}</div>`;
+    else if(t==='banner') body=inappBackdrop(false)+`<div class="ia-banner ${state.inapp.bannerPos}">${iaBanner()}</div>`;
+    else if(t==='sheet') body=inappBackdrop(true)+`<div class="abd-scrim"></div><div class="ia-sheetwrap">${iaSheet()}</div>`;
+    else if(t==='image') body=inappBackdrop(true)+`<div class="abd-scrim"></div><div class="ia-center">${iaImage()}</div>`;
+    else body=inappBackdrop(true)+`<div class="abd-scrim"></div><div class="ia-center">${iaModal()}</div>`;
     return `<div style="position:absolute;inset:0;--brand:${brand}">${body}</div>`;
   }
 
@@ -859,6 +892,10 @@
     const im=$('#iaImg'); im.innerHTML=''; im.appendChild(imageField(()=>state.inapp.image, v=>{ state.inapp.image=v; render(); }));
     buildCtas($('#iaCtas'));
     document.querySelectorAll('#iaPosSeg button').forEach(b=>b.classList.toggle('on', b.dataset.pos===state.inapp.bannerPos));
+    document.querySelectorAll('#iaBgSeg button').forEach(b=>b.classList.toggle('on', b.dataset.bg===state.appBg.mode));
+    $('#iaBlur').checked=!!state.appBg.blur;
+    $('#iaBgUpWrap').style.display = state.appBg.mode==='upload'?'':'none';
+    const bgi=$('#iaBgImg'); bgi.innerHTML=''; bgi.appendChild(imageField(()=>state.appBg.image, v=>{ state.appBg.image=v; render(); }));
     applyInappFieldVis();
   }
   function applyInappFieldVis(){
@@ -951,6 +988,8 @@
   $('#gmSegments').addEventListener('input',e=>{ state.game.segments=e.target.value; render(); });
   $('#gmClose').addEventListener('change',e=>{ state.game.close=e.target.checked; render(); });
   document.querySelectorAll('#iaPosSeg button').forEach(b=>b.addEventListener('click',()=>{ state.inapp.bannerPos=b.dataset.pos; document.querySelectorAll('#iaPosSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); render(); }));
+  document.querySelectorAll('#iaBgSeg button').forEach(b=>b.addEventListener('click',()=>{ state.appBg.mode=b.dataset.bg; document.querySelectorAll('#iaBgSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); $('#iaBgUpWrap').style.display=state.appBg.mode==='upload'?'':'none'; render(); }));
+  $('#iaBlur').addEventListener('change',e=>{ state.appBg.blur=e.target.checked; render(); });
 
   (function(){ const drop=$('#iconDrop'),inp=$('#iconInput');
     const set=d=>{ state.appLogo=d; $('#iconImg').src=d; $('#iconPrev').style.display='flex'; render(); };
