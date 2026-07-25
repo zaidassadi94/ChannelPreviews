@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -95,12 +96,7 @@ function AndShade() {
 
 export function PushPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyPushTemplate(PUSH_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyPushTemplate(PUSH_TEMPLATES[0], false))
 
   const device = useStudio((s) => s.device)
   const surface = useStudio((s) => s.notify.surface)

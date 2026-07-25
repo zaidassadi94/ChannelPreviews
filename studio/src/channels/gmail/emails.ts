@@ -54,6 +54,17 @@ export const GMAIL_TEMPLATES: GmailTemplate[] = [
   },
 ]
 
+/** Build a rich AI-generated email (brand bar + optional hero + heading/body/CTA), reusing
+    the same inline-styled builders as the templates so it renders identically in the pane. */
+export function buildAiEmail(o: { brand: string; accent: string; image?: string; heading: string; body: string; btn?: string }): string {
+  const esc = (s: string) => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const brandBar = `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${o.accent};">${esc(o.brand)}</span></div>`
+  const hero = o.image ? `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${o.accent},#3a3a5a);"><img src="${o.image}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;"></div>` : ''
+  const btn = o.btn ? `<div style="margin-top:16px;"><a href="#" style="display:inline-block;background:${o.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${esc(o.btn)}</a></div>` : ''
+  const body = `<div style="padding:32px 34px;text-align:center;"><h1 style="margin:0 0 12px;font-size:24px;color:#111;">${esc(o.heading)}</h1><p style="margin:0;font-size:15px;color:#555;line-height:1.6;white-space:pre-wrap;">${esc(o.body)}</p>${btn}</div>`
+  return eWrap(brandBar + hero + body)
+}
+
 /** Build the plain-mode email HTML from composed fields. */
 export function plainEmail(plain: { heading: string; body: string; btn: string; accent: string }): string {
   const esc = (s: string) => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

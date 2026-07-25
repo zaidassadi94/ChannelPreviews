@@ -1,5 +1,6 @@
 import './facebook.css'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -115,12 +116,7 @@ function MarketplaceAd() {
 
 export function FacebookPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyFbTemplate(FB_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyFbTemplate(FB_TEMPLATES[0], false))
 
   const format = useStudio((s) => s.fb.format)
   const inner = format === 'story' ? <StoryAd /> : format === 'marketplace' ? <MarketplaceAd /> : <FeedAd />

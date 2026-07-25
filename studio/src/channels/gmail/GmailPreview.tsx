@@ -1,5 +1,6 @@
 import './gmail.css'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type GmailState } from '@/store/useStudio'
 import { PhoneFrame } from '@/shell/PhoneFrame'
 import { DesktopFrame } from '@/shell/DesktopFrame'
@@ -212,12 +213,7 @@ function DesktopOpen() {
 
 export function GmailPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyGmailTemplate(GMAIL_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyGmailTemplate(GMAIL_TEMPLATES[0], false))
 
   const skin = useStudio((s) => s.gmail.skin)
   const view = useStudio((s) => s.gmail.view)

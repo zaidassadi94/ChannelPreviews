@@ -168,6 +168,9 @@ interface StudioState {
   brand: Brand
   sim: boolean
   dateChip: string
+  /** When an AI generation is populating a ctx's slice itself, this holds that ctxId so
+      the preview's auto-apply-first-template effect skips it (deterministic, order-free). */
+  aiSuppressCtx: string | null
 
   // whatsapp slice
   wa: { messages: WAMsg[]; played: WAMsg[]; encNotice: boolean; typing: boolean }
@@ -197,6 +200,8 @@ interface StudioState {
   setBrand: (patch: Partial<Brand>) => void
   setSim: (on: boolean) => void
   setDateChip: (v: string) => void
+  setAiSuppress: (ctx: string) => void
+  clearAiSuppress: () => void
 
   // whatsapp actions
   waSetMessages: (msgs: WAMsg[]) => void
@@ -257,6 +262,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   brand: { name: 'Nova', sub: 'online', logo: null, verified: true, phone: '+1 (800) 555-0199', desc: 'Official account · Customer care', agentCard: true },
   sim: false,
   dateChip: 'Today',
+  aiSuppressCtx: null,
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
   msg: { rcs: emptyMsg(), sms: emptyMsg() },
   notify: {
@@ -296,6 +302,8 @@ export const useStudio = create<StudioState>((set, get) => ({
   setBrand: (patch) => set({ brand: { ...get().brand, ...patch } }),
   setSim: (on) => set({ sim: on, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setDateChip: (v) => set({ dateChip: v }),
+  setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),
+  clearAiSuppress: () => set({ aiSuppressCtx: null }),
 
   waSetMessages: (msgs) => set({ wa: { ...get().wa, messages: msgs, played: [] } }),
   waAdd: (type) => set({ wa: { ...get().wa, messages: [...get().wa.messages, makeMsg(type)] } }),

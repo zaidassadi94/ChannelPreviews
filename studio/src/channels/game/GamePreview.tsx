@@ -1,5 +1,6 @@
 import './game.css'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type NotifyState } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -103,12 +104,7 @@ function GzConfetti() {
 
 export function GamePreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyGameTemplate(GAME_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyGameTemplate(GAME_TEMPLATES[0], false))
 
   const g = useStudio((s) => s.notify.game)
   const appName = useStudio((s) => s.notify.appName)

@@ -1,5 +1,6 @@
 import './whatsapp.css'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type WAMsg } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { parseButtons, brandMark, phImg, type Btn } from '@/lib/util'
@@ -81,13 +82,7 @@ function WAMessage({ msg }: { msg: WAMsg }) {
 
 export function WhatsAppPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  // auto-apply the first template on load and whenever the industry/sub changes
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyWATemplate(WA_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyWATemplate(WA_TEMPLATES[0], false))
 
   const brand = useStudio((s) => s.brand)
   const dateChip = useStudio((s) => s.dateChip)

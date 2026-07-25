@@ -1,17 +1,12 @@
-import { useEffect, useRef } from 'react'
 import { useStudio } from '@/store/useStudio'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { PhoneFrame } from '@/shell/PhoneFrame'
 import { GoogleMessages, IOSMessages } from '@/channels/messaging/screen'
 import { RCS_TEMPLATES, applyRcsTemplate } from './templates'
 
 export function RcsPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyRcsTemplate(RCS_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyRcsTemplate(RCS_TEMPLATES[0], false))
 
   const device = useStudio((s) => s.device)
   return (

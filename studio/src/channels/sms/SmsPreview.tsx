@@ -1,17 +1,12 @@
-import { useEffect, useRef } from 'react'
 import { useStudio } from '@/store/useStudio'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { PhoneFrame } from '@/shell/PhoneFrame'
 import { GoogleMessages, IOSMessages } from '@/channels/messaging/screen'
 import { SMS_TEMPLATES, applySmsTemplate } from './templates'
 
 export function SmsPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applySmsTemplate(SMS_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applySmsTemplate(SMS_TEMPLATES[0], false))
 
   const device = useStudio((s) => s.device)
   return (

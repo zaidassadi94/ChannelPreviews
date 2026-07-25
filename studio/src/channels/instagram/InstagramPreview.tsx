@@ -1,5 +1,6 @@
 import './instagram.css'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -99,12 +100,7 @@ function StoryAd() {
 
 export function InstagramPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyIgTemplate(IG_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyIgTemplate(IG_TEMPLATES[0], false))
 
   const format = useStudio((s) => s.ig.format)
   return <PhoneFrame bare badge="● Simulate — tap the CTA">{format === 'story' ? <StoryAd /> : <FeedAd />}</PhoneFrame>

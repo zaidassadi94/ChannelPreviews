@@ -3,6 +3,7 @@ import { industryById } from '@/content/model'
 import { Icon } from '@/lib/icons'
 import { useCapture } from '@/lib/useCapture'
 import { useRecorder } from '@/lib/useRecorder'
+import { useAiPanel } from '@/store/useAiPanel'
 import { ChannelPicker } from './ChannelPicker'
 
 export function TopBar() {
@@ -17,6 +18,8 @@ export function TopBar() {
   const simReset = useStudio((s) => s.simReset)
   const { onExport, onCopy } = useCapture()
   const recRef = useRecorder()
+  const toggleAi = useAiPanel((s) => s.toggle)
+  const aiOpen = useAiPanel((s) => s.open)
   const ind = industryById(industry)
   const subs = ind ? ind.subs : []
 
@@ -51,6 +54,9 @@ export function TopBar() {
         {sim ? Icon.pause : Icon.play}{sim ? 'Editing' : 'Simulate'}
       </button>
       {sim && <button className="btn ghost" onClick={simReset}>↺ Reset</button>}
+      <button className={'btn ghost' + (aiOpen ? ' on' : '')} onClick={toggleAi} title="Generate with AI">
+        <span style={{ fontSize: 14 }}>✨</span> AI
+      </button>
       {/* Record — the recorder owns this button's content + class (childless on purpose). */}
       <button ref={recRef} className="btn ghost" title="Record the preview (Chrome/Edge)" />
       <button className="btn ghost" onClick={onCopy}>Copy</button>

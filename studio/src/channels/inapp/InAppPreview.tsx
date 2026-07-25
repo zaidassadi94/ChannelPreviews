@@ -1,4 +1,5 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { type CSSProperties } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -101,12 +102,7 @@ function IaImage() {
 
 export function InAppPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyInappTemplate(INAPP_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyInappTemplate(INAPP_TEMPLATES[0], false))
 
   const a = useStudio((s) => s.notify.inapp)
   const appName = useStudio((s) => s.notify.appName)

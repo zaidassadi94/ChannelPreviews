@@ -1,5 +1,6 @@
 import './osm.css'
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type OsmState } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -169,12 +170,7 @@ function StageInner({ mobile }: { mobile: boolean }) {
 
 export function OsmPreview() {
   const ctxId = useStudio((s) => s.ctxId())
-  const lastCtx = useRef<string | null>(null)
-  useEffect(() => {
-    if (lastCtx.current === ctxId) return
-    lastCtx.current = ctxId
-    applyOsmTemplate(OSM_TEMPLATES[0], false)
-  }, [ctxId])
+  useAutoTemplate(ctxId, () => applyOsmTemplate(OSM_TEMPLATES[0], false))
 
   const device = useStudio((s) => s.osm.device)
   const url = useStudio((s) => s.osm.url)
