@@ -65,6 +65,19 @@ export function makeM(type: MType, over: Partial<MMsg> = {}): MMsg {
 }
 interface MsgSlice { messages: MMsg[]; played: MMsg[]; typing: boolean }
 
+/* ---- notify model (Push / In-App / Gamification share app identity) ---- */
+export interface NotifyState {
+  appName: string
+  appLogo: string | null
+  surface: string   // ios: lock|banner · android: heads|shade
+  wallpaper: string
+  expanded: boolean
+  push: { title: string; body: string; image: string; actions: string; time: string }
+  inapp: { type: string; image: string; headline: string; body: string; ctas: string; close: boolean; bannerPos: string }
+  appBg: { mode: string; image: string; blur: boolean }
+  game: { type: string; eyebrow: string; headline: string; sub: string; prize: string; prizeCap: string; cta: string; segments: string; close: boolean }
+}
+
 interface StudioState {
   // shared context
   channel: string
@@ -81,6 +94,9 @@ interface StudioState {
 
   // generic messaging slices, keyed by channel id (rcs, sms)
   msg: Record<string, MsgSlice>
+
+  // notify slice (push / inapp / game)
+  notify: NotifyState
 
   // shared actions
   setChannel: (c: string) => void
@@ -117,6 +133,13 @@ interface StudioState {
   msgTapReply: (ch: string, reply: string, response?: string) => void
   msgSimReset: (ch: string) => void
 
+  // notify actions
+  setNotify: (patch: Partial<Pick<NotifyState, 'appName' | 'appLogo' | 'surface' | 'wallpaper' | 'expanded'>>) => void
+  setPush: (patch: Partial<NotifyState['push']>) => void
+  setInapp: (patch: Partial<NotifyState['inapp']>) => void
+  setAppBg: (patch: Partial<NotifyState['appBg']>) => void
+  setGame: (patch: Partial<NotifyState['game']>) => void
+
   ctxId: () => string
 }
 
@@ -133,6 +156,13 @@ export const useStudio = create<StudioState>((set, get) => ({
   dateChip: 'Today',
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
   msg: { rcs: emptyMsg(), sms: emptyMsg() },
+  notify: {
+    appName: 'Nova', appLogo: null, surface: 'lock', wallpaper: 'aurora', expanded: true,
+    push: { title: '', body: '', image: '', actions: '', time: 'now' },
+    inapp: { type: 'modal', image: '', headline: '', body: '', ctas: '', close: true, bannerPos: 'top' },
+    appBg: { mode: 'branded', image: '', blur: true },
+    game: { type: 'scratch', eyebrow: 'Exclusive reward', headline: '', sub: '', prize: '', prizeCap: '', cta: '', segments: '', close: true },
+  },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
@@ -201,6 +231,12 @@ export const useStudio = create<StudioState>((set, get) => ({
     set({ msg: patchSlice(get().msg, ch, { played }) })
   },
   msgSimReset: (ch) => set({ msg: patchSlice(get().msg, ch, { played: [] }) }),
+
+  setNotify: (patch) => set({ notify: { ...get().notify, ...patch } }),
+  setPush: (patch) => set({ notify: { ...get().notify, push: { ...get().notify.push, ...patch } } }),
+  setInapp: (patch) => set({ notify: { ...get().notify, inapp: { ...get().notify.inapp, ...patch } } }),
+  setAppBg: (patch) => set({ notify: { ...get().notify, appBg: { ...get().notify.appBg, ...patch } } }),
+  setGame: (patch) => set({ notify: { ...get().notify, game: { ...get().notify.game, ...patch } } }),
 
   ctxId: () => get().sub || get().industry,
 }))

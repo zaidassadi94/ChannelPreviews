@@ -5,6 +5,8 @@ import { RcsPreview } from './rcs/RcsPreview'
 import { rcsSections } from './rcs/panels'
 import { SmsPreview } from './sms/SmsPreview'
 import { smsSections } from './sms/panels'
+import { PushPreview } from './push/PushPreview'
+import { pushSections } from './push/panels'
 
 export interface SectionDef {
   id: string
@@ -32,7 +34,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'rcs', label: 'RCS', icon: emoji('📲'), group: 'Messaging', sections: rcsSections, Preview: RcsPreview },
   { id: 'sms', label: 'SMS', icon: emoji('✉️'), group: 'Messaging', sections: smsSections, Preview: SmsPreview },
   { id: 'gmail', label: 'Gmail', icon: emoji('📧'), group: 'Email' },
-  { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify' },
+  { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify', sections: pushSections, Preview: PushPreview },
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify' },
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify' },
   { id: 'osm', label: 'Onsite', icon: emoji('🌐'), group: 'Web' },
