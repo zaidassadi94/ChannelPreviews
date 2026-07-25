@@ -23,6 +23,13 @@ export const Icon: Record<string, ReactNode> = {
   phone: <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" strokeWidth="2" /></svg>,
   android: <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M10 5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>,
   chat: <svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff" /></svg>,
+  // section-rail icons
+  templates: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="14" y="3" width="7" height="5" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="14" y="12" width="7" height="9" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="3" y="16" width="7" height="5" rx="1.6" stroke="currentColor" strokeWidth="1.8" /></svg>,
+  convo: <svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h8A2.5 2.5 0 0 1 17 6.5v4A2.5 2.5 0 0 1 14.5 13H9l-3.4 2.6c-.5.4-1.1 0-1.1-.6V6.5z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="M8 17.5a2 2 0 0 0 2 2h5l3 2.2c.5.4 1 0 1-.5V13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+  sender: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.8" /><circle cx="8.5" cy="11" r="2" stroke="currentColor" strokeWidth="1.7" /><path d="M5.5 16c.4-1.5 1.6-2.3 3-2.3s2.6.8 3 2.3M14 9.5h4M14 13h3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>,
+  context: <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h9M18 7h1M5 12h1M10 12h9M5 17h6M15 17h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><circle cx="16" cy="7" r="2" stroke="currentColor" strokeWidth="1.7" /><circle cx="8" cy="12" r="2" stroke="currentColor" strokeWidth="1.7" /><circle cx="13" cy="17" r="2" stroke="currentColor" strokeWidth="1.7" /></svg>,
+  chevron: <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+  refresh: <svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
 }
 
 export const btnIcon = (t: string): ReactNode => (t === 'call' ? Icon.phone : t === 'url' ? Icon.link : t === 'copy' ? Icon.copy : Icon.reply)

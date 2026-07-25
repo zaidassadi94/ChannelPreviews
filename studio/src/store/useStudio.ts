@@ -32,6 +32,7 @@ export interface Brand { name: string; sub: string; logo: string | null; verifie
 interface StudioState {
   // shared context
   channel: string
+  section: string
   device: 'ios' | 'android'
   industry: string
   sub: string | null
@@ -44,6 +45,7 @@ interface StudioState {
 
   // shared actions
   setChannel: (c: string) => void
+  setSection: (s: string) => void
   setDevice: (d: 'ios' | 'android') => void
   setIndustry: (id: string) => void
   setSub: (s: string) => void
@@ -69,6 +71,7 @@ interface StudioState {
 
 export const useStudio = create<StudioState>((set, get) => ({
   channel: 'whatsapp',
+  section: '',
   device: 'ios',
   industry: 'ecom',
   sub: 'fashion',
@@ -77,7 +80,8 @@ export const useStudio = create<StudioState>((set, get) => ({
   dateChip: 'Today',
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
 
-  setChannel: (c) => set({ channel: c, sim: false, wa: { ...get().wa, played: [] } }),
+  setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] } }),
+  setSection: (s) => set({ section: s }),
   setDevice: (d) => set({ device: d }),
   setIndustry: (id) => {
     const ind = industryById(id)

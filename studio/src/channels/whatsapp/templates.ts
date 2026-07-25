@@ -1,5 +1,6 @@
-import { makeMsg, type WAMsg } from '@/store/useStudio'
-import { type Pack, confirmFor } from '@/content/model'
+import { makeMsg, useStudio, type WAMsg } from '@/store/useStudio'
+import { useToast } from '@/store/useToast'
+import { type Pack, confirmFor, packFor } from '@/content/model'
 import { phImg, genOtp, hueOf } from '@/lib/util'
 
 export interface WATemplate {
@@ -46,5 +47,15 @@ export const WA_TEMPLATES: WATemplate[] = [
     })],
   },
 ]
+
+/** Imperative apply — usable from a panel click or a mount effect. */
+export function applyWATemplate(t: WATemplate, announce = true) {
+  const s = useStudio.getState()
+  const p = packFor(s.ctxId())
+  if (!p) return
+  s.waSetMessages(t.build(p, s.ctxId()))
+  s.setBrand({ name: p.brand, sub: 'online' })
+  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to branch' : ''))
+}
 
 export { cap }
