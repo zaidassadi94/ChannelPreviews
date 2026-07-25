@@ -5,6 +5,7 @@ import { useToast } from '@/store/useToast'
 import { parseButtons, brandMark, phImg, type Btn } from '@/lib/util'
 import { formatText } from '@/lib/format'
 import { Icon, btnIcon } from '@/lib/icons'
+import { PhoneFrame } from '@/shell/PhoneFrame'
 import { WA_TEMPLATES, applyWATemplate } from './templates'
 
 function Tail({ color }: { color: string }) {
@@ -97,6 +98,7 @@ export function WhatsAppPreview() {
   const avatar = brand.logo || brandMark(brand.name, 96)
 
   return (
+    <PhoneFrame>
     <div className="wa">
       <div className="wa-header">
         <span className="bk">{Icon.back}</span>
@@ -126,5 +128,6 @@ export function WhatsAppPreview() {
         <div className="wa-in-i"><span className="plus">{Icon.plus}</span><div className="fld"><span className="ph">Message</span><span className="ti">{Icon.sticker}</span></div><span className="ti">{Icon.camera}</span><span className="ti">{Icon.mic}</span></div>
       )}
     </div>
+    </PhoneFrame>
   )
 }

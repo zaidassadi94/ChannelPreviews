@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { channelById } from '@/channels/registry'
 import { TopBar } from './TopBar'
-import { PhoneFrame } from './PhoneFrame'
+import { StageFit } from './StageFit'
 import { SectionRail, SectionPanel } from './SectionNav'
 import { StubPreview } from './Stub'
 
@@ -18,9 +18,7 @@ export function AppShell() {
         <SectionRail />
         <SectionPanel />
         <div className={'stage' + (sim ? ' sim-on' : '')}>
-          <PhoneFrame>
-            {Preview ? <Preview /> : <StubPreview label={def?.label ?? channel} />}
-          </PhoneFrame>
+          {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
         </div>
       </div>
     </div>

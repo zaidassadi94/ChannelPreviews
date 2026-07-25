@@ -61,7 +61,12 @@ src/
     ChannelPicker.tsx          grouped channel dropdown (the "channel selection")
     SectionNav.tsx             <SectionRail/> (thin left rail = the active channel's
                                sections) + <SectionPanel/> (shows ONE section — master/detail)
-    PhoneFrame.tsx             device chrome + scales to fit stage height (ResizeObserver)
+    StageFit.tsx               scales WHATEVER frame a channel renders down to fit the
+                               stage (ResizeObserver). Frames are channel-owned.
+    PhoneFrame.tsx             phone device chrome (notch, status bar, home indicator).
+                               A channel Preview wraps its screen in this. For desktop/
+                               web channels (Gmail desktop, OSM) add a DesktopFrame here
+                               following the same shape; ad channels can render their own.
     StatusBar.tsx              iOS/Android status bar
     Toaster.tsx, Stub.tsx
   channels/
@@ -92,7 +97,9 @@ redrawing. For channel `X`:
    (e.g. `messaging-preview-tool/index.html` has WhatsApp/RCS/SMS; `gmail-…`,
    `notify-…`, `osm-…`, `social-…`, `facebook-…` for the rest). Use `formatText`,
    `phImg`, `brandMark`, `Icon`. Handle Simulate via store actions. Import an
-   `X.css` for channel styles.
+   `X.css` for channel styles. **Wrap the screen in a frame the channel owns** —
+   `<PhoneFrame>` for phone channels, or a new `<DesktopFrame>` for Gmail-desktop /
+   OSM-web (`AppShell` scales whatever you render via `StageFit`).
 3. **Sections.** `channels/X/panels.tsx` — build the editor as section-panel
    components and export `const xSections: SectionDef[] = [...]`.
 4. **Templates.** `channels/X/templates.ts` (if templated) — `X_TEMPLATES` +
@@ -133,17 +140,31 @@ Then call the Artifact tool with `url:"https://claude.ai/code/artifact/d3da92cb-
 same favicon (💬) and title, pointing at the inlined HTML — this keeps the owner's
 existing preview link stable.
 
-## Suggested next-session order
-1. **RCS + SMS** (reuse the messaging engine; fastest, validates a 2nd/3rd channel).
-2. **Export PNG** (makes previews downloadable — high owner value).
-3. **Gmail**, then **Push / In-App / Gamification**, then **OSM**, then **IG / FB Ads**.
-4. **AI panel** + **real images** last (network features; won't show in the artifact preview).
-5. When at parity: promote `studio/` to the site root + point Vercel at it, retire
-   the root HTML tools. (Owner will handle Vercel; provide exact steps.)
+## Plan: port ALL remaining channels in one pass
+The owner wants every channel migrated in one shot, then debug individually.
+Suggested order within the pass (group by frame/engine to reuse code):
+1. **SMS + RCS** — reuse the messaging engine (iOS + Android chat bubbles; RCS adds
+   cards/carousels/chips). Add their message types to the store or a shared slice.
+2. **Push / In-App / Gamification** — phone frame; port from `notify-preview-tool`.
+3. **Gmail** — needs a **DesktopFrame** (and a mobile skin); port from `gmail-preview-tool`.
+4. **OSM** — desktop + mobile-web frames; port from `osm-preview-tool`.
+5. **Instagram / Facebook Ads** — phone feed/story; port from `social-`/`facebook-…`.
+Extend `content/model.ts` with the fields each channel needs (email/push overrides,
+gamification, OSM/ad templates) from the full root `../content.js`.
+Then port the shared features (Export/Copy/Record/AI/images) into the shell.
+Keep `npm run build` GREEN and smoke-test after each channel so a failure is isolated.
+When at parity: promote `studio/` to the site root + point Vercel at it (owner handles
+Vercel; provide exact steps).
 
 ## Kickoff prompt for the next chat (paste this)
 > Continue the `studio/` React app on branch `claude/channel-ux-audit-vw4qf6`.
-> Read `studio/HANDOFF.md` first. WhatsApp is the reference channel. Migrate RCS
-> and SMS next by repeating the WhatsApp pattern, keep `npm run build` green,
-> smoke-test in Chromium, and refresh the existing preview artifact (same URL).
-> Don't push to main. Don't reintroduce MoEngage/real-client/personal-name content.
+> Read `studio/HANDOFF.md` first. WhatsApp is the fully-working reference channel
+> (its Preview wraps itself in <PhoneFrame>; the shell scales it via <StageFit>).
+> Port ALL the remaining channels in one pass by repeating that pattern — RCS, SMS,
+> Push, In-App, Gamification, Gmail (add a DesktopFrame), OSM, Instagram Ads,
+> Facebook Ads — porting each channel's render, section panels, and templates from
+> the matching root `*-preview-tool` HTML, and extending `content/model.ts` from the
+> root `content.js` as needed. Run `npm run build` (tsc strict) and a Chromium smoke
+> test after EACH channel so any breakage is isolated, then refresh the existing
+> preview artifact (same URL) and commit. Don't push to main. Keep it white-label
+> (no MoEngage / real-client / personal names; American names; dollars; genOtp()).
