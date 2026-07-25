@@ -5,11 +5,13 @@ This is the working note for continuing the **`studio/`** rebuild. Read this fir
 ## TL;DR
 We are consolidating six standalone HTML tools (at the repo root) into ONE
 React + Vite + TypeScript single-page app in `studio/`, where switching channels
-swaps only the sidebar + preview (no page reload). **WhatsApp is fully migrated
-and verified.** The other 9 channels are registered (dropdown + shell work) but
-show a "Migrating" placeholder. The remaining work is mostly **repeating the
-WhatsApp pattern** for each channel, then porting the shared features (Export,
-Copy, Record, AI, real images).
+swaps only the sidebar + preview (no page reload). **ALL 11 channels are now
+migrated and verified** — WhatsApp (the original reference) plus RCS, SMS, Push,
+In-App, Gamification, Gmail, Onsite Messaging, Instagram Ads and Facebook Ads.
+Each has its render (channel-owned frame → `PhoneFrame`/`DesktopFrame`, scaled by
+`StageFit`), section panels, and per-vertical templates. No "Migrating" stubs
+remain. The remaining work is the **shared features still stubbed in the shell**:
+Export PNG, Copy, Record, AI panel, and real (network) images/logos — see below.
 
 - **Branch:** `claude/channel-ux-audit-vw4qf6`. Do NOT push to `main` yet — the
   owner said "we'll push to main later." Keep committing to this branch.
@@ -140,21 +142,32 @@ Then call the Artifact tool with `url:"https://claude.ai/code/artifact/d3da92cb-
 same favicon (💬) and title, pointing at the inlined HTML — this keeps the owner's
 existing preview link stable.
 
-## Plan: port ALL remaining channels in one pass
-The owner wants every channel migrated in one shot, then debug individually.
-Suggested order within the pass (group by frame/engine to reuse code):
-1. **SMS + RCS** — reuse the messaging engine (iOS + Android chat bubbles; RCS adds
-   cards/carousels/chips). Add their message types to the store or a shared slice.
-2. **Push / In-App / Gamification** — phone frame; port from `notify-preview-tool`.
-3. **Gmail** — needs a **DesktopFrame** (and a mobile skin); port from `gmail-preview-tool`.
-4. **OSM** — desktop + mobile-web frames; port from `osm-preview-tool`.
-5. **Instagram / Facebook Ads** — phone feed/story; port from `social-`/`facebook-…`.
-Extend `content/model.ts` with the fields each channel needs (email/push overrides,
-gamification, OSM/ad templates) from the full root `../content.js`.
-Then port the shared features (Export/Copy/Record/AI/images) into the shell.
-Keep `npm run build` GREEN and smoke-test after each channel so a failure is isolated.
-When at parity: promote `studio/` to the site root + point Vercel at it (owner handles
-Vercel; provide exact steps).
+## Plan: port ALL remaining channels in one pass — ✅ DONE
+Every channel is migrated. How the code is organised now:
+- **content/model.ts** — all 15 content packs (every field incl. push/email overrides),
+  full CONFIRM, `emailPackFor`/`pushFlowFor`/`resolveIndustry` helpers.
+- **store/useStudio.ts** — shared context + one slice per engine: `wa` (WhatsApp),
+  generic `msg` keyed by channel (RCS/SMS), `notify` (push/inapp/appBg/game), `gmail`,
+  `osm`, `ig`, `fb`. Each with typed actions.
+- **shell** — `PhoneFrame` (now supports `bare` for full-screen surfaces + a `badge`),
+  new `DesktopFrame` (browser chrome, shared by Gmail-desktop + OSM), `StageFit`.
+- **channels/** — one folder per channel (`Preview.tsx` + `panels.tsx` + `templates.ts`
+  + `*.css`). Shared bits: `channels/messaging/screen.tsx` (Google/iOS Messages for
+  RCS+SMS), `channels/notify/shared.tsx` (AppIcon/AppBackdrop/InappBackdrop/wallBg).
+- **CSS collision notes:** the messaging Google-Messages uses `.gm*`; the notify
+  gamification was renamed `.gz*` and the Gmail root `.gm`→`.gml` to avoid clashing.
+  Notification card text is `.body` — pinned to `display:block` (it inherits the shell
+  layout's `.body{display:grid}` otherwise).
+
+### What's left (shared features — still stubbed in the shell)
+1. **Export PNG + Copy** — TopBar buttons toast "being ported"; port a `useCapture()`
+   over `#capture` (html2canvas). Each frame already carries `id="capture"`.
+2. **Record** (webm/gif) — root `recorder.js` + `gif-encoder.js`.
+3. **AI panel** — root `ai.js` → `/api/generate`; make it a shell component.
+4. **Real images / logos** — network-based (`api/photo.js`/`api/logo.js`); studio is
+   offline-first with `phImg` placeholders, so keep those as the fallback.
+Then, at parity: promote `studio/` to the site root + point Vercel at it (owner handles
+Vercel; provide exact steps). Keep `npm run build` GREEN + smoke-test per change.
 
 ## Kickoff prompt for the next chat (paste this)
 > Continue the `studio/` React app on branch `claude/channel-ux-audit-vw4qf6`.
