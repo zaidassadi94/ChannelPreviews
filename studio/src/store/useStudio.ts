@@ -124,6 +124,40 @@ export interface OsmState {
   blur: boolean
 }
 
+/* ---- Instagram ads model ---- */
+export interface IgState {
+  format: string   // feed | story
+  brand: string
+  handle: string
+  verified: boolean
+  logo: string | null
+  media: string
+  caption: string
+  cta: string
+  likes: string
+  comments: string
+  time: string
+}
+
+/* ---- Facebook ads model ---- */
+export interface FbState {
+  format: string   // feed | story | marketplace
+  page: string
+  verified: boolean
+  logo: string | null
+  media: string
+  primary: string
+  headline: string
+  desc: string
+  url: string
+  price: string
+  cta: string
+  reactions: string
+  comments: string
+  shares: string
+  time: string
+}
+
 interface StudioState {
   // shared context
   channel: string
@@ -149,6 +183,10 @@ interface StudioState {
 
   // osm slice
   osm: OsmState
+
+  // ad slices
+  ig: IgState
+  fb: FbState
 
   // shared actions
   setChannel: (c: string) => void
@@ -201,6 +239,10 @@ interface StudioState {
   // osm actions
   setOsm: (patch: Partial<OsmState>) => void
 
+  // ad actions
+  setIg: (patch: Partial<IgState>) => void
+  setFb: (patch: Partial<FbState>) => void
+
   ctxId: () => string
 }
 
@@ -239,6 +281,8 @@ export const useStudio = create<StudioState>((set, get) => ({
     countdown: '', rating: 3, scaleLo: 'Not likely', scaleHi: 'Very likely',
     bg: 'branded', bgImage: '', blur: true,
   },
+  ig: { format: 'feed', brand: 'Nova', handle: 'nova', verified: true, logo: null, media: '', caption: '', cta: 'Shop Now', likes: '2,438', comments: '86', time: '2 hours ago' },
+  fb: { format: 'feed', page: 'Nova', verified: true, logo: null, media: '', primary: '', headline: '', desc: '', url: 'nova.shop', price: '$89', cta: 'Shop Now', reactions: '1,204', comments: '86', shares: '32', time: '2h' },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
@@ -320,6 +364,9 @@ export const useStudio = create<StudioState>((set, get) => ({
   setGmailFiller: (patch) => set({ gmail: { ...get().gmail, filler: { ...get().gmail.filler, ...patch } } }),
 
   setOsm: (patch) => set({ osm: { ...get().osm, ...patch } }),
+
+  setIg: (patch) => set({ ig: { ...get().ig, ...patch } }),
+  setFb: (patch) => set({ fb: { ...get().fb, ...patch } }),
 
   ctxId: () => get().sub || get().industry,
 }))

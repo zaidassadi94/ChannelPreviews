@@ -15,6 +15,8 @@ import { GmailPreview } from './gmail/GmailPreview'
 import { gmailSections } from './gmail/panels'
 import { OsmPreview } from './osm/OsmPreview'
 import { osmSections } from './osm/panels'
+import { InstagramPreview } from './instagram/InstagramPreview'
+import { igSections } from './instagram/panels'
 
 export interface SectionDef {
   id: string
@@ -46,7 +48,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify', sections: inappSections, Preview: InAppPreview },
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify', sections: gameSections, Preview: GamePreview },
   { id: 'osm', label: 'Onsite', icon: emoji('🌐'), group: 'Web', sections: osmSections, Preview: OsmPreview },
-  { id: 'instagram', label: 'Instagram Ads', icon: emoji('📸'), group: 'Ads' },
+  { id: 'instagram', label: 'Instagram Ads', icon: emoji('📸'), group: 'Ads', sections: igSections, Preview: InstagramPreview },
   { id: 'facebook', label: 'Facebook Ads', icon: emoji('👍'), group: 'Ads' },
 ]
 
