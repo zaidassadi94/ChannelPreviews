@@ -1,6 +1,6 @@
 # Channel Studio — Handoff / Full Context
 
-Last updated: 2026-07-23. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + two optional serverless functions under `api/`).
+Last updated: 2026-07-25. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + three optional serverless functions under `api/`: `generate.js`, `photo.js`, `logo.js`). **11 channels across 6 tools** (see §2/§4).
 
 This doc gives a new session everything needed to continue without re-reading the
 whole history. Read this first.
@@ -82,7 +82,9 @@ them in headless Chromium via the global Playwright at
 
 ---
 
-## 4. The two tools
+## 4. The tools
+
+*(Six tools: messaging, gmail, notify, social=Instagram, facebook, osm. Each section below.)*
 
 ### messaging-preview-tool (SMS / RCS / WhatsApp)
 - **Skins/devices:** iPhone + Android frames (top-left toggle). RCS renders **iOS
@@ -239,7 +241,7 @@ them in headless Chromium via the global Playwright at
   BEFORE Instagram's so "a facebook feed ad…" wins over IG's generic "…feed ad" match).
 
 ### Screen recorder (`recorder.js`, shared)
-- Root `recorder.js` (loaded by all three tools via `<script src="../recorder.js">`)
+- Root `recorder.js` (loaded by all six tools via `<script src="../recorder.js">`)
   adds a **Record** button next to Export that records **only the device/desktop view**
   (`#capture`) — not the sidebar or browser chrome. Uses the Chromium **Region Capture**
   API: `getDisplayMedia({preferCurrentTab:true})` → `CropTarget.fromElement(#capture)` →
@@ -564,7 +566,8 @@ to `cosmetics`, not `clothing`. NOTE: sharp *live* photos still require `PEXELS_
   counts (6 push/inapp/messaging, 4 game), Simulate reveals, `#gameSeg`/`#grpWheel` visibility,
   push wallpaper-group logic, inapp all 5 types. `syncAppearance` tightened to `channel==='push'`.
 
-**Done:** **all 7 channels** — SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App +
+**Milestone (2026-07-15) — the first 7 channels** (since expanded to 11 across 6 tools; see
+the top of §10): SMS/RCS/WhatsApp (messaging), Gmail (gmail), Push + In-App +
 In-App Gamification (notify). Channel Studio design across all three tools, templates ×
 channel × (sub)industry, DIY block builders, Simulate, US locale, digital-aware
 confirmations, dark mode removed, real Pexels photos live (56) with illustration fallback,

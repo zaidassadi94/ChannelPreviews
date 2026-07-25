@@ -2,8 +2,8 @@
 
 Realistic, self-contained **channel mockup tools** for building marketing/campaign
 previews to drop into decks and screenshots — no build step; everything runs in the
-browser. Built for producing MoEngage-style creative mocks across email and messaging
-channels. An **optional** AI generator (a tiny serverless function, off unless you add
+browser. Built for producing MoEngage-style creative mocks across email, messaging, social
+& web ad, and onsite/in-app channels. An **optional** AI generator (a tiny serverless function, off unless you add
 a key) can draft a message for you — see "Generate with AI" below.
 
 Open **`index.html`** (it opens the studio), or open any tool folder directly —
@@ -20,7 +20,7 @@ Gmail — from the **Channel** dropdown inside the app.
 | **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
 | **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents |
 | **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
-| **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | MoEngage-style in-app messages over a dimmed app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · 6 templates per vertical |
+| **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | MoEngage-style in-app messages over the app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · **Background control** (branded app skeleton / upload your real app screenshot / neutral, with blur-&-dim) · 6 templates per vertical |
 | **In-App Gamification** | [`notify-preview-tool/?channel=game`](notify-preview-tool/index.html?channel=game) | Premium dark "reward moment" takeovers (CRED / Cult-UI style) · **Scratch card** · **Spin the wheel** · **Mystery box** · **Slot machine** · headline/sub/prize/CTA · **Simulate** to reveal the win (scratch fades, wheel spins, box opens, reels land) with confetti · editable wheel segments · 4 templates per vertical |
 | **Onsite Messaging** | [`osm-preview-tool/`](osm-preview-tool/) | MoEngage-style web onsite messages on a **desktop browser or mobile-web** frame · **Popup · Banner (top/bottom sticky) · Nudge (slide-in) · Full-screen · Survey/Feedback (NPS emoji)** · live **countdown timer** · email-capture & coupon-reveal · **Background control** (branded site skeleton / upload your real screenshot / neutral, with blur-&-dim) · 12 templates (welcome, exit-intent, cart, free-shipping, flash-sale, cookie-consent…) |
 | **Instagram Ads** | [`social-preview-tool/`](social-preview-tool/) | Sponsored **Feed** (in-feed post · CTA action bar · like/comment/share/save · likes count · caption · "View all comments") and **Story** (full-screen 9:16 · progress bar · swipe-up CTA · reply bar) ads · advertiser handle + verified badge + profile photo · authentic Instagram mark · 10 real Instagram CTAs · 6 templates per vertical |
@@ -137,11 +137,18 @@ otherwise the generated monogram is used.
 - **Push** — iOS lock-screen & banner, Android heads-up & notification shade;
   collapsed or expanded (big-picture) with a large image; up to 3 action buttons
 - **In-App** — modal, slim banner (top/bottom), full-screen takeover, bottom sheet,
-  image-only; headline/body/image, 1–2 CTAs (primary/secondary/text), close button
+  image-only; headline/body/image, 1–2 CTAs (primary/secondary/text), close button;
+  **Background** control (branded app skeleton / upload your real app screenshot / neutral,
+  with dim-&-blur) so the backdrop matches your customer's app
 - **In-App Gamification** — scratch card, spin the wheel, mystery box, slot machine;
   premium dark reward takeover with headline/sub/prize/CTA; **Simulate** to play (tap to
   reveal the prize) with confetti; wheel segments editable (one per line, `*` marks the
   winning wedge)
+- **Onsite Messaging (web)** — popup, sticky banner (top/bottom), nudge (corner slide-in),
+  full-screen, and survey/feedback (NPS emoji), on a desktop-browser or mobile-web frame;
+  live **countdown timer**, email-capture input, coupon reveal; the same **Background**
+  control (branded site / upload real screenshot / neutral + blur); 12 templates
+  (welcome, exit-intent, cart, free-shipping, flash-sale, cookie-consent, …)
 - **Instagram Ads** — sponsored **Feed** (in-feed post with CTA action bar, like/
   comment/share/save, likes count, caption, comments) and **Story** (full-screen 9:16 with
   progress bar, header, swipe-up CTA pill, reply bar) formats; advertiser handle, verified
