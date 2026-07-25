@@ -5,6 +5,8 @@
    keep `phImg(...)` / the monogram as the guaranteed-offline fallback, so the core render
    path (and the artifact preview) never depends on the network. */
 
+import { pxFor, normKw } from '@/content/pximg'
+
 const API = { PHOTO: '/api/photo', LOGO: '/api/logo' }
 
 /** The schema message returned by `/api/generate` (superset of every channel's shape). */
@@ -110,12 +112,17 @@ async function livePhoto(query: string, orientation: string): Promise<string | n
 }
 
 /** Best real photo for an AI subject, or null. Precedence: the literal `query` (a live
-    Pexels search — sharpest) → the short `kw` (live). Orientation from the slot's w/h so
-    portrait slots don't get a letterboxed landscape. Feature 4 inserts a pre-resolved
-    keyword set (images.js) between these. Null → caller falls back to `phImg`. */
+    Pexels search — sharpest) → a pre-resolved keyword from `images.js` (real photo, no key
+    needed) → a live keyword lookup. Orientation from the slot's w/h so portrait slots don't
+    get a letterboxed landscape. Null → caller falls back to the self-contained `phImg`. */
 export async function photoFor(kw?: string, w?: number, h?: number, query?: string): Promise<string | null> {
   const orientation = orientFor(w, h)
   if (query) { const u = await livePhoto(query, orientation); if (u) return u }
-  if (kw) { const u = await livePhoto(kw, orientation); if (u) return u }
+  if (kw) {
+    const pre = pxFor(kw)
+    if (pre) return pre
+    const u = await livePhoto(normKw(kw) || kw, orientation)
+    if (u) return u
+  }
   return null
 }
