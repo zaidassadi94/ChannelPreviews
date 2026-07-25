@@ -20,6 +20,7 @@ export interface AiMessage {
   btnText?: string; header?: string
   subject?: string; snippet?: string; category?: string; heading?: string; bodyText?: string; buttonLabel?: string
   headline?: string
+  tag?: string
   cta?: string; cta2?: string; code?: string
   input?: boolean; countdown?: string
   actions?: string[]; expanded?: boolean; close?: boolean

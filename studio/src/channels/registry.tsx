@@ -11,6 +11,8 @@ import { InAppPreview } from './inapp/InAppPreview'
 import { inappSections } from './inapp/panels'
 import { GamePreview } from './game/GamePreview'
 import { gameSections } from './game/panels'
+import { CardsPreview } from './cards/CardsPreview'
+import { cardsSections } from './cards/panels'
 import { GmailPreview } from './gmail/GmailPreview'
 import { gmailSections } from './gmail/panels'
 import { OsmPreview } from './osm/OsmPreview'
@@ -51,6 +53,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify', sections: pushSections, Preview: PushPreview },
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify', sections: inappSections, Preview: InAppPreview },
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify', sections: gameSections, Preview: GamePreview },
+  { id: 'cards', label: 'Cards / Inbox', icon: emoji('🗂️'), group: 'Notify', sections: cardsSections, Preview: CardsPreview },
   { id: 'osm', label: 'Onsite', icon: emoji('🌐'), group: 'Web', sections: osmSections, Preview: OsmPreview },
   { id: 'webpush', label: 'Web Push', icon: emoji('🖥️'), group: 'Web', sections: webpushSections, Preview: WebPushPreview },
   { id: 'instagram', label: 'Instagram Ads', icon: emoji('📸'), group: 'Ads', sections: igSections, Preview: InstagramPreview },

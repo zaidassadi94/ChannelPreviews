@@ -7,8 +7,8 @@
    back to the generated monogram. Identity (industry/sub + shared brand) is applied first,
    with the AI-suppress flag so the preview's auto-first-template effect can't clobber it. */
 
-import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg } from '@/store/useStudio'
-import { resolveIndustry, emailPackFor } from '@/content/model'
+import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg, type CardItem } from '@/store/useStudio'
+import { resolveIndustry, emailPackFor, packFor } from '@/content/model'
 import { phImg, hueOf, avColor } from '@/lib/util'
 import { photoFor, cleanDomain, guessDomain, type AiMessage } from '@/lib/media'
 import { handleFromBrand } from '@/channels/instagram/templates'
@@ -191,6 +191,20 @@ async function applyWebpush(m: AiMessage, logo: string | null) {
   })
 }
 
+async function applyCards(m: AiMessage, logo: string | null) {
+  const s = useStudio.getState()
+  const brand = m.brand || s.cards.appName
+  const image = hasImg(m) ? await pic(m, 600, 300, brand) : ''
+  const aiCard: CardItem = { image, title: m.title || m.headline || 'New update', body: m.body || '', tag: m.tag || 'For you', time: 'now', unread: true }
+  // a couple of filler cards from the current vertical's pack so the inbox reads full
+  const p = packFor(s.ctxId())
+  const filler: CardItem[] = p ? [
+    { image: '', title: `Order #${p.orderId} shipped`, body: 'On its way — arriving soon.', tag: 'Order', time: '3h', unread: false },
+    { image: phImg(p.carousel[0] ? p.carousel[0][0] : brand, null, hueOf((p.carousel[0] ? p.carousel[0][0] : '') + '9'), 600, 300), title: p.carousel[0] ? p.carousel[0][0] : 'New arrival', body: 'Just added — take a look.', tag: 'New', time: '1d', unread: false },
+  ] : []
+  s.setCards({ appName: brand, logo, screenTitle: s.cards.screenTitle || 'Updates', items: [aiCard, ...filler] })
+}
+
 /** Dispatch a generated message to the active channel's adapter (identity applied first). */
 export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
   applyIdentity(m)
@@ -207,5 +221,6 @@ export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo
     case 'instagram': return applyIg(m, logo)
     case 'facebook': return applyFb(m, logo)
     case 'webpush': return applyWebpush(m, logo)
+    case 'cards': return applyCards(m, logo)
   }
 }

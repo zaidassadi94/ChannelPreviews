@@ -3,6 +3,7 @@
 
 const CH_WORDS: [RegExp, string][] = [
   [/\b(web\s*push|browser\s*(push|notification|notif)|website\s*(push|notification)|desktop\s*notification)\b/, 'webpush'],
+  [/\b(in-?app\s*cards?|app\s*inbox|cards?\s*(feed|inbox|channel|centre|center)|notification\s*(centre|center)|message\s*(centre|center))\b/, 'cards'],
   [/\bfacebook\b|\bfb\s*(ad|ads|feed|story|stories|post)\b/, 'facebook'],
   [/\b(instagram|insta)\b|\big\s*(ad|ads|story|stories|feed|post)\b|\b(story|feed)\s*ad\b|\bsponsored\s*(post|ad)\b/, 'instagram'],
   [/\b(osm|onsite|on-site|website\s*(popup|banner|message)|web\s*popup|exit[\s-]?intent|cookie\s*consent)\b/, 'osm'],
@@ -18,7 +19,7 @@ const CH_WORDS: [RegExp, string][] = [
 export const CH_LABEL: Record<string, string> = {
   whatsapp: 'WhatsApp', rcs: 'RCS', sms: 'SMS', push: 'Push', inapp: 'In-App',
   game: 'Gamification', gmail: 'Gmail', instagram: 'Instagram Ads', facebook: 'Facebook Ads', osm: 'Onsite',
-  webpush: 'Web Push',
+  webpush: 'Web Push', cards: 'Cards / Inbox',
 }
 
 export function detectChannel(brief: string): string | null {

@@ -136,6 +136,15 @@ export interface WebpushState {
   actions: string   // up to 2, one per line
 }
 
+/* ---- cards / app inbox model ---- */
+export interface CardItem { image: string; title: string; body: string; tag: string; time: string; unread: boolean }
+export interface CardsState {
+  appName: string
+  logo: string | null
+  screenTitle: string
+  items: CardItem[]
+}
+
 /* ---- Instagram ads model ---- */
 export interface IgState {
   format: string   // feed | story
@@ -206,6 +215,9 @@ interface StudioState {
   // web push slice
   webpush: WebpushState
 
+  // cards / app inbox slice
+  cards: CardsState
+
   // shared actions
   setChannel: (c: string) => void
   setSection: (s: string) => void
@@ -266,6 +278,9 @@ interface StudioState {
   // web push actions
   setWebpush: (patch: Partial<WebpushState>) => void
 
+  // cards actions
+  setCards: (patch: Partial<CardsState>) => void
+
   ctxId: () => string
 }
 
@@ -308,6 +323,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   ig: { format: 'feed', brand: 'Nova', handle: 'nova', verified: true, logo: null, media: '', caption: '', cta: 'Shop Now', likes: '2,438', comments: '86', time: '2 hours ago' },
   fb: { format: 'feed', page: 'Nova', verified: true, logo: null, media: '', primary: '', headline: '', desc: '', url: 'nova.shop', price: '$89', cta: 'Shop Now', reactions: '1,204', comments: '86', shares: '32', time: '2h' },
   webpush: { os: 'mac', site: 'Nova', url: 'nova.shop', logo: null, title: '', body: '', image: '', actions: '' },
+  cards: { appName: 'Nova', logo: null, screenTitle: 'Updates', items: [] },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
@@ -396,6 +412,8 @@ export const useStudio = create<StudioState>((set, get) => ({
   setFb: (patch) => set({ fb: { ...get().fb, ...patch } }),
 
   setWebpush: (patch) => set({ webpush: { ...get().webpush, ...patch } }),
+
+  setCards: (patch) => set({ cards: { ...get().cards, ...patch } }),
 
   ctxId: () => get().sub || get().industry,
 }))
