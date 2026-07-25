@@ -1,0 +1,97 @@
+/* In-App Gamification — premium dark "reward" takeovers (scratch / wheel / box /
+   slots). Ported from notify-preview-tool; classes renamed .gm* -> .gz* so they
+   don't collide with the messaging Google Messages .gm styles. */
+.gz{ position:absolute; inset:0; overflow:hidden; z-index:45; color:#fff;
+  background:radial-gradient(120% 90% at 50% -8%, #23284a 0%, #12142a 42%, #0a0b1a 100%);
+  display:flex; flex-direction:column; --gm-accent:#ffd36e; --gm-accent-2:#f5a623; --gm-ink:#0c0d1a;
+  font-family:var(--font,system-ui,sans-serif); }
+.gz::before{ content:""; position:absolute; width:340px; height:340px; left:-90px; top:-70px; border-radius:50%;
+  background:radial-gradient(circle, rgba(var(--gm-accent-rgb),.34) 0%, transparent 66%); filter:blur(6px); opacity:.55; pointer-events:none; }
+.gz::after{ content:""; position:absolute; width:300px; height:300px; right:-100px; bottom:-40px; border-radius:50%;
+  background:radial-gradient(circle, rgba(124,110,246,.4) 0%, transparent 66%); filter:blur(6px); opacity:.5; pointer-events:none; }
+.gz-top{ position:relative; z-index:3; display:flex; align-items:center; gap:9px; padding:16px 16px 4px; }
+.gz-top .gz-ic{ width:26px; height:26px; border-radius:8px; object-fit:cover; flex:none; }
+.gz-top .gz-ic.mono{ display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#fff; }
+.gz-top .gz-nm{ font-size:12.5px; font-weight:650; letter-spacing:.02em; color:rgba(255,255,255,.92); flex:1; }
+.gz-x{ width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.8); flex:none; }
+.gz-x svg{ width:13px; height:13px; }
+.gz-stage{ position:relative; z-index:3; flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 26px 30px; gap:3px; }
+.gz-eyebrow{ font-size:10.5px; font-weight:800; letter-spacing:.22em; text-transform:uppercase;
+  background:linear-gradient(90deg,var(--gm-accent),var(--gm-accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:4px; }
+.gz-hl{ font-size:25px; font-weight:800; letter-spacing:-.5px; line-height:1.12; text-shadow:0 2px 20px rgba(0,0,0,.35); }
+.gz-sub{ font-size:13px; line-height:1.5; color:rgba(255,255,255,.72); margin-top:6px; max-width:88%; }
+.gz-play{ position:relative; margin:20px 0 8px; display:flex; align-items:center; justify-content:center; }
+.gz-hint{ font-size:11px; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.5); margin-top:2px; height:14px; transition:opacity .25s; }
+.gz.revealed .gz-hint{ opacity:0; }
+.gz-win{ margin-top:16px; width:100%; max-width:280px; opacity:0; transform:translateY(10px) scale(.96); transition:opacity .4s .15s, transform .4s .15s; pointer-events:none; }
+.gz.revealed .gz-win{ opacity:1; transform:none; }
+.gz-prize-pill{ display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px;
+  background:linear-gradient(135deg, rgba(var(--gm-accent-rgb),.22), rgba(255,255,255,.05));
+  border:1px solid rgba(var(--gm-accent-rgb),.55); box-shadow:0 8px 24px rgba(0,0,0,.35);
+  font-size:15px; font-weight:800; letter-spacing:-.2px; color:#fff; }
+.gz-prize-pill .gz-star{ color:var(--gm-accent); }
+.gz-cta{ display:block; width:100%; margin-top:16px; padding:14px; border:0; border-radius:14px; cursor:default;
+  font-family:inherit; font-size:14.5px; font-weight:750; letter-spacing:-.1px; color:var(--gm-ink);
+  background:linear-gradient(135deg,var(--gm-accent),var(--gm-accent-2)); box-shadow:0 10px 26px rgba(var(--gm-accent-rgb),.34); }
+.gz-terms{ font-size:10px; color:rgba(255,255,255,.4); margin-top:10px; }
+
+/* --- Scratch card --- */
+.gz-card{ position:relative; width:250px; height:150px; border-radius:20px; overflow:hidden; box-shadow:0 20px 46px rgba(0,0,0,.5); }
+.gz-card-prize{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  background:radial-gradient(120% 120% at 50% 0%, #2a2f52, #171a30); }
+.gz-card-prize .ic{ font-size:34px; line-height:1; filter:drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+.gz-card-prize .val{ font-size:24px; font-weight:850; letter-spacing:-.6px; background:linear-gradient(90deg,var(--gm-accent),var(--gm-accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.gz-card-prize .cap{ font-size:11px; color:rgba(255,255,255,.6); }
+.gz-foil{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;
+  background:linear-gradient(135deg,#c8ccd8 0%,#eef1f8 22%,#aeb4c6 46%,#e7eaf2 68%,#b9bfd0 100%); color:#5a6072;
+  transition:opacity .5s ease, transform .5s ease; }
+.gz-foil::after{ content:""; position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.5) 0 2px, transparent 2px 7px); opacity:.35; }
+.gz-foil .fic{ width:30px; height:30px; opacity:.7; }
+.gz-foil .ft{ font-size:12px; font-weight:750; letter-spacing:.02em; position:relative; }
+.gz.revealed .gz-foil{ opacity:0; transform:scale(1.08); }
+
+/* --- Spin the wheel --- */
+.gz-wheelwrap{ position:relative; width:246px; height:246px; }
+.gz-wheel{ position:absolute; inset:0; border-radius:50%; transform:rotate(0deg); transition:transform 4.2s cubic-bezier(.15,.62,.14,1);
+  box-shadow:0 0 0 7px rgba(255,255,255,.08), 0 0 0 12px rgba(var(--gm-accent-rgb),.40), 0 22px 50px rgba(0,0,0,.55); }
+.gz.revealed .gz-wheel{ transform:rotate(var(--spin,1440deg)); }
+.gz-wheel svg{ display:block; border-radius:50%; }
+.gz-pointer{ position:absolute; top:-6px; left:50%; transform:translateX(-50%); z-index:4; width:0; height:0;
+  border-left:11px solid transparent; border-right:11px solid transparent; border-top:20px solid var(--gm-accent); filter:drop-shadow(0 3px 5px rgba(0,0,0,.5)); }
+.gz-hub{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3; width:60px; height:60px; border-radius:50%;
+  background:radial-gradient(circle at 50% 35%, #fff 0%, var(--gm-accent) 46%, var(--gm-accent-2) 100%); color:var(--gm-ink);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:850; letter-spacing:.03em;
+  box-shadow:0 6px 16px rgba(0,0,0,.5), inset 0 2px 3px rgba(255,255,255,.6); }
+
+/* --- Mystery box --- */
+.gz-box{ position:relative; width:160px; height:150px; }
+.gz-box-glow{ position:absolute; left:50%; top:52%; width:220px; height:220px; transform:translate(-50%,-50%) scale(.5); border-radius:50%;
+  background:radial-gradient(circle, rgba(var(--gm-accent-rgb),.55) 0%, transparent 62%); opacity:0; transition:opacity .5s, transform .6s; }
+.gz.revealed .gz-box-glow{ opacity:.9; transform:translate(-50%,-50%) scale(1); }
+.gz-box-b{ position:absolute; left:20px; right:20px; bottom:0; height:92px; border-radius:8px 8px 12px 12px;
+  background:linear-gradient(135deg,#3b2f6e,#2a2150); box-shadow:inset 0 -8px 18px rgba(0,0,0,.35), 0 16px 34px rgba(0,0,0,.5); }
+.gz-box-b::after{ content:""; position:absolute; left:50%; top:0; bottom:0; width:22px; transform:translateX(-50%); background:linear-gradient(var(--gm-accent),var(--gm-accent-2)); opacity:.9; }
+.gz-box-lid{ position:absolute; left:8px; right:8px; top:34px; height:34px; border-radius:8px; z-index:2;
+  background:linear-gradient(135deg,#4a3c85,#342a63); box-shadow:0 8px 16px rgba(0,0,0,.45); transition:transform .55s cubic-bezier(.3,.9,.3,1.4), opacity .55s; }
+.gz-box-lid::after{ content:""; position:absolute; left:50%; top:-13px; width:26px; height:26px; transform:translateX(-50%) rotate(45deg); background:linear-gradient(135deg,var(--gm-accent),var(--gm-accent-2)); border-radius:5px; }
+.gz-box-pop{ position:absolute; left:50%; top:24px; transform:translate(-50%,10px) scale(.3); z-index:1; font-size:40px; opacity:0; transition:opacity .5s .15s, transform .6s .15s cubic-bezier(.3,.9,.3,1.5); }
+.gz.revealed .gz-box-lid{ transform:translateY(-46px) rotate(-14deg); opacity:0; }
+.gz.revealed .gz-box-pop{ opacity:1; transform:translate(-50%,-32px) scale(1); }
+
+/* --- Slot machine --- */
+.gz-slots{ display:flex; gap:9px; padding:16px; border-radius:20px; background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.14); box-shadow:0 18px 42px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14); }
+.gz-reel{ width:60px; height:74px; border-radius:12px; overflow:hidden; background:radial-gradient(120% 120% at 50% 0%, #22263f, #12142a);
+  box-shadow:inset 0 6px 12px rgba(0,0,0,.5), inset 0 -6px 12px rgba(0,0,0,.5); position:relative; }
+.gz-reel::after{ content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); border-radius:12px; }
+.gz-strip{ display:flex; flex-direction:column; align-items:center; transform:translateY(var(--rest,0)); }
+.gz.revealed .gz-strip{ transition:transform 1.15s cubic-bezier(.16,.7,.2,1); transform:translateY(var(--stop,0)); }
+.gz.revealed .gz-reel:nth-child(2) .gz-strip{ transition-duration:1.45s; }
+.gz.revealed .gz-reel:nth-child(3) .gz-strip{ transition-duration:1.75s; }
+.gz-strip span{ height:74px; display:flex; align-items:center; justify-content:center; font-size:36px; line-height:1; }
+
+/* --- confetti --- */
+.gz-confetti{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; opacity:0; }
+.gz.revealed .gz-confetti{ opacity:1; }
+.gz-confetti i{ position:absolute; top:-14px; width:7px; height:11px; border-radius:1px; opacity:.95; animation:gz-fall linear forwards; }
+@keyframes gz-fall{ 0%{ transform:translateY(-14px) rotate(0); opacity:1; } 100%{ transform:translateY(720px) rotate(540deg); opacity:.9; } }
