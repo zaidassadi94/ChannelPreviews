@@ -101,6 +101,29 @@ export interface GmailState {
   filler: { on: boolean; position: number }
 }
 
+/* ---- osm (onsite messaging) model ---- */
+export interface OsmState {
+  device: string   // desktop | mobile
+  format: string   // popup | bannerTop | bannerBottom | nudge | full | survey
+  site: string
+  url: string
+  logo: string | null
+  headline: string
+  body: string
+  image: string
+  cta: string
+  cta2: string
+  code: string
+  input: boolean
+  countdown: string
+  rating: number
+  scaleLo: string
+  scaleHi: string
+  bg: string
+  bgImage: string
+  blur: boolean
+}
+
 interface StudioState {
   // shared context
   channel: string
@@ -123,6 +146,9 @@ interface StudioState {
 
   // gmail slice
   gmail: GmailState
+
+  // osm slice
+  osm: OsmState
 
   // shared actions
   setChannel: (c: string) => void
@@ -172,6 +198,9 @@ interface StudioState {
   setGmailAnnot: (patch: Partial<GmailState['annot']>) => void
   setGmailFiller: (patch: Partial<GmailState['filler']>) => void
 
+  // osm actions
+  setOsm: (patch: Partial<OsmState>) => void
+
   ctxId: () => string
 }
 
@@ -203,6 +232,12 @@ export const useStudio = create<StudioState>((set, get) => ({
     plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5' },
     annot: { on: false, deal: 'Up to 40% off', code: '', expiry: 'Ends Sunday', img: '' },
     filler: { on: true, position: 0 },
+  },
+  osm: {
+    device: 'desktop', format: 'popup', site: 'Nova', url: 'nova.shop', logo: null,
+    headline: '', body: '', image: '', cta: 'Shop Now', cta2: '', code: '', input: false,
+    countdown: '', rating: 3, scaleLo: 'Not likely', scaleHi: 'Very likely',
+    bg: 'branded', bgImage: '', blur: true,
   },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
@@ -283,6 +318,8 @@ export const useStudio = create<StudioState>((set, get) => ({
   setGmailPlain: (patch) => set({ gmail: { ...get().gmail, plain: { ...get().gmail.plain, ...patch } } }),
   setGmailAnnot: (patch) => set({ gmail: { ...get().gmail, annot: { ...get().gmail.annot, ...patch } } }),
   setGmailFiller: (patch) => set({ gmail: { ...get().gmail, filler: { ...get().gmail.filler, ...patch } } }),
+
+  setOsm: (patch) => set({ osm: { ...get().osm, ...patch } }),
 
   ctxId: () => get().sub || get().industry,
 }))
