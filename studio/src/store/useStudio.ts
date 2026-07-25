@@ -27,7 +27,43 @@ export function makeMsg(type: WAType, over: Partial<WAMsg> = {}): WAMsg {
   return { ...JSON.parse(JSON.stringify(WA_DEFAULTS[type])), id: nid(), ...over }
 }
 
-export interface Brand { name: string; sub: string; logo: string | null; verified: boolean }
+export interface Brand { name: string; sub: string; logo: string | null; verified: boolean; phone: string; desc: string; agentCard: boolean }
+
+/* ---- generic messaging model (RCS + SMS; a superset that also covers WA's richer types) ---- */
+export type MType = 'text' | 'image' | 'card' | 'carousel' | 'template' | 'list' | 'document'
+export interface MMsg {
+  id: string
+  type: MType
+  from: 'business' | 'customer'
+  text?: string
+  img?: string
+  caption?: string
+  title?: string
+  desc?: string
+  body?: string
+  footer?: string
+  buttons?: string
+  chips?: string
+  cards?: string
+  btnText?: string
+  header?: string
+  items?: string
+  file?: string
+  meta?: string
+}
+export const M_DEFAULTS: Record<MType, Omit<MMsg, 'id'>> = {
+  text: { type: 'text', from: 'business', text: 'Hello! 👋', buttons: '', chips: '' },
+  image: { type: 'image', from: 'business', img: '', caption: '', buttons: '' },
+  card: { type: 'card', from: 'business', img: '', title: 'Card title', desc: 'Description', buttons: 'Learn more | url | https://example.com', chips: '' },
+  carousel: { type: 'carousel', from: 'business', cards: ' | Product one | $19 | Shop | https://example.com\n | Product two | $24 | Shop | https://example.com', chips: '' },
+  template: { type: 'template', from: 'business', img: '', body: 'Your message *here*.', footer: '', buttons: 'Track | url | https://ex.com\nSupport | call | +100' },
+  list: { type: 'list', from: 'business', body: 'Pick an option:', btnText: 'View options', header: 'Options', items: 'Option A | detail\nOption B | detail', footer: '' },
+  document: { type: 'document', from: 'business', file: 'Document.pdf', meta: '2 pages · 480 KB · PDF', caption: '' },
+}
+export function makeM(type: MType, over: Partial<MMsg> = {}): MMsg {
+  return { ...JSON.parse(JSON.stringify(M_DEFAULTS[type])), id: nid(), ...over }
+}
+interface MsgSlice { messages: MMsg[]; played: MMsg[]; typing: boolean }
 
 interface StudioState {
   // shared context
@@ -42,6 +78,9 @@ interface StudioState {
 
   // whatsapp slice
   wa: { messages: WAMsg[]; played: WAMsg[]; encNotice: boolean; typing: boolean }
+
+  // generic messaging slices, keyed by channel id (rcs, sms)
+  msg: Record<string, MsgSlice>
 
   // shared actions
   setChannel: (c: string) => void
@@ -66,8 +105,22 @@ interface StudioState {
   simTapReply: (reply: string, response?: string) => void
   simReset: () => void
 
+  // generic messaging actions (channel-scoped)
+  msgSet: (ch: string, msgs: MMsg[]) => void
+  msgAdd: (ch: string, type: MType) => void
+  msgReplaceType: (ch: string, idx: number, type: MType) => void
+  msgUpdate: (ch: string, idx: number, patch: Partial<MMsg>) => void
+  msgDelete: (ch: string, idx: number) => void
+  msgMove: (ch: string, idx: number, dir: -1 | 1) => void
+  msgToggleTyping: (ch: string) => void
+  msgClear: (ch: string) => void
+  msgTapReply: (ch: string, reply: string, response?: string) => void
+  msgSimReset: (ch: string) => void
+
   ctxId: () => string
 }
+
+const emptyMsg = (): MsgSlice => ({ messages: [makeM('text')], played: [], typing: false })
 
 export const useStudio = create<StudioState>((set, get) => ({
   channel: 'whatsapp',
@@ -75,12 +128,13 @@ export const useStudio = create<StudioState>((set, get) => ({
   device: 'ios',
   industry: 'ecom',
   sub: 'fashion',
-  brand: { name: 'Nova', sub: 'online', logo: null, verified: true },
+  brand: { name: 'Nova', sub: 'online', logo: null, verified: true, phone: '+1 (800) 555-0199', desc: 'Official account · Customer care', agentCard: true },
   sim: false,
   dateChip: 'Today',
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
+  msg: { rcs: emptyMsg(), sms: emptyMsg() },
 
-  setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] } }),
+  setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
   setDevice: (d) => set({ device: d }),
   setIndustry: (id) => {
@@ -90,7 +144,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
   setSub: (s) => set({ sub: s }),
   setBrand: (patch) => set({ brand: { ...get().brand, ...patch } }),
-  setSim: (on) => set({ sim: on, wa: { ...get().wa, played: [] } }),
+  setSim: (on) => set({ sim: on, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setDateChip: (v) => set({ dateChip: v }),
 
   waSetMessages: (msgs) => set({ wa: { ...get().wa, messages: msgs, played: [] } }),
@@ -119,7 +173,46 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
   simReset: () => set({ wa: { ...get().wa, played: [] } }),
 
+  msgSet: (ch, messages) => set({ msg: patchSlice(get().msg, ch, { messages, played: [] }) }),
+  msgAdd: (ch, type) => { const s = sliceOf(get().msg, ch); set({ msg: patchSlice(get().msg, ch, { messages: [...s.messages, makeM(type)] }) }) },
+  msgReplaceType: (ch, idx, type) => {
+    const s = sliceOf(get().msg, ch); const cur = s.messages[idx]; const messages = s.messages.slice()
+    messages[idx] = makeM(type, { id: cur.id, from: cur.from })
+    set({ msg: patchSlice(get().msg, ch, { messages }) })
+  },
+  msgUpdate: (ch, idx, patch) => {
+    const s = sliceOf(get().msg, ch); const messages = s.messages.slice()
+    messages[idx] = { ...messages[idx], ...patch }
+    set({ msg: patchSlice(get().msg, ch, { messages }) })
+  },
+  msgDelete: (ch, idx) => { const s = sliceOf(get().msg, ch); set({ msg: patchSlice(get().msg, ch, { messages: s.messages.filter((_, i) => i !== idx) }) }) },
+  msgMove: (ch, idx, dir) => {
+    const s = sliceOf(get().msg, ch); const messages = s.messages.slice(); const j = idx + dir
+    if (j < 0 || j >= messages.length) return
+    ;[messages[idx], messages[j]] = [messages[j], messages[idx]]
+    set({ msg: patchSlice(get().msg, ch, { messages }) })
+  },
+  msgToggleTyping: (ch) => { const s = sliceOf(get().msg, ch); set({ msg: patchSlice(get().msg, ch, { typing: !s.typing }) }) },
+  msgClear: (ch) => set({ msg: patchSlice(get().msg, ch, { messages: [makeM('text')], played: [] }) }),
+  msgTapReply: (ch, reply, response) => {
+    const s = sliceOf(get().msg, ch); const played = s.played.slice()
+    played.push(makeM('text', { from: 'customer', text: reply || 'Selected' }))
+    if (response) played.push(makeM('text', { from: 'business', text: response }))
+    set({ msg: patchSlice(get().msg, ch, { played }) })
+  },
+  msgSimReset: (ch) => set({ msg: patchSlice(get().msg, ch, { played: [] }) }),
+
   ctxId: () => get().sub || get().industry,
 }))
+
+function sliceOf(msg: Record<string, MsgSlice>, ch: string): MsgSlice { return msg[ch] || emptyMsg() }
+function patchSlice(msg: Record<string, MsgSlice>, ch: string, patch: Partial<MsgSlice>): Record<string, MsgSlice> {
+  return { ...msg, [ch]: { ...sliceOf(msg, ch), ...patch } }
+}
+function clearedPlayed(msg: Record<string, MsgSlice>): Record<string, MsgSlice> {
+  const out: Record<string, MsgSlice> = {}
+  for (const k of Object.keys(msg)) out[k] = { ...msg[k], played: [] }
+  return out
+}
 
 export { INDUSTRIES }

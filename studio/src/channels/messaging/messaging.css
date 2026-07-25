@@ -1,0 +1,64 @@
+/* Shared chat chrome for RCS + SMS: Google Messages (Android) and iOS Messages
+   (iPhone), plus RCS rich cards / carousels / suggestion chips.
+   Ported light-only from messaging-preview-tool (the studio dropped dark mode). */
+
+/* ===================== Google Messages (RCS / Android SMS) ===================== */
+.gm{ flex:1; display:flex; flex-direction:column; background:#fff; min-height:0; }
+.gm-header{ flex:none; display:flex; align-items:center; gap:13px; padding:11px 15px 10px; }
+.gm-header .bk{ width:22px; color:#444; flex:none; } .gm-header .bk svg{ width:22px; }
+.gm-av{ width:40px; height:40px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; flex:none; } .gm-av img{ width:100%; height:100%; object-fit:cover; }
+.gm-h-meta{ min-width:0; flex:1; } .gm-name{ font-size:16.5px; font-weight:500; display:flex; align-items:center; gap:5px; min-width:0; }
+.gm-name .nm{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .gm-name .vf{ width:16px; height:16px; flex:none; color:#1a73e8; }
+.gm-sub{ font-size:12px; color:#5f6368; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gm-hicons{ display:flex; gap:20px; color:#444; flex:none; } .gm-hicons svg{ width:22px; }
+.gm-body{ flex:1; overflow-y:auto; padding:8px 14px 6px; }
+.gm-agent{ text-align:center; padding:14px 20px 18px; }
+.gm-agent .lg{ width:64px; height:64px; border-radius:50%; margin:0 auto 10px; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:26px; box-shadow:0 2px 8px rgba(0,0,0,.12); } .gm-agent .lg img{ width:100%; height:100%; object-fit:cover; }
+.gm-agent .an{ font-size:17px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:6px; } .gm-agent .an .vf{ width:17px; height:17px; color:#1a73e8; }
+.gm-agent .ad{ font-size:12.5px; color:#5f6368; margin-top:3px; line-height:1.4; }
+.gm-agent .vb{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; color:#1a73e8; background:#e8f0fe; padding:4px 11px; border-radius:999px; margin-top:9px; font-weight:500; } .gm-agent .vb svg{ width:13px; }
+.gm-date{ text-align:center; font-size:12px; color:#5f6368; margin:6px 0 14px; font-weight:500; }
+.gm-msg{ display:flex; margin:2px 0; } .gm-msg.out{ justify-content:flex-end; }
+.gm-b{ max-width:78%; background:#f1f3f4; color:#1f1f1f; border-radius:18px 18px 18px 5px; padding:9px 14px; font-size:14.5px; line-height:1.4; }
+.gm-msg.out .gm-b{ background:#0b57d0; color:#fff; border-radius:18px 18px 5px 18px; }
+.gtext{ white-space:pre-wrap; overflow-wrap:anywhere; }
+.gm-stamp{ font-size:11px; color:#5f6368; margin:3px 6px 9px; }
+.gm-msg.img .gm-b{ padding:3px; background:transparent; } .gm-iw{ border-radius:16px; overflow:hidden; max-width:236px; } .gm-iw img{ width:100%; display:block; }
+
+/* RCS rich cards / carousel / chips (shared by gm + ios) */
+.rcs-card{ max-width:290px; background:#fff; border:1px solid #e6e7ea; border-radius:18px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.rcs-card img{ width:100%; height:158px; object-fit:cover; display:block; }
+.rcs-card .cb{ padding:12px 15px; } .rcs-card .ct{ font-size:15px; font-weight:600; } .rcs-card .cd{ font-size:13px; color:#5f6368; margin-top:3px; line-height:1.45; }
+.rcs-cbtn{ border-top:1px solid #eee; padding:12px 15px; color:#1a73e8; font-size:14px; font-weight:600; display:flex; align-items:center; gap:9px; } .rcs-cbtn svg{ width:17px; }
+.rcs-carousel{ display:flex; gap:11px; overflow-x:auto; padding:4px 0 12px; scrollbar-width:none; } .rcs-carousel::-webkit-scrollbar{ display:none; } .rcs-carousel .rcs-card{ flex:none; width:238px; }
+.rcs-chips{ display:flex; gap:8px; overflow-x:auto; padding:8px 14px 12px; scrollbar-width:none; } .rcs-chips::-webkit-scrollbar{ display:none; }
+.rcs-chip{ flex:none; border:1px solid #dadce0; color:#1a73e8; background:#fff; border-radius:18px; padding:9px 16px; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; white-space:nowrap; } .rcs-chip svg{ width:15px; }
+
+.gm-typing{ display:flex; margin:4px 0; } .gm-typing .d{ background:#f1f3f4; border-radius:18px; padding:12px 16px; display:flex; gap:4px; }
+.gm-typing i{ width:7px; height:7px; border-radius:50%; background:#9aa0a6; animation:gm-tp 1.2s infinite; } .gm-typing i:nth-child(2){ animation-delay:.2s; } .gm-typing i:nth-child(3){ animation-delay:.4s; }
+@keyframes gm-tp{ 0%,60%,100%{ opacity:.3; } 30%{ opacity:1; } }
+.gm-in{ flex:none; display:flex; align-items:center; gap:11px; padding:8px 13px 10px; }
+.gm-in .ic{ width:24px; height:24px; color:#5f6368; flex:none; }
+.gm-in .fld{ flex:1; background:#f1f3f4; border-radius:24px; display:flex; align-items:center; gap:9px; padding:11px 15px; min-width:0; }
+.gm-in .fld .ph{ flex:1; color:#5f6368; font-size:14.5px; } .gm-in .fld svg{ width:22px; height:22px; color:#5f6368; }
+
+/* ===================== iOS Messages (SMS / RCS on iPhone) ===================== */
+.ios{ flex:1; display:flex; flex-direction:column; background:#fff; min-height:0; }
+.ios-header{ flex:none; display:flex; flex-direction:column; align-items:center; padding:4px 0 9px; border-bottom:.5px solid #d8d8dc; position:relative; background:rgba(249,249,249,.94); }
+.ios-header .bk{ position:absolute; left:12px; top:8px; color:#0a84ff; display:flex; align-items:center; gap:1px; font-size:15px; } .ios-header .bk svg{ width:12px; height:20px; }
+.ios-av{ width:50px; height:50px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:20px; margin-bottom:3px; } .ios-av img{ width:100%; height:100%; object-fit:cover; }
+.ios-nm{ font-size:12px; display:flex; align-items:center; gap:3px; } .ios-nm .vf{ width:12px; height:12px; color:#0a84ff; } .ios-nm .cv{ color:#8e8e93; font-size:10px; }
+.ios-body{ flex:1; overflow-y:auto; padding:10px 14px; }
+.ios-time{ text-align:center; font-size:11px; color:#8e8e93; margin:8px 0 14px; } .ios-time b{ color:#3c3c43; font-weight:600; }
+.ios-msg{ display:flex; margin:2px 0; } .ios-msg.out{ justify-content:flex-end; }
+.ios-b{ max-width:72%; padding:8px 13px; border-radius:19px; font-size:16px; line-height:1.32; background:#e9e9eb; color:#000; position:relative; word-wrap:break-word; overflow-wrap:anywhere; }
+.ios-msg.out .ios-b{ background:#34c759; color:#fff; } .ios-msg.out.imsg .ios-b{ background:#0a84ff; }
+.itext{ white-space:pre-wrap; }
+.ios-rcpt{ text-align:right; font-size:11px; color:#8e8e93; margin:2px 4px 6px; font-weight:600; }
+.ios-img{ max-width:62%; border-radius:17px; overflow:hidden; } .ios-msg.out .ios-img{ margin-left:auto; } .ios-img img{ width:100%; display:block; }
+.ios-rich{ max-width:80%; }
+.ios .rcs-chip{ color:#0a84ff; border-color:#d1d1d6; }
+.ios-in{ flex:none; display:flex; align-items:center; gap:9px; padding:7px 12px 10px; }
+.ios-in .plus{ width:30px; height:30px; color:#8e8e93; flex:none; }
+.ios-in .fld{ flex:1; border:1px solid #d1d1d6; border-radius:19px; display:flex; align-items:center; padding:7px 12px; gap:8px; min-width:0; }
+.ios-in .fld .ph{ flex:1; color:#8e8e93; font-size:16px; } .ios-in .fld .wv{ width:24px; height:24px; color:#8e8e93; flex:none; }

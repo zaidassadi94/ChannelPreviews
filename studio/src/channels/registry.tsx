@@ -1,6 +1,8 @@
 import type { ComponentType, ReactNode } from 'react'
 import { WhatsAppPreview } from './whatsapp/WhatsAppPreview'
 import { whatsappSections } from './whatsapp/panels'
+import { RcsPreview } from './rcs/RcsPreview'
+import { rcsSections } from './rcs/panels'
 
 export interface SectionDef {
   id: string
@@ -25,7 +27,7 @@ const emoji = (e: string): ReactNode => <span style={{ fontSize: 18, lineHeight:
    soon" stub until ported. Adding a channel = drop in its sections + preview here. */
 export const CHANNELS: ChannelDef[] = [
   { id: 'whatsapp', label: 'WhatsApp', icon: emoji('💬'), group: 'Messaging', sections: whatsappSections, Preview: WhatsAppPreview },
-  { id: 'rcs', label: 'RCS', icon: emoji('📲'), group: 'Messaging' },
+  { id: 'rcs', label: 'RCS', icon: emoji('📲'), group: 'Messaging', sections: rcsSections, Preview: RcsPreview },
   { id: 'sms', label: 'SMS', icon: emoji('✉️'), group: 'Messaging' },
   { id: 'gmail', label: 'Gmail', icon: emoji('📧'), group: 'Email' },
   { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify' },

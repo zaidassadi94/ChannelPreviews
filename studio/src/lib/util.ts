@@ -60,6 +60,13 @@ export function brandMark(name: string, size = 96): string {
 export type BtnType = 'reply' | 'url' | 'call' | 'copy' | 'map'
 export interface Btn { label: string; type: BtnType; value: string; response: string }
 
+/** Split a row on the first `>>` into [main, response]. */
+export function splitResp(l: string): [string, string] {
+  const rr = l.split('>>')
+  if (rr.length > 1) return [rr[0].trim(), rr.slice(1).join('>>').trim()]
+  return [l.trim(), '']
+}
+
 export function parseButtons(raw: string): Btn[] {
   return (raw || '')
     .split('\n')
@@ -67,11 +74,39 @@ export function parseButtons(raw: string): Btn[] {
     .filter(Boolean)
     .map((l) => {
       // "Label | type | value >> response"  (>> makes it branch in Simulate)
-      const [main, response = ''] = l.split('>>').map((x) => x.trim())
+      const [main, response] = splitResp(l)
       const p = main.split('|').map((x) => x.trim())
       let type = (p[1] || 'reply').toLowerCase() as BtnType
       if (!['reply', 'url', 'call', 'copy', 'map'].includes(type)) type = 'reply'
       return { label: p[0] || '', type, value: p[2] || '', response }
     })
     .filter((b) => b.label)
+}
+
+/* ---- RCS/SMS rich content parsing (mirrors blocks.js) ---- */
+export interface Chip { label: string; response: string }
+export function parseChips(raw: string): Chip[] {
+  if (!raw) return []
+  const src = raw.indexOf('\n') >= 0 ? raw.split('\n') : raw.split(',')
+  return src.map((x) => x.trim()).filter(Boolean).map((l) => {
+    const [label, response] = splitResp(l)
+    return { label, response }
+  })
+}
+
+export interface Card { img: string; title: string; sub: string; btn: string; val: string }
+export function parseCards(raw: string): Card[] {
+  return (raw || '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const p = l.split('|').map((x) => x.trim())
+    return { img: p[0] || '', title: p[1] || '', sub: p[2] || '', btn: p[3] || '', val: p[4] || '' }
+  })
+}
+
+export interface ListItem { t: string; d: string; response: string }
+export function parseListItems(raw: string): ListItem[] {
+  return (raw || '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const [main, response] = splitResp(l)
+    const p = main.split('|').map((x) => x.trim())
+    return { t: p[0] || '', d: p[1] || '', response }
+  })
 }

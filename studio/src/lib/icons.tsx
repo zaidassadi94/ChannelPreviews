@@ -30,6 +30,10 @@ export const Icon: Record<string, ReactNode> = {
   context: <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h9M18 7h1M5 12h1M10 12h9M5 17h6M15 17h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><circle cx="16" cy="7" r="2" stroke="currentColor" strokeWidth="1.7" /><circle cx="8" cy="12" r="2" stroke="currentColor" strokeWidth="1.7" /><circle cx="13" cy="17" r="2" stroke="currentColor" strokeWidth="1.7" /></svg>,
   chevron: <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   refresh: <svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+  // messaging extras
+  verifG: <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 1.7 2.8-.2.9 2.6 2.4 1.5-.9 2.6.9 2.6-2.4 1.5-.9 2.6-2.8-.2L12 22l-2.2-1.7-2.8.2-.9-2.6L3.7 16.4l.9-2.6-.9-2.6 2.4-1.5.9-2.6 2.8.2z" /><path d="M8.5 12.3l2.2 2.2 4.6-4.6" stroke="#fff" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+  map: <svg viewBox="0 0 24 24" fill="none"><path d="M12 21c5-5 8-8 8-12a8 8 0 10-16 0c0 4 3 7 8 12z" stroke="currentColor" strokeWidth="1.8" /><circle cx="12" cy="9" r="2.4" stroke="currentColor" strokeWidth="1.8" /></svg>,
+  wave: <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h1M8 8v8M12 5v14M16 8v8M20 12h0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
 }
 
-export const btnIcon = (t: string): ReactNode => (t === 'call' ? Icon.phone : t === 'url' ? Icon.link : t === 'copy' ? Icon.copy : Icon.reply)
+export const btnIcon = (t: string): ReactNode => (t === 'call' ? Icon.phone : t === 'url' ? Icon.link : t === 'map' ? Icon.map : t === 'copy' ? Icon.copy : Icon.reply)
