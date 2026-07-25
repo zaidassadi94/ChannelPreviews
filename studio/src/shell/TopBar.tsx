@@ -1,7 +1,7 @@
 import { useStudio, INDUSTRIES } from '@/store/useStudio'
 import { industryById } from '@/content/model'
-import { useToast } from '@/store/useToast'
 import { Icon } from '@/lib/icons'
+import { useCapture } from '@/lib/useCapture'
 import { ChannelPicker } from './ChannelPicker'
 
 export function TopBar() {
@@ -14,7 +14,7 @@ export function TopBar() {
   const sim = useStudio((s) => s.sim)
   const setSim = useStudio((s) => s.setSim)
   const simReset = useStudio((s) => s.simReset)
-  const show = useToast((s) => s.show)
+  const { onExport, onCopy } = useCapture()
   const ind = industryById(industry)
   const subs = ind ? ind.subs : []
 
@@ -49,8 +49,8 @@ export function TopBar() {
         {sim ? Icon.pause : Icon.play}{sim ? 'Editing' : 'Simulate'}
       </button>
       {sim && <button className="btn ghost" onClick={simReset}>↺ Reset</button>}
-      <button className="btn ghost" onClick={() => show('Export (PNG) is being ported next')}>Copy</button>
-      <button className="btn primary" onClick={() => show('Export (PNG) is being ported next')}>{Icon.download}Export</button>
+      <button className="btn ghost" onClick={onCopy}>Copy</button>
+      <button className="btn primary" onClick={onExport}>{Icon.download}Export</button>
     </div>
   )
 }
