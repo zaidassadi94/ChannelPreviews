@@ -17,6 +17,8 @@ import { OsmPreview } from './osm/OsmPreview'
 import { osmSections } from './osm/panels'
 import { InstagramPreview } from './instagram/InstagramPreview'
 import { igSections } from './instagram/panels'
+import { FacebookPreview } from './facebook/FacebookPreview'
+import { fbSections } from './facebook/panels'
 
 export interface SectionDef {
   id: string
@@ -49,7 +51,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify', sections: gameSections, Preview: GamePreview },
   { id: 'osm', label: 'Onsite', icon: emoji('🌐'), group: 'Web', sections: osmSections, Preview: OsmPreview },
   { id: 'instagram', label: 'Instagram Ads', icon: emoji('📸'), group: 'Ads', sections: igSections, Preview: InstagramPreview },
-  { id: 'facebook', label: 'Facebook Ads', icon: emoji('👍'), group: 'Ads' },
+  { id: 'facebook', label: 'Facebook Ads', icon: emoji('👍'), group: 'Ads', sections: fbSections, Preview: FacebookPreview },
 ]
 
 export const channelById = (id: string) => CHANNELS.find((c) => c.id === id)
