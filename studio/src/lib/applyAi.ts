@@ -181,6 +181,16 @@ async function applyFb(m: AiMessage, logo: string | null) {
   })
 }
 
+async function applyWebpush(m: AiMessage, logo: string | null) {
+  const s = useStudio.getState()
+  const image = hasImg(m) ? await pic(m, 600, 340, m.brand || '') : ''
+  s.setWebpush({
+    site: m.brand || s.webpush.site, url: urlOf(m, s.webpush.url), logo,
+    title: m.title || m.headline || '', body: m.body || '', image,
+    actions: (m.actions || []).filter(Boolean).slice(0, 2).join('\n'),
+  })
+}
+
 /** Dispatch a generated message to the active channel's adapter (identity applied first). */
 export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
   applyIdentity(m)
@@ -196,5 +206,6 @@ export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo
     case 'osm': return applyOsm(m, logo)
     case 'instagram': return applyIg(m, logo)
     case 'facebook': return applyFb(m, logo)
+    case 'webpush': return applyWebpush(m, logo)
   }
 }

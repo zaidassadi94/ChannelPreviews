@@ -1,0 +1,53 @@
+import { useStudio } from '@/store/useStudio'
+import { useToast } from '@/store/useToast'
+import { type Pack, packFor, cap } from '@/content/model'
+import { phImg, hueOf } from '@/lib/util'
+import { oneLine } from '@/channels/notify/shared'
+
+export interface WebpushBuild { site: string; url: string; title: string; body: string; image: string; actions: string }
+export interface WebpushTemplate {
+  name: string
+  kind: 'Promotional' | 'Transactional' | 'Flow'
+  icon: string
+  desc: string
+  flow?: boolean
+  build: (p: Pack, ctxId: string) => WebpushBuild
+}
+
+const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
+
+export const WEBPUSH_TEMPLATES: WebpushTemplate[] = [
+  {
+    name: 'Promotional offer', kind: 'Promotional', icon: '🏷️', desc: 'Image + CTA',
+    build: (p) => ({ site: p.brand, url: p.url, title: `${p.emoji} ${p.offer}`, body: `${p.brand} just dropped something good — take a look before it's gone.`, image: hero(p, '3'), actions: 'Shop now\nDismiss' }),
+  },
+  {
+    name: 'Cart abandonment', kind: 'Flow', icon: '🛒', desc: 'Left something behind', flow: true,
+    build: (p) => ({ site: p.brand, url: p.url, title: 'Still thinking it over?', body: oneLine(p.flow.intro) || 'Your cart is waiting — finish up before it sells out.', image: hero(p, '7'), actions: 'Return to cart\nNot now' }),
+  },
+  {
+    name: 'Price drop', kind: 'Promotional', icon: '📉', desc: 'Wishlist alert',
+    build: (p) => ({ site: p.brand, url: p.url, title: 'Good news — a price just dropped', body: `Something on your wishlist at ${p.brand} is now cheaper. Grab it while it lasts.`, image: hero(p, '5'), actions: 'See the deal' }),
+  },
+  {
+    name: 'Back in stock', kind: 'Transactional', icon: '🔔', desc: 'Restock nudge',
+    build: (p) => ({ site: p.brand, url: p.url, title: "It's back in stock", body: cap(p.reminder), image: hero(p, '9'), actions: 'Shop it now\nRemind me' }),
+  },
+  {
+    name: 'Flash sale', kind: 'Promotional', icon: '⚡', desc: 'Countdown urgency',
+    build: (p) => ({ site: p.brand, url: p.url, title: `⏰ Ends at midnight — ${p.offer}`, body: `Last call at ${p.brand}. After tonight it's back to full price.`, image: hero(p, '2'), actions: 'Shop the sale' }),
+  },
+  {
+    name: 'Re-engagement', kind: 'Flow', icon: '💛', desc: 'We miss you', flow: true,
+    build: (p) => ({ site: p.brand, url: p.url, title: `We miss you at ${p.brand}`, body: "Here's what's new since you've been gone — worth a look.", image: hero(p, '4'), actions: "See what's new\nNo thanks" }),
+  },
+]
+
+export function applyWebpushTemplate(t: WebpushTemplate, announce = true) {
+  const s = useStudio.getState()
+  const p = packFor(s.ctxId())
+  if (!p) return
+  const f = t.build(p, s.ctxId())
+  s.setWebpush({ site: f.site, url: f.url, title: f.title, body: f.body, image: f.image, actions: f.actions })
+  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to click' : ''))
+}

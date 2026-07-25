@@ -32,6 +32,7 @@ const CHANNELS = {
   instagram: ['story', 'feed'],
   facebook: ['feed', 'story', 'marketplace'],
   osm: ['popup', 'bannerTop', 'bannerBottom', 'nudge', 'full', 'survey'],
+  webpush: ['webpush'],
 };
 
 // A curated keyword vocabulary the image system resolves to real photos.
@@ -112,6 +113,11 @@ function schemaFor(channel) {
     cta: S('STRING', { enum: ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Send Message', 'Contact Us'] }),
     imageKeyword: kwEnum, imageQuery: imgQuery,
   }, required: ['brand', 'industry', 'type', 'body'] });
+  if (channel === 'webpush') return S('OBJECT', { properties: {
+    brand: brandField, industry: industryField, domain: domainField,
+    title: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery,
+    actions: S('ARRAY', { items: STR }),
+  }, required: ['brand', 'industry', 'title', 'body'] });
   if (channel === 'game') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.game }),
@@ -137,6 +143,7 @@ const CHANNEL_VOICE = {
   rcs: 'RCS voice: rich and modern. The card title is a tight headline (<=5 words); the description carries the hook. Suggestion chips are short, tappable next steps written as the customer would say them.',
   sms: 'SMS voice: one or two lines, every character earns its place. Front-load the offer, one link as a plain domain, no markdown, no wasted words.',
   push: 'Push voice: a title that stops the thumb (<=6 words) and a body that pays it off in one line. Curiosity or a concrete benefit — NEVER "Open the app" or "Tap here".',
+  webpush: 'Web-push voice: a browser notification while the visitor is elsewhere online, so the title must earn the click on its own (<=7 words) and the body pays it off in one line. Concrete benefit or curiosity — never "Visit our site". Actions are 1-2 short verbs ("Shop now", "Return to cart").',
   inapp: 'In-app voice: the user is already inside the app, so skip the intro. Headline is a bold promise; body is one supportive line; the primary CTA is a confident verb.',
   gmail: 'Email voice: a subject line that earns the open (specific and curious, <=7 words) and a snippet that COMPLEMENTS the subject rather than repeating it. The heading + body carry the story; the button is one clear next step.',
   game: 'Reward voice: celebratory and a little thrilling, never cheesy. The headline announces the moment ("You unlocked a spin", "A little something for you"), the prize feels genuinely worth it, and the CTA claims it now.',

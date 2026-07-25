@@ -15,6 +15,8 @@ import { GmailPreview } from './gmail/GmailPreview'
 import { gmailSections } from './gmail/panels'
 import { OsmPreview } from './osm/OsmPreview'
 import { osmSections } from './osm/panels'
+import { WebPushPreview } from './webpush/WebPushPreview'
+import { webpushSections } from './webpush/panels'
 import { InstagramPreview } from './instagram/InstagramPreview'
 import { igSections } from './instagram/panels'
 import { FacebookPreview } from './facebook/FacebookPreview'
@@ -50,6 +52,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify', sections: inappSections, Preview: InAppPreview },
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify', sections: gameSections, Preview: GamePreview },
   { id: 'osm', label: 'Onsite', icon: emoji('🌐'), group: 'Web', sections: osmSections, Preview: OsmPreview },
+  { id: 'webpush', label: 'Web Push', icon: emoji('🖥️'), group: 'Web', sections: webpushSections, Preview: WebPushPreview },
   { id: 'instagram', label: 'Instagram Ads', icon: emoji('📸'), group: 'Ads', sections: igSections, Preview: InstagramPreview },
   { id: 'facebook', label: 'Facebook Ads', icon: emoji('👍'), group: 'Ads', sections: fbSections, Preview: FacebookPreview },
 ]
