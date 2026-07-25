@@ -3,6 +3,8 @@ import { WhatsAppPreview } from './whatsapp/WhatsAppPreview'
 import { whatsappSections } from './whatsapp/panels'
 import { RcsPreview } from './rcs/RcsPreview'
 import { rcsSections } from './rcs/panels'
+import { SmsPreview } from './sms/SmsPreview'
+import { smsSections } from './sms/panels'
 
 export interface SectionDef {
   id: string
@@ -28,7 +30,7 @@ const emoji = (e: string): ReactNode => <span style={{ fontSize: 18, lineHeight:
 export const CHANNELS: ChannelDef[] = [
   { id: 'whatsapp', label: 'WhatsApp', icon: emoji('💬'), group: 'Messaging', sections: whatsappSections, Preview: WhatsAppPreview },
   { id: 'rcs', label: 'RCS', icon: emoji('📲'), group: 'Messaging', sections: rcsSections, Preview: RcsPreview },
-  { id: 'sms', label: 'SMS', icon: emoji('✉️'), group: 'Messaging' },
+  { id: 'sms', label: 'SMS', icon: emoji('✉️'), group: 'Messaging', sections: smsSections, Preview: SmsPreview },
   { id: 'gmail', label: 'Gmail', icon: emoji('📧'), group: 'Email' },
   { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify' },
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify' },
