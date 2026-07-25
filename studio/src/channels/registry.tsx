@@ -11,6 +11,8 @@ import { InAppPreview } from './inapp/InAppPreview'
 import { inappSections } from './inapp/panels'
 import { GamePreview } from './game/GamePreview'
 import { gameSections } from './game/panels'
+import { GmailPreview } from './gmail/GmailPreview'
+import { gmailSections } from './gmail/panels'
 
 export interface SectionDef {
   id: string
@@ -37,7 +39,7 @@ export const CHANNELS: ChannelDef[] = [
   { id: 'whatsapp', label: 'WhatsApp', icon: emoji('💬'), group: 'Messaging', sections: whatsappSections, Preview: WhatsAppPreview },
   { id: 'rcs', label: 'RCS', icon: emoji('📲'), group: 'Messaging', sections: rcsSections, Preview: RcsPreview },
   { id: 'sms', label: 'SMS', icon: emoji('✉️'), group: 'Messaging', sections: smsSections, Preview: SmsPreview },
-  { id: 'gmail', label: 'Gmail', icon: emoji('📧'), group: 'Email' },
+  { id: 'gmail', label: 'Gmail', icon: emoji('📧'), group: 'Email', sections: gmailSections, Preview: GmailPreview },
   { id: 'push', label: 'Push', icon: emoji('🔔'), group: 'Notify', sections: pushSections, Preview: PushPreview },
   { id: 'inapp', label: 'In-App', icon: emoji('📱'), group: 'Notify', sections: inappSections, Preview: InAppPreview },
   { id: 'game', label: 'Gamification', icon: emoji('🎁'), group: 'Notify', sections: gameSections, Preview: GamePreview },

@@ -78,6 +78,29 @@ export interface NotifyState {
   game: { type: string; eyebrow: string; headline: string; sub: string; prize: string; prizeCap: string; cta: string; segments: string; close: boolean }
 }
 
+/* ---- gmail model ---- */
+export interface GmailState {
+  skin: string   // mobile | desktop
+  view: string   // inbox | open
+  senderName: string
+  senderEmail: string
+  logo: string | null
+  subject: string
+  snippet: string
+  timestamp: string
+  toLine: string
+  unread: boolean
+  starred: boolean
+  important: boolean
+  category: string
+  labelChip: string
+  bodyMode: string  // template | plain
+  html: string
+  plain: { heading: string; body: string; btn: string; accent: string }
+  annot: { on: boolean; deal: string; code: string; expiry: string; img: string }
+  filler: { on: boolean; position: number }
+}
+
 interface StudioState {
   // shared context
   channel: string
@@ -97,6 +120,9 @@ interface StudioState {
 
   // notify slice (push / inapp / game)
   notify: NotifyState
+
+  // gmail slice
+  gmail: GmailState
 
   // shared actions
   setChannel: (c: string) => void
@@ -140,6 +166,12 @@ interface StudioState {
   setAppBg: (patch: Partial<NotifyState['appBg']>) => void
   setGame: (patch: Partial<NotifyState['game']>) => void
 
+  // gmail actions
+  setGmail: (patch: Partial<GmailState>) => void
+  setGmailPlain: (patch: Partial<GmailState['plain']>) => void
+  setGmailAnnot: (patch: Partial<GmailState['annot']>) => void
+  setGmailFiller: (patch: Partial<GmailState['filler']>) => void
+
   ctxId: () => string
 }
 
@@ -162,6 +194,15 @@ export const useStudio = create<StudioState>((set, get) => ({
     inapp: { type: 'modal', image: '', headline: '', body: '', ctas: '', close: true, bannerPos: 'top' },
     appBg: { mode: 'branded', image: '', blur: true },
     game: { type: 'scratch', eyebrow: 'Exclusive reward', headline: '', sub: '', prize: '', prizeCap: '', cta: '', segments: '', close: true },
+  },
+  gmail: {
+    skin: 'desktop', view: 'inbox', senderName: 'Nova', senderEmail: 'hello@nova.shop', logo: null,
+    subject: '🎉 Your weekend sale is here — up to 40% off', snippet: 'First pick of the new arrivals — up to 40% off, this weekend only…',
+    timestamp: '9:15 AM', toLine: 'to me', unread: true, starred: false, important: false,
+    category: 'promotions', labelChip: 'Inbox', bodyMode: 'template', html: '',
+    plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5' },
+    annot: { on: false, deal: 'Up to 40% off', code: '', expiry: 'Ends Sunday', img: '' },
+    filler: { on: true, position: 0 },
   },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
@@ -237,6 +278,11 @@ export const useStudio = create<StudioState>((set, get) => ({
   setInapp: (patch) => set({ notify: { ...get().notify, inapp: { ...get().notify.inapp, ...patch } } }),
   setAppBg: (patch) => set({ notify: { ...get().notify, appBg: { ...get().notify.appBg, ...patch } } }),
   setGame: (patch) => set({ notify: { ...get().notify, game: { ...get().notify.game, ...patch } } }),
+
+  setGmail: (patch) => set({ gmail: { ...get().gmail, ...patch } }),
+  setGmailPlain: (patch) => set({ gmail: { ...get().gmail, plain: { ...get().gmail.plain, ...patch } } }),
+  setGmailAnnot: (patch) => set({ gmail: { ...get().gmail, annot: { ...get().gmail.annot, ...patch } } }),
+  setGmailFiller: (patch) => set({ gmail: { ...get().gmail, filler: { ...get().gmail.filler, ...patch } } }),
 
   ctxId: () => get().sub || get().industry,
 }))

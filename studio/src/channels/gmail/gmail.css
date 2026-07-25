@@ -1,0 +1,147 @@
+/* Gmail chrome ported from gmail-preview-tool (light-only). The root container is
+   renamed .gm -> .gml so it doesn't collide with the messaging Google Messages .gm.
+   Device frames come from the shell (PhoneFrame / DesktopFrame). */
+
+/* template kind badges (sidebar) */
+.tpl .tt .kind{ font-size:9px; font-weight:700; padding:1.5px 5px; border-radius:5px; letter-spacing:.02em; }
+.tpl .tt .Promotional{ color:#a15c00; background:#fff2d6; } .tpl .tt .Transactional{ color:#0b62c4; background:#e3f0ff; }
+
+.gml{ --gm-red:#ea4335; --gm-blue:#1a73e8; --gm-green:#34a853; --gm-yellow:#fbbc04;
+  --g-text:#202124; --g-muted:#5f6368; --g-line:#e0e0e0; --g-bg:#fff; --g-hover:#f2f6fc; --g-unread:#fff; --g-read:#f2f6fc; --g-chip:#f1f3f4;
+  font-family:Roboto,'Google Sans Text',Arial,sans-serif; color:var(--g-text); background:var(--g-bg); flex:1; min-height:0; display:flex; flex-direction:column; }
+
+/* Mobile Gmail */
+.gm-m-search{ flex:none; margin:8px 12px 6px; height:48px; background:var(--g-chip); border-radius:26px; display:flex; align-items:center; gap:12px; padding:0 14px; }
+.gm-m-search .q{ flex:1; color:var(--g-muted); font-size:15px; }
+.gm-m-search .av{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:600; }
+.hamb{ width:22px; height:22px; color:var(--g-muted); }
+.gm-tabs{ display:flex; padding:2px 6px 0; border-bottom:1px solid var(--g-line); flex:none; overflow-x:auto; }
+.gm-tabs.mob{ gap:0; }
+.gm-tab{ padding:10px 12px 12px; font-size:13px; font-weight:500; color:var(--g-muted); white-space:nowrap; display:flex; align-items:center; gap:7px; border-bottom:3px solid transparent; cursor:pointer; }
+.gm-tab.on{ color:var(--gm-blue); border-bottom-color:var(--gm-blue); }
+.gm-tab .tdot{ width:8px; height:8px; border-radius:50%; }
+.gm-list{ flex:1; overflow-y:auto; }
+.gm-row{ display:flex; gap:14px; padding:12px 16px; align-items:flex-start; border-bottom:1px solid transparent; cursor:pointer; position:relative; }
+.gm-row:hover{ background:var(--g-hover); }
+.gm-row .avatar{ width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:500; overflow:hidden; }
+.gm-row .avatar img{ width:100%; height:100%; object-fit:cover; }
+.gm-row .rbody{ flex:1; min-width:0; }
+.gm-row .line1{ display:flex; align-items:center; gap:8px; }
+.gm-row .sender{ font-size:14px; color:var(--g-text); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gm-row.unread .sender{ font-weight:700; }
+.gm-row .time{ font-size:12px; color:var(--g-muted); flex:none; }
+.gm-row.unread .time{ color:var(--g-text); font-weight:600; }
+.gm-row .subject{ font-size:14px; color:var(--g-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.gm-row.unread .subject{ font-weight:700; }
+.gm-row .snippet{ font-size:13px; color:var(--g-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.gm-row .star{ flex:none; color:var(--g-muted); }
+.gm-row .star.on{ color:var(--gm-yellow); }
+.gm-row .imp{ color:var(--gm-yellow); }
+
+/* Promotions annotation card */
+.annot{ border:1px solid var(--g-line); border-radius:12px; margin:6px 16px 10px 70px; overflow:hidden; }
+.annot-head{ display:flex; align-items:center; gap:10px; padding:10px 12px; }
+.annot-head .alogo{ width:28px; height:28px; border-radius:6px; object-fit:contain; background:#fff; border:1px solid var(--g-line); }
+.annot-head .abrand{ font-size:13px; font-weight:600; flex:1; }
+.annot-head .adeal{ font-size:12px; color:var(--gm-green); font-weight:600; }
+.annot-body{ display:flex; gap:2px; padding:0 8px 10px; }
+.annot-card{ flex:1; border-radius:8px; overflow:hidden; background:var(--g-chip); }
+.annot-card img{ width:100%; height:88px; object-fit:cover; display:block; }
+.annot-card .ac-t{ font-size:11px; padding:6px 8px; color:var(--g-text); font-weight:500; }
+.annot-code{ font-size:11px; color:var(--g-muted); padding:0 12px 12px; }
+.annot-code b{ color:var(--g-text); background:var(--g-chip); padding:2px 7px; border-radius:5px; border:1px dashed var(--g-line); }
+
+/* FAB / compose */
+.fab{ position:absolute; right:16px; bottom:20px; height:48px; background:#c2e7ff; border-radius:16px; display:flex; align-items:center; gap:10px; padding:0 18px 0 16px; box-shadow:0 3px 8px rgba(0,0,0,.2); font-size:14px; font-weight:600; color:#001d35; z-index:20; }
+.fab svg{ width:22px; height:22px; }
+
+/* Mobile open-email */
+.gm-m-openbar{ flex:none; display:flex; align-items:center; gap:6px; padding:6px 12px; }
+.gm-m-openbar .oact{ width:24px; height:24px; color:var(--g-muted); }
+.gm-m-openbar .oact svg{ width:24px; height:24px; }
+.gm-m-openbar .sp{ flex:1; }
+.gm-open-scroll{ flex:1; overflow-y:auto; }
+.gm-open-subject{ font-size:22px; line-height:1.3; font-weight:400; padding:6px 20px 10px; }
+.gm-open-label{ display:inline-block; font-size:11px; background:var(--g-chip); color:var(--g-muted); padding:3px 10px; border-radius:6px; margin:0 20px 12px; }
+.gm-open-from{ display:flex; align-items:center; gap:12px; padding:4px 16px 14px; }
+.gm-open-from .avatar{ width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:500; overflow:hidden; }
+.gm-open-from .avatar img{ width:100%; height:100%; object-fit:cover; }
+.gm-open-from .meta{ flex:1; min-width:0; }
+.gm-open-from .nm{ font-size:14px; font-weight:600; display:flex; gap:6px; align-items:baseline; }
+.gm-open-from .nm .t{ font-weight:400; color:var(--g-muted); font-size:12px; margin-left:auto; }
+.gm-open-from .to{ font-size:12px; color:var(--g-muted); display:flex; align-items:center; gap:3px; }
+.email-body{ width:100%; display:block; }
+.gm-open-actions{ flex:none; display:flex; gap:10px; padding:10px 16px 14px; border-top:1px solid var(--g-line); }
+.gm-open-actions button{ flex:1; border:1px solid var(--g-line); background:var(--g-bg); color:var(--g-text); border-radius:20px; padding:9px 0; font-size:13px; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
+.gm-open-actions svg{ width:16px; height:16px; }
+
+/* Desktop Gmail */
+.gm-d{ display:grid; grid-template-rows:auto 1fr; height:720px; }
+.gm-d-top{ display:flex; align-items:center; gap:16px; padding:8px 16px; border-bottom:1px solid var(--g-line); }
+.gm-d-logo{ display:flex; align-items:center; gap:8px; width:210px; }
+.gm-d-logo span{ font-size:22px; color:var(--g-muted); font-weight:400; }
+.gm-d-search{ flex:1; max-width:720px; height:46px; background:var(--g-chip); border-radius:8px; display:flex; align-items:center; gap:14px; padding:0 16px; color:var(--g-muted); font-size:14px; }
+.gm-d-top .spacer{ flex:1; }
+.gm-d-top .tavatar{ width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; }
+.gm-d-main{ display:grid; grid-template-columns:240px 1fr; grid-template-rows:minmax(0,1fr); min-height:0; }
+.gm-d-nav{ padding:12px 8px; overflow-y:auto; }
+.compose-btn{ display:flex; align-items:center; gap:14px; background:#c2e7ff; color:#001d35; border-radius:16px; padding:14px 22px; font-size:14px; font-weight:600; margin:4px 8px 14px; width:max-content; box-shadow:0 1px 3px rgba(0,0,0,.15); }
+.compose-btn svg{ width:22px; height:22px; }
+.nav-item{ display:flex; align-items:center; gap:18px; padding:6px 18px; border-radius:0 16px 16px 0; font-size:14px; color:var(--g-text); margin:1px 0; cursor:pointer; }
+.nav-item .ni{ width:20px; height:20px; color:var(--g-muted); flex:none; }
+.nav-item.on{ background:#d3e3fd; color:#041e49; font-weight:700; }
+.nav-item.on .ni{ color:#041e49; }
+.nav-item .cnt{ margin-left:auto; font-size:12px; color:var(--g-muted); }
+.gm-d-content{ border-left:1px solid var(--g-line); display:flex; flex-direction:column; min-width:0; min-height:0; }
+.gm-d-toolbar{ display:flex; align-items:center; gap:20px; padding:8px 20px; color:var(--g-muted); flex:none; }
+.gm-d-toolbar .tb{ width:20px; height:20px; }
+.gm-d-toolbar .tb svg{ width:20px; height:20px; }
+.gm-d-toolbar .sp{ flex:1; }
+.gm-d-toolbar .pg{ font-size:12px; }
+.gm-d-tabs{ display:flex; border-bottom:1px solid var(--g-line); flex:none; }
+.gm-d-tab{ flex:1; max-width:240px; padding:12px 16px 14px; font-size:14px; font-weight:500; color:var(--g-muted); display:flex; align-items:center; gap:12px; border-bottom:3px solid transparent; cursor:pointer; }
+.gm-d-tab.on{ color:var(--gm-blue); border-bottom-color:var(--gm-blue); }
+.gm-d-tab .ni svg{ width:20px; height:20px; }
+.gm-d-rows{ flex:1; overflow-y:auto; }
+.gm-d-row{ display:flex; align-items:center; gap:14px; padding:0 16px; height:40px; border-bottom:1px solid var(--g-line); cursor:pointer; font-size:14px; }
+.gm-d-row:hover{ box-shadow:inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px rgba(60,64,67,.3); z-index:1; }
+.gm-d-row .ck, .gm-d-row .st, .gm-d-row .im{ width:18px; height:18px; color:var(--g-muted); flex:none; }
+.gm-d-row .ck svg, .gm-d-row .st svg, .gm-d-row .im svg{ width:18px; height:18px; }
+.gm-d-row .st.on{ color:var(--gm-yellow); }
+.gm-d-row.unread{ background:var(--g-unread); }
+.gm-d-row:not(.unread){ background:var(--g-read); }
+.gm-d-row .dsender{ width:180px; flex:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gm-d-row.unread .dsender, .gm-d-row.unread .dsub{ font-weight:700; }
+.gm-d-row .dmid{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gm-d-row .dsub{ color:var(--g-text); }
+.gm-d-row .dsnip{ color:var(--g-muted); }
+.gm-d-row .dtime{ flex:none; font-size:12px; color:var(--g-muted); width:70px; text-align:right; }
+.gm-d-row.unread .dtime{ color:var(--g-text); font-weight:600; }
+
+/* Desktop open */
+.gm-d-open{ flex:1; overflow-y:auto; padding:8px 0 40px; }
+.gm-d-open-sub{ font-size:22px; font-weight:400; padding:16px 72px 10px; display:flex; align-items:center; gap:12px; }
+.gm-d-open-sub .lb{ font-size:12px; background:var(--g-chip); color:var(--g-muted); padding:2px 8px; border-radius:6px; font-weight:400; }
+.gm-d-open-from{ display:flex; align-items:center; gap:16px; padding:6px 24px 10px 72px; }
+.gm-d-open-from .avatar{ width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:500; overflow:hidden; }
+.gm-d-open-from .avatar img{ width:100%; height:100%; object-fit:cover; }
+.gm-d-open-from .nm{ font-size:14px; font-weight:700; }
+.gm-d-open-from .em{ font-size:12px; color:var(--g-muted); font-weight:400; }
+.gm-d-open-from .to{ font-size:12px; color:var(--g-muted); }
+.gm-d-open-from .rgt{ margin-left:auto; display:flex; align-items:center; gap:20px; color:var(--g-muted); font-size:13px; }
+.gm-d-open-body{ padding:8px 72px; }
+.gm-d-reply{ margin:16px 72px; border:1px solid var(--g-line); border-radius:16px; padding:12px 18px; display:flex; gap:14px; color:var(--g-muted); font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.gm-d-reply button{ border:1px solid var(--g-line); background:var(--g-bg); color:var(--g-text); border-radius:18px; padding:7px 20px; font-size:13px; display:flex; gap:8px; align-items:center; cursor:pointer; font-family:inherit; }
+.empty-note{ color:var(--g-muted); font-size:13px; padding:30px; text-align:center; }
+
+/* icon sizing — these SVGs carry no intrinsic size, so pin them per container
+   (without a blanket .gml svg rule that would squish the Gmail wordmark logo) */
+.gm-d-search > svg{ width:22px; height:22px; flex:none; }
+.gm-d-logo .ni svg{ width:24px; height:24px; }
+.nav-item .ni svg{ width:20px; height:20px; }
+.gm-d-open-from .rgt svg{ width:20px; height:20px; }
+.gm-d-reply button svg{ width:16px; height:16px; }
+.hamb svg{ width:22px; height:22px; }
+.gm-row .star svg{ width:20px; height:20px; }
+.gm-row .imp svg{ width:18px; height:18px; }
+.gm-open-from .nm svg{ width:16px; height:16px; }
