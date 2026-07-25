@@ -250,8 +250,8 @@
     <section class="group collapsed" data-group>
       <button class="ghead" data-head>Sender <span class="chev">▼</span></button>
       <div class="gbody">
-        <label class="f"><span>Sender name</span><input type="text" id="senderName" value="Social Development Bank" /></label>
-        <label class="f"><span>Sender email</span><input type="email" id="senderEmail" value="training@socialdevbank.com" /></label>
+        <label class="f"><span>Sender name</span><input type="text" id="senderName" value="Nova" /></label>
+        <label class="f"><span>Sender email</span><input type="email" id="senderEmail" value="hello@nova.shop" /></label>
         <label class="f"><span>Sender logo / avatar (optional)</span>
           <div class="drop" id="logoDrop"><span class="up-ic">🖼️</span>Drag &amp; drop image, or click to browse</div>
           <input type="file" id="logoInput" accept="image/*" hidden />
@@ -268,8 +268,8 @@
     <section class="group collapsed" data-group>
       <button class="ghead" data-head>Message <span class="chev">▼</span></button>
       <div class="gbody">
-        <label class="f"><span>Subject</span><input type="text" id="subject" value="🎓 Transform Your Career – Free Vocational Training Awaits!" /></label>
-        <label class="f"><span>Preview / snippet text</span><input type="text" id="snippet" value="Unlock your future with free vocational training programs. Limited seats available…" /></label>
+        <label class="f"><span>Subject</span><input type="text" id="subject" value="🎉 Your weekend sale is here — up to 40% off" /></label>
+        <label class="f"><span>Preview / snippet text</span><input type="text" id="snippet" value="First pick of the new arrivals — up to 40% off, this weekend only…" /></label>
         <div class="row2">
           <label class="f"><span>Timestamp</span><input type="text" id="timestamp" value="9:15 AM" /></label>
           <label class="f"><span>"to" line</span><input type="text" id="toLine" value="to me" /></label>
@@ -306,16 +306,16 @@
         </div>
 
         <div data-panel="paste" style="display:none;">
-          <label class="f"><span>Paste full HTML (from MoEngage, an ESP, wherever)</span>
+          <label class="f"><span>Paste full HTML (from your ESP, campaign tool, wherever)</span>
             <textarea class="code" id="pasteHtml" placeholder="&lt;div&gt;...your email HTML...&lt;/div&gt;"></textarea>
           </label>
           <button class="btn ghost" id="applyPaste" style="width:100%; justify-content:center;">Apply HTML</button>
         </div>
 
         <div data-panel="plain" style="display:none;">
-          <label class="f"><span>Heading</span><input type="text" id="plainHeading" value="Unlock Your Future" /></label>
-          <label class="f"><span>Body text</span><textarea id="plainBody" placeholder="Write the email copy…">Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.</textarea></label>
-          <label class="f"><span>Button label</span><input type="text" id="plainBtn" value="Reserve My Seat" /></label>
+          <label class="f"><span>Heading</span><input type="text" id="plainHeading" value="New arrivals, up to 40% off" /></label>
+          <label class="f"><span>Body text</span><textarea id="plainBody" placeholder="Write the email copy…">Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.</textarea></label>
+          <label class="f"><span>Button label</span><input type="text" id="plainBtn" value="Shop the sale" /></label>
           <label class="f"><span>Accent color</span><input type="text" id="plainAccent" value="#5b3df5" /></label>
         </div>
       </div>
@@ -383,14 +383,17 @@
 (function(){
   "use strict";
 
+  // Random 6-digit one-time code (never a hardcoded value)
+  function genOtp(){ return String(Math.floor(100000 + Math.random()*900000)); }
+
   // ---------- State ----------
   const state = {
     skin: 'mobile', view: 'inbox', theme: 'light',
-    senderName: 'Social Development Bank',
-    senderEmail: 'training@socialdevbank.com',
+    senderName: 'Nova',
+    senderEmail: 'hello@nova.shop',
     logo: null,
-    subject: '🎓 Transform Your Career – Free Vocational Training Awaits!',
-    snippet: 'Unlock your future with free vocational training programs. Limited seats available…',
+    subject: '🎉 Your weekend sale is here — up to 40% off',
+    snippet: 'First pick of the new arrivals — up to 40% off, this weekend only…',
     timestamp: '9:15 AM',
     toLine: 'to me',
     unread: true, starred: false, important: false,
@@ -399,22 +402,22 @@
     bodyMode: 'upload',
     htmlBody: '',           // active rendered HTML
     pasteHtml: '',
-    plain: { heading:'Unlock Your Future', body:'Free Vocational Training Programs are now open. Limited seats available — reserve yours today and take the first step toward a new career.', btn:'Reserve My Seat', accent:'#5b3df5' },
-    annot: { on:false, deal:'Free · Limited seats', code:'', expiry:'Enrollment closes soon', img:'' },
+    plain: { heading:'New arrivals, up to 40% off', body:"Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn:'Shop the sale', accent:'#5b3df5' },
+    annot: { on:false, deal:'Up to 40% off', code:'', expiry:'Ends Sunday', img:'' },
     filler: { on:true, position:0 },
   };
 
   const SAMPLE_HTML = `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
     <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:50px 30px;text-align:center;">
-      <h1 style="color:#fff;margin:0 0 15px;font-size:36px;font-weight:800;letter-spacing:-0.5px;line-height:1.1;">Unlock Your Future</h1>
-      <p style="color:#e9e5ff;margin:0 0 24px;font-size:18px;font-weight:600;">Free Vocational Training Programs Now Open!</p>
-      <div style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,.5);color:#fff;padding:10px 22px;border-radius:30px;font-size:14px;font-weight:600;">⏳ Limited Seats Available</div>
+      <h1 style="color:#fff;margin:0 0 15px;font-size:36px;font-weight:800;letter-spacing:-0.5px;line-height:1.1;">Your Weekend Sale Is Here</h1>
+      <p style="color:#e9e5ff;margin:0 0 24px;font-size:18px;font-weight:600;">New arrivals — up to 40% off, this weekend only</p>
+      <div style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,.5);color:#fff;padding:10px 22px;border-radius:30px;font-size:14px;font-weight:600;">⏳ Ends Sunday</div>
     </div>
     <div style="padding:36px 30px;">
-      <h2 style="margin:0 0 10px;font-size:24px;color:#1a1a2e;">Ready to Level Up?</h2>
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#444;">Join thousands who transformed their careers with our fully-funded vocational training. Choose from 12 in-demand tracks and start learning today.</p>
-      <a href="#" style="display:inline-block;background:#5b3df5;color:#fff;text-decoration:none;padding:14px 34px;border-radius:10px;font-size:16px;font-weight:700;">Reserve My Seat →</a>
+      <h2 style="margin:0 0 10px;font-size:24px;color:#1a1a2e;">Ready to treat yourself?</h2>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#444;">Enjoy up to 40% off across the store, plus free shipping on orders over $50. Shop your favorites before they're gone.</p>
+      <a href="#" style="display:inline-block;background:#5b3df5;color:#fff;text-decoration:none;padding:14px 34px;border-radius:10px;font-size:16px;font-weight:700;">Shop the Sale →</a>
     </div>
   </div>`;
   state.htmlBody = SAMPLE_HTML;
@@ -439,7 +442,7 @@
     {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Hero image + code + CTA',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`${p.brand}: ${p.offer} 🎉`,snippet:`${p.offer}${p.code?` — use code ${p.code}`:''}. Limited time only.`,html:eWrap(eBrand(p)+eHeroImg(p,p.kw,3)+`<div style="padding:32px 34px;text-align:center;"><h1 style="margin:0 0 10px;font-size:26px;color:#111;">${p.offer}</h1><p style="margin:0 0 8px;font-size:15px;color:#555;">Treat yourself — this week only.</p>${p.code?`<div style="margin:16px 0;display:inline-block;border:2px dashed ${p.accent};border-radius:8px;padding:10px 22px;font-size:18px;font-weight:800;color:${p.accent};letter-spacing:1px;">${p.code}</div><br>`:''}<div style="margin-top:12px;">${eBtn(p,'Shop now')}</div></div>`)})},
     {name:'Confirmation',kind:'Transactional',icon:'✅',desc:'Order / booking confirmed',build:p=>{ const c=ecx(); const inner = c.ship ? `<div style="padding:30px 34px;"><h2 style="margin:0 0 6px;font-size:20px;color:#111;">${c.head} ✅</h2><p style="margin:0 0 18px;color:#666;font-size:14px;">${ecap(c.noun)} <b>#${p.orderId}</b> · ${c.line}</p>`+eOrderTable(p)+`<div style="text-align:center;margin-top:22px;">${eBtn(p,c.cta)}</div></div>` : `<div style="padding:36px 34px;text-align:center;"><div style="width:58px;height:58px;border-radius:50%;background:${p.accent}1f;color:${p.accent};font-size:30px;line-height:58px;margin:0 auto 16px;">✓</div><h2 style="margin:0 0 8px;font-size:22px;color:#111;">${c.head}</h2><p style="margin:0 0 8px;color:#555;font-size:15px;line-height:1.5;">${c.line}</p><p style="margin:0 0 22px;color:#999;font-size:13px;">${ecap(c.noun)} #${p.orderId}</p>${eBtn(p,c.cta)}</div>`; return {sender:p.brand,from:p.from,category:'updates',subject:`Your ${p.brand} ${c.noun} #${p.orderId} is confirmed`,snippet:c.line,html:eWrap(eBrand(p)+inner)}; }},
     {name:'Product picks',kind:'Promotional',icon:'🖼️',desc:'Featured products grid',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`Fresh picks from ${p.brand} ✨`,snippet:`Handpicked for you — new this week.`,html:eWrap(eBrand(p)+`<div style="padding:26px 30px 6px;text-align:center;"><h1 style="margin:0 0 4px;font-size:22px;color:#111;">New this week</h1><p style="margin:0;color:#777;font-size:14px;">Handpicked, just for you</p></div>`+eGrid(p)+`<div style="text-align:center;padding:6px 0 30px;">${eBtn(p,'Shop the collection')}</div>`)})},
-    {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP email',build:p=>({sender:p.brand,from:p.from,category:'updates',subject:`Your ${p.brand} verification code`,snippet:`Use code 457812 to continue. It expires in 10 minutes.`,html:eWrap(eBrand(p)+`<div style="padding:34px;text-align:center;"><h2 style="margin:0 0 8px;font-size:20px;color:#111;">Verify it's you</h2><p style="margin:0 0 20px;color:#666;font-size:14px;">Enter this code to complete your ${p.otpUse}.</p><div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#111;background:#f5f6f8;border-radius:10px;padding:16px 0;">457812</div><p style="margin:18px 0 0;color:#999;font-size:12px;">Expires in 10 minutes. If you didn't request it, ignore this email.</p></div>`)})},
+    {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP email',build:p=>{ const otp=genOtp(); return {sender:p.brand,from:p.from,category:'updates',subject:`Your ${p.brand} verification code`,snippet:`Use code ${otp} to continue. It expires in 10 minutes.`,html:eWrap(eBrand(p)+`<div style="padding:34px;text-align:center;"><h2 style="margin:0 0 8px;font-size:20px;color:#111;">Verify it's you</h2><p style="margin:0 0 20px;color:#666;font-size:14px;">Enter this code to complete your ${p.otpUse}.</p><div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#111;background:#f5f6f8;border-radius:10px;padding:16px 0;">${otp}</div><p style="margin:18px 0 0;color:#999;font-size:12px;">Expires in 10 minutes. If you didn't request it, ignore this email.</p></div>`)}; }},
     {name:'Welcome',kind:'Transactional',icon:'👋',desc:'Onboarding email',build:p=>({sender:p.brand,from:p.from,category:'updates',subject:`Welcome to ${p.brand} 🎉`,snippet:`We're glad you're here. Here's how to get started.`,html:eWrap(eBrand(p)+eHeroImg(p,p.kw,15)+`<div style="padding:30px 34px;text-align:center;"><h1 style="margin:0 0 10px;font-size:24px;color:#111;">Welcome aboard!</h1><p style="margin:0 0 20px;color:#555;font-size:15px;line-height:1.6;">Thanks for joining ${p.brand}. Let's get you set up in a couple of taps.</p>${eBtn(p,'Get started')}</div>`)})},
     {name:'Win-back',kind:'Promotional',icon:'💛',desc:'We miss you + offer',build:p=>({sender:p.brand,from:p.from,category:'promotions',subject:`We miss you 💛${p.code?` Here's ${p.code}`:''}`,snippet:`Come back to ${p.brand} — enjoy a welcome-back treat.`,html:eWrap(eBrand(p)+`<div style="padding:36px 34px;text-align:center;"><h1 style="margin:0 0 12px;font-size:26px;color:#111;">We miss you!</h1><p style="margin:0 0 18px;color:#555;font-size:15px;">It's been a while. Here's ${p.offer} to welcome you back.</p>${p.code?`<div style="margin:0 0 20px;display:inline-block;border:2px dashed ${p.accent};border-radius:8px;padding:10px 22px;font-size:18px;font-weight:800;color:${p.accent};">${p.code}</div><br>`:''}${eBtn(p,'Come back')}</div>`)})},
   ];
@@ -529,13 +532,13 @@
 
   // ---------- Filler inbox data ----------
   const FILLER = [
-    { name:'LinkedIn', email:'jobs@linkedin.com', subject:'5 new jobs for "Product Marketing"', snippet:'Based on your profile and searches, these roles may interest you…', time:'8:42 AM', unread:true, cat:'updates' },
-    { name:'Google', email:'no-reply@accounts.google.com', subject:'Security alert', snippet:'A new sign-in on Mac. If this was you, no action is needed.', time:'8:10 AM', unread:false, cat:'updates' },
-    { name:'Notion', email:'team@makenotion.com', subject:'Your workspace weekly digest', snippet:'Here is what happened across your teamspaces this week…', time:'Wed', unread:true, cat:'updates' },
-    { name:'Swiggy', email:'noreply@swiggy.in', subject:'Craving something? Flat 60% OFF today 🍔', snippet:'Order now and get free delivery on your next 3 orders.', time:'Tue', unread:false, cat:'promotions' },
-    { name:'Amazon.in', email:'offers@amazon.in', subject:'Deals of the Day — up to 70% off electronics', snippet:'Handpicked deals ending tonight. Shop before they are gone.', time:'Tue', unread:true, cat:'promotions' },
-    { name:'Medium Daily', email:'noreply@medium.com', subject:'Stories for you: The art of writing tight', snippet:'6 min read · Recommended based on your reading history.', time:'Mon', unread:false, cat:'updates' },
-    { name:'Figma', email:'updates@figma.com', subject:'Comment on "Q3 Campaign Mocks"', snippet:'Priya: Can we make the CTA a bit larger on mobile?', time:'Mon', unread:false, cat:'social' },
+    { name:'Workline', email:'jobs@workline.com', subject:'5 new jobs for "Product Marketing"', snippet:'Based on your profile and searches, these roles may interest you…', time:'8:42 AM', unread:true, cat:'updates' },
+    { name:'Nimbus Cloud', email:'no-reply@nimbuscloud.com', subject:'Security alert', snippet:'A new sign-in on Mac. If this was you, no action is needed.', time:'8:10 AM', unread:false, cat:'updates' },
+    { name:'Kanbanly', email:'team@kanbanly.com', subject:'Your workspace weekly digest', snippet:'Here is what happened across your teamspaces this week…', time:'Wed', unread:true, cat:'updates' },
+    { name:'QuickBite', email:'offers@quickbite.app', subject:'Craving something? 40% off today 🍔', snippet:'Order now and get free delivery on your next 3 orders.', time:'Tue', unread:false, cat:'promotions' },
+    { name:'Nova Market', email:'deals@novamarket.com', subject:'Deals of the Day — up to 70% off electronics', snippet:'Handpicked deals ending tonight. Shop before they are gone.', time:'Tue', unread:true, cat:'promotions' },
+    { name:'The Daily Read', email:'hello@dailyread.co', subject:'Stories for you: The art of writing tight', snippet:'6 min read · Recommended based on your reading history.', time:'Mon', unread:false, cat:'updates' },
+    { name:'Deck Studio', email:'notify@deckstudio.com', subject:'Comment on "Q3 Campaign Mocks"', snippet:'Jordan: Can we make the CTA a bit larger on mobile?', time:'Mon', unread:false, cat:'social' },
   ];
 
   function heroRow(){
@@ -836,7 +839,8 @@
   segBind('#skinSeg','skin'); $('#topVar').addEventListener('change',e=>{ state.view=e.target.value; render(); }); $('#topVar').value=state.view;
 
   // ---------- Collapsible groups ----------
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   // ---------- Export ----------
   // Remote CDN images (e.g. Pexels hero photos) taint / CORS-fail inside

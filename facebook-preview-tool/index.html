@@ -169,10 +169,7 @@
           <label class="f"><span>Reactions</span><input type="text" id="fbReactions"></label>
           <label class="f"><span>Comments</span><input type="text" id="fbComments"></label>
         </div>
-        <div class="row2">
-          <label class="f"><span>Shares</span><input type="text" id="fbShares"></label>
-          <label class="f"><span>Timestamp</span><input type="text" id="fbTime" value="2h"></label>
-        </div>
+        <label class="f"><span>Shares</span><input type="text" id="fbShares"></label>
       </div>
     </div>
   </aside>
@@ -440,7 +437,6 @@
     $('#fbReactions').value=state.fb.reactions||'';
     $('#fbComments').value=state.fb.comments||'';
     $('#fbShares').value=state.fb.shares||'';
-    $('#fbTime').value=state.fb.time||'';
     const mi=$('#fbMedia'); mi.innerHTML=''; mi.appendChild(imageField(()=>state.fb.media, v=>{ state.fb.media=v; render(); }));
     setFormatGroups();
   }
@@ -457,7 +453,6 @@
   $('#fbReactions').addEventListener('input',e=>{ state.fb.reactions=e.target.value; render(); });
   $('#fbComments').addEventListener('input',e=>{ state.fb.comments=e.target.value; render(); });
   $('#fbShares').addEventListener('input',e=>{ state.fb.shares=e.target.value; render(); });
-  $('#fbTime').addEventListener('input',e=>{ state.fb.time=e.target.value; render(); });
 
   (function(){ const drop=$('#avDrop'),inp=$('#avInput');
     const set=d=>{ state.brandLogo=d; $('#avImg').src=d; $('#avPrev').style.display='flex'; render(); };
@@ -481,7 +476,8 @@
     state.fb={ page:state.fb.page, verified:state.fb.verified, media:'', primary:state.format==='feed'?'Your text here.':'', headline:state.format==='marketplace'?'Your listing title':'Your headline', desc:'', url:state.fb.url, price:state.fb.price||'$89', cta:'Shop Now', reactions:'1,204', comments:'18', shares:'6', time:'2h' };
     syncEditor(); render();
   });
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the CTA':'Back to editing'); });
 

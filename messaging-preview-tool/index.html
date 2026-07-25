@@ -21,6 +21,10 @@
   .addmsg button:hover{ background:var(--accent-weak); border-color:#c9c6f5; }
   .stage.dark-stage{ background:radial-gradient(120% 120% at 15% 0%, #23262f 0%, transparent 45%), #1c1e24; }
   .sim-on .clickable{ border-radius:9px; }
+  /* WhatsApp CTA + list rows bleed to the bubble edge, so the generic 2px ring reads as a
+     stray boxy outline (esp. on the first of stacked buttons). Use a clean fill instead. */
+  .sim-on .wa-cta.clickable, .sim-on .wa-litem.clickable{ box-shadow:none; border-radius:0; background:rgba(99,91,255,.07); }
+  .sim-on .wa-cta.clickable:active, .sim-on .wa-litem.clickable:active{ background:rgba(99,91,255,.14); opacity:1; }
   /* ===================== WhatsApp ===================== */
   .wa{ flex:1; display:flex; flex-direction:column; background:#efeae2; min-height:0; }
   .wa.dark{ background:#0b141a; }
@@ -288,6 +292,8 @@
       +"</svg>";
     return 'data:image/svg+xml,'+encodeURIComponent(svg); }
   let uid=1; const nid=()=>'m'+(uid++);
+  // Random 6-digit one-time code (never a hardcoded value)
+  const genOtp=()=>String(Math.floor(100000+Math.random()*900000));
 
 
   const state={
@@ -355,7 +361,7 @@
       {name:'Seasonal offer',kind:'Promotional',icon:'🏷️',desc:'Image + offer + CTA',build:p=>[ mk('template',{img:photo(p.kw,600,340,3),body:`${p.emoji} *${p.offer}* just went live at ${p.brand}.\nYou're on the early list — first pick, best of the lot.`,footer:p.brand,buttons:`Shop the drop | url | https://${p.url}`}) ]},
       {name:'Confirmation',kind:'Transactional',icon:'✅',desc:'Order / booking confirmed',build:p=>{ const c=ecx(); return [ mk('template',{body:`Your ${c.noun} *#${p.orderId}* is confirmed ✅\n${c.line}`,footer:p.brand,buttons:`${c.cta} | url | https://${p.url}${c.ship?'/track':''}\nContact support | call | +18005550199`}) ]; }},
       {name:'Interactive flow',kind:'Flow',icon:'🔀',desc:'Tap buttons to branch',build:p=>[ mk('template',{img:photo(p.kw,600,340,7),body:p.flow.intro,footer:p.brand,buttons:optStr(p.flow.opts)}) ]},
-      {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP + copy button',build:p=>[ mk('template',{body:`*457 812* is your ${p.brand} ${p.otpUse} code.\nFor your security, never share it.`,footer:'Expires in 10 minutes',buttons:`Copy code | copy`}) ]},
+      {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP + copy button',build:p=>{ const otp=genOtp(); return [ mk('template',{body:`*${otp.slice(0,3)} ${otp.slice(3)}* is your ${p.brand} ${p.otpUse} code.\nFor your security, never share it.`,footer:'Expires in 10 minutes',buttons:`Copy code | copy`}) ]; }},
       {name:'Product carousel',kind:'Promotional',icon:'🖼️',desc:'Swipeable cards',build:p=>[ mk('text',{text:`${p.emoji} We had a feeling these were your kind of thing:`}), mk('carousel',{cards:p.carousel.map((c,i)=>`${photo(kwFor(c[0]),300,200,i+1)} | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')}) ]},
       {name:'Feedback request',kind:'Flow',icon:'⭐',desc:'Rating replies branch',build:p=>[ mk('template',{body:`Thanks for choosing ${p.brand} 🙌\n${p.feedbackQ||'How did we do?'}`,footer:p.brand,buttons:`😍 Loved it | reply >> Amazing — thank you! 💛 Mind leaving a quick review? ${p.url}/review\n🙂 It was OK | reply >> Thanks for the honest feedback — we're always improving.\n😞 Not great | reply >> So sorry. Reply here and we'll make it right.`}) ]},
     ],
@@ -369,7 +375,7 @@
     ],
     sms:[
       {name:'Promotional',kind:'Promotional',icon:'🏷️',desc:'Offer + link',build:p=>[ mk('text',{text:`${p.emoji} ${p.brand}: ${p.offer}! Shop now: ${p.url}/sale\nReply STOP to opt out.`}) ]},
-      {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP',build:p=>[ mk('text',{text:`457812 is your ${p.brand} ${p.otpUse} code. It expires in 10 minutes. Do not share it with anyone.`}) ]},
+      {name:'Verification code',kind:'Transactional',icon:'🔐',desc:'OTP',build:p=>{ const otp=genOtp(); return [ mk('text',{text:`${otp} is your ${p.brand} ${p.otpUse} code. It expires in 10 minutes. Do not share it with anyone.`}) ]; }},
       {name:'Confirmation',kind:'Transactional',icon:'✅',desc:'Order / booking status',build:p=>{ const c=ecx(); return [ mk('text',{text: c.ship ? `Your ${p.brand} ${c.noun} #${p.orderId} is out for delivery and arrives today by 6 PM. Track: ${p.url}/t/${p.orderId}` : `Your ${p.brand} ${c.noun} #${p.orderId} is confirmed. ${c.line} ${p.url}`}) ]; }},
       {name:'Reminder',kind:'Transactional',icon:'🔔',desc:'Nudge',build:p=>[ mk('text',{text:`Reminder from ${p.brand}: ${p.reminder}. Details: ${p.url}`}) ]},
       {name:'Flash sale',kind:'Promotional',icon:'⚡',desc:'Urgency + link',build:p=>[ mk('text',{text:`⏰ Last chance! ${p.offer} ends at midnight — ${p.brand}. ${p.url}/flash`}) ]},
@@ -552,7 +558,7 @@
   // ---------- DIY block builders ----------
 
   const FIELDS={
-    text:[['text','Message text','ta'],['buttons','Buttons','blk','wa,rcs'],['chips','Suggested replies (tap to branch)','blk','rcs']],
+    text:[['text','Message text','ta'],['buttons','Buttons','blk','wa'],['chips','Suggested replies (tap to branch)','blk','rcs']],
     image:[['img','Image','img'],['caption','Caption','ta'],['buttons','Buttons','blk','wa']],
     card:[['img','Image','img'],['title','Title','tx'],['desc','Description','ta'],['buttons','Buttons','blk'],['chips','Suggested replies (tap to branch)','blk','rcs']],
     carousel:[['cards','Products','blk'],['chips','Suggested replies (RCS)','blk','rcs']],
@@ -638,7 +644,8 @@
   function messagesValidFor(ch){ const a=CHANNEL_TYPES[ch].map(x=>x[0]); return state.messages.length && state.messages.every(m=>a.includes(m.type)); }
 
   $('#clearMsgs').addEventListener('click',()=>{ state.messages=[mk('text')]; state.played=[]; renderMsgList(); render(); });
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; $('#btnReset').style.display=state.play?'':'none'; if(!state.play) state.played=[]; render(); toast(state.play?'Simulate on — tap buttons, lists & chips to branch':'Back to editing'); });
   $('#btnReset').addEventListener('click',()=>{ state.played=[]; render(); });

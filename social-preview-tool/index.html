@@ -427,7 +427,8 @@
     state.ig={ brand:state.ig.brand, handle:state.ig.handle, verified:state.ig.verified, media:'', caption:state.format==='feed'?'Your caption here.':'', cta:'Shop Now', likes:'1,204', comments:'18', time:'2 hours ago' };
     syncEditor(); render();
   });
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the CTA':'Back to editing'); });
 

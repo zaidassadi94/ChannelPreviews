@@ -171,9 +171,36 @@
     .cs-ai-status.ok{ background:#e9fbf1; color:#0b7a43; border:1px solid #b6ebcc; }
     .cs-ai-spin{ width:15px; height:15px; border:2px solid rgba(255,255,255,.5); border-top-color:#fff; border-radius:50%; animation:cs-ai-sp .7s linear infinite; }
     @keyframes cs-ai-sp{ to{ transform:rotate(360deg); } }
-    @media (max-width:920px){ .cs-ai{ top:0; width:100vw; max-width:100vw; } }`;
+    @media (max-width:920px){ .cs-ai{ top:0; width:100vw; max-width:100vw; } }
+    /* after a generation, flash the editor so it's obvious the copy is editable here */
+    .cs-ai-reveal{ animation:cs-ai-reveal 1.8s ease 1; }
+    @keyframes cs-ai-reveal{ 0%,72%{ box-shadow:inset 4px 0 0 var(--accent,#635bff); } 100%{ box-shadow:inset 0 0 0 transparent; } }
+    .cs-ai-editnote{ margin:10px 20px 4px; padding:9px 11px; border-radius:9px; font-size:11.5px; line-height:1.45;
+      background:var(--accent-weak,#eeecff); color:var(--accent-ink,#4b45d6); border:1px solid #dcd9fb; display:flex; gap:7px; align-items:flex-start; }
+    .cs-ai-editnote b{ font-weight:700; } .cs-ai-editnote .x{ margin-left:auto; cursor:pointer; opacity:.6; border:0; background:none; color:inherit; font-size:13px; line-height:1; padding:0 2px; }`;
     const el = document.createElement('style'); el.id = 'cs-ai-styles'; el.textContent = css;
     document.head.appendChild(el);
+  }
+
+  // After a generation, make it obvious the copy is now editable in the sidebar:
+  // expand the editor sections, drop a one-time note, flash + scroll the editor.
+  function revealEditor() {
+    const ed = document.querySelector('.editor') || document.querySelector('aside');
+    if (!ed) return;
+    // reveal every section so no AI-filled field stays hidden in a collapsed accordion
+    document.querySelectorAll('[data-group]').forEach(g => g.classList.remove('collapsed'));
+    if (!ed.querySelector('.cs-ai-editnote')) {
+      const note = document.createElement('div');
+      note.className = 'cs-ai-editnote';
+      note.innerHTML = '<span>✎</span><span><b>Generated — edit any field below to fine-tune.</b> No need to regenerate for small tweaks.</span><button class="x" title="Dismiss">✕</button>';
+      note.querySelector('.x').addEventListener('click', () => note.remove());
+      const anchor = ed.querySelector('.ctx') || ed.querySelector('.brand');
+      if (anchor && anchor.parentNode === ed) ed.insertBefore(note, anchor.nextSibling);
+      else ed.insertBefore(note, ed.firstChild);
+    }
+    ed.classList.remove('cs-ai-reveal'); void ed.offsetWidth; ed.classList.add('cs-ai-reveal');
+    setTimeout(() => ed.classList.remove('cs-ai-reveal'), 1900);
+    try { ed.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { ed.scrollTop = 0; }
   }
 
   let _autogen = null;   // set by init(); lets a handoff from another tool trigger a run
@@ -260,6 +287,7 @@
         // the adapter owns image resolution (via ChannelStudioAI.photoFor); the
         // brief lets it fall back to the message's own subject, not the vertical.
         await apply(msg, { brief });
+        revealEditor();
         toast('✨ AI message generated');
         const note = (target && target !== ctx.channel) ? ('Switched to ' + (CH_LABEL[target] || target) + '. ') : '';
         setStatus('ok', note + 'Done — edit any field on the left, or generate again.');

@@ -413,8 +413,8 @@
         <label class="f"><span>Eyebrow (small label)</span><input type="text" id="gmEyebrow"></label>
         <label class="f"><span>Headline</span><input type="text" id="gmHl"></label>
         <label class="f"><span>Sub-text</span><textarea id="gmSub"></textarea></label>
-        <label class="f"><span>Prize (the reward)</span><input type="text" id="gmPrize" placeholder="e.g. 20% OFF"></label>
-        <label class="f"><span>Prize caption</span><input type="text" id="gmPrizeCap" placeholder="e.g. on your next order"></label>
+        <label class="f" id="gmPrizeWrap"><span>Prize (the reward)</span><input type="text" id="gmPrize" placeholder="e.g. 20% OFF"></label>
+        <label class="f" id="gmPrizeCapWrap"><span>Prize caption</span><input type="text" id="gmPrizeCap" placeholder="e.g. on your next order"></label>
         <label class="f"><span>CTA button</span><input type="text" id="gmCta" placeholder="e.g. Claim reward"></label>
         <div class="toggle-row"><span>Close (✕) button</span><label class="switch"><input type="checkbox" id="gmClose" checked><span class="slider"></span></label></div>
       </div>
@@ -700,11 +700,14 @@
       const strip=syms.map(s=>`<span>${s}</span>`).join(''); return `<div class="gm-reel"><div class="gm-strip" style="--rest:${-74}px; --stop:${-8*74}px">${strip}</div></div>`; };
     return `<div class="gm-slots${gmTap(true)}"${gmAttr()}>${reel(0)}${reel(1)}${reel(2)}</div>`;
   }
+  // On the wheel the winning segment defines the prize; elsewhere the Prize field does.
+  function gmWinLabel(){ if(state.game.type==='wheel'){ const w=gmSegList().find(r=>r.win); if(w) return w.label; } return state.game.prize||'You won!'; }
   function renderGame(){
     const g=state.game, t=g.type, acc=GM_ACCENTS[t]||GM_ACCENTS.scratch;
     const el = t==='wheel'?gmWheel(acc) : t==='box'?gmBox() : t==='slots'?gmSlots() : gmScratch();
     const hint = t==='wheel'?'Tap SPIN to play' : t==='box'?'Tap the box to open' : t==='slots'?'Tap to spin' : 'Scratch the card';
-    const pill = `<div class="gm-prize-pill"><span class="gm-star">★</span> ${esc(g.prize||'You won!')}${g.prizeCap?` · ${esc(g.prizeCap)}`:''}</div>`;
+    const capText = t==='wheel'?'' : (g.prizeCap?` · ${esc(g.prizeCap)}`:'');
+    const pill = `<div class="gm-prize-pill"><span class="gm-star">★</span> ${esc(gmWinLabel())}${capText}</div>`;
     const x = g.close?`<div class="gm-x">${IC.clear}</div>`:'';
     return `<div class="gm" style="--gm-accent:${acc[0]}; --gm-accent-2:${acc[1]}; --gm-accent-rgb:${hexRgb(acc[0])}">
       <div class="gm-top">${appIcon('gm-ic')}<span class="gm-nm">${esc(appName())}</span>${x}</div>
@@ -743,7 +746,7 @@
   // Gamification: tapping the game reveals the prize (scratch fades, wheel spins,
   // box opens, reels land) via the .revealed class, then a celebratory toast.
   function bindGame(){ if(!state.play||state.channel!=='game') return; const gm=stage.querySelector('.gm'); if(!gm) return;
-    const reveal=e=>{ if(e) e.stopPropagation(); if(gm.classList.contains('revealed')) return; gm.classList.add('revealed'); toast('🎉 '+(state.game.prize||'You won!')+' — '+appName()); };
+    const reveal=e=>{ if(e) e.stopPropagation(); if(gm.classList.contains('revealed')) return; gm.classList.add('revealed'); toast('🎉 '+gmWinLabel()+' — '+appName()); };
     stage.querySelectorAll('[data-gm]').forEach(el=>el.addEventListener('click',reveal)); }
 
   // ======================================================================
@@ -866,7 +869,9 @@
         const sel=document.createElement('select'); [['primary','Primary (filled)'],['secondary','Secondary (outline)'],['text','Text (plain)']].forEach(o=>{ const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if((row.style||'primary')===o[0]) op.selected=true; sel.appendChild(op); }); sel.addEventListener('change',()=>{ row.style=sel.value; commit(); }); blk.appendChild(sel);
         host.appendChild(blk);
       });
-      if(rows.length<2){ const add=document.createElement('button'); add.type='button'; add.className='blk-add'; add.textContent='+ Add CTA'; add.onclick=()=>{ rows.push({label:'Button',style:rows.length?'text':'primary'}); commit(); draw(); }; host.appendChild(add); }
+      const maxC = state.inapp.type==='banner' ? 1 : 2;  // a slim banner shows a single action
+      if(rows.length<maxC){ const add=document.createElement('button'); add.type='button'; add.className='blk-add'; add.textContent='+ Add CTA'; add.onclick=()=>{ rows.push({label:'Button',style:rows.length?'text':'primary'}); commit(); draw(); }; host.appendChild(add); }
+      if(state.inapp.type==='banner'){ const h=document.createElement('div'); h.className='hint'; h.style.marginTop='6px'; h.textContent='Banners show a single action.'; host.appendChild(h); }
     }
     draw();
   }
@@ -920,7 +925,12 @@
     $('#gmSegments').value=g.segments||'';
     applyGameFieldVis();
   }
-  function applyGameFieldVis(){ $('#grpWheel').style.display = (state.channel==='game'&&state.game.type==='wheel')?'':'none'; }
+  function applyGameFieldVis(){ const wheel=(state.channel==='game'&&state.game.type==='wheel');
+    $('#grpWheel').style.display = wheel?'':'none';
+    // On the wheel, the winning segment IS the prize — hide the separate Prize fields so
+    // the two can't disagree (the pill/toast read the winning segment).
+    $('#gmPrizeWrap').style.display = wheel?'none':'';
+    $('#gmPrizeCapWrap').style.display = wheel?'none':''; }
   function fillGameSeg(){ fillTopVar(); }
 
   // ---------- industries ----------
@@ -942,7 +952,7 @@
     sel.value=cur;
   }
   $('#topVar').addEventListener('change',e=>{ const v=e.target.value, ch=state.channel;
-    if(ch==='inapp'){ state.inapp.type=v; applyInappFieldVis(); }
+    if(ch==='inapp'){ state.inapp.type=v; if(v==='banner') state.inapp.ctas=serCtas(parseCtas(state.inapp.ctas).slice(0,1)); applyInappFieldVis(); buildCtas($('#iaCtas')); }
     else if(ch==='game'){ state.game.type=v; applyGameFieldVis(); }
     else { state.surface=v; syncAppearance(); }
     render();
@@ -1023,7 +1033,8 @@
     else { state.push={ appName:state.push.appName, title:'New notification', body:'Your message here.', image:'', actions:'', time:'now' }; }
     syncEditor(); render();
   });
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — tap the action buttons':'Back to editing'); });
 

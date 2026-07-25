@@ -1,7 +1,7 @@
 # Gmail Preview Studio
 
 A single self-contained HTML file that renders pixel-accurate **Gmail mockups** for
-email creatives — built for producing screenshots for decks (e.g. MoEngage campaign
+email creatives — built for producing screenshots for decks (e.g. campaign
 previews). No backend, no build step, no AI. Everything runs in the browser.
 
 ## Use it
@@ -15,7 +15,7 @@ Open `index.html` in any browser, or host the folder anywhere static
 - **Two views** — the **inbox list** and the **open email** (reading view). Toggle live.
 - **Three ways to supply the email body:**
   - **Upload HTML** — drag/drop or browse an existing `.html` email file.
-  - **Paste HTML** — paste raw markup (from MoEngage, an ESP, wherever) and apply.
+  - **Paste HTML** — paste raw markup (from your ESP, campaign tool, wherever) and apply.
   - **Plain** — build a simple email from heading + copy + button + accent color.
 - **Editable metadata** — sender name/email, logo (or auto Gmail-style monogram
   avatar), subject, snippet, timestamp, "to" line, unread / starred / important

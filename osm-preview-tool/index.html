@@ -175,7 +175,7 @@
     <div class="group collapsed" data-group>
       <button class="ghead" data-head>Templates <span class="chev">▼</span></button>
       <div class="gbody">
-        <div class="hint">MoEngage-style onsite messages. Picking one sets the right <b>format</b> up top. Hit <b>Simulate</b> to try inputs, ratings &amp; the CTA.</div>
+        <div class="hint">Onsite web messages. Picking one sets the right <b>format</b> up top. Hit <b>Simulate</b> to try inputs, ratings &amp; the CTA.</div>
         <div class="tpl-grid" id="tplGrid"></div>
         <button class="btn reset block" id="clearMsgs" style="margin-top:11px;"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5M19 9a8 8 0 00-14.5-2.5M5 15a8 8 0 0014.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear &amp; start blank</button>
       </div>
@@ -212,6 +212,8 @@
         <div class="f" id="wImg"><span>Image (optional)</span><div class="imgz" id="osmImg"></div></div>
         <label class="f" id="wCta"><span>Primary button</span><input type="text" id="osmCta"></label>
         <label class="f" id="wCta2"><span>Secondary link (optional)</span><input type="text" id="osmCta2"></label>
+        <label class="f" id="wScaleLo"><span>Survey scale — low label</span><input type="text" id="osmScaleLo"></label>
+        <label class="f" id="wScaleHi"><span>Survey scale — high label</span><input type="text" id="osmScaleHi"></label>
         <label class="f" id="wCode"><span>Coupon code (optional)</span><input type="text" id="osmCode"></label>
         <div class="toggle-row" id="wInput"><span>Email capture input</span><label class="switch"><input type="checkbox" id="osmInput"><span class="slider"></span></label></div>
         <label class="f" id="wCd"><span>Countdown (HH:MM:SS, blank = off)</span><input type="text" id="osmCd" placeholder="05:59:59"></label>
@@ -264,7 +266,7 @@
     channel:'osm', device:'desktop', format:'popup', play:false,
     industry:'ecom', sub:'fashion', brandLogo:null,
     osm:{ site:'Nova', url:'nova.shop', headline:'', body:'', image:'', cta:'Shop Now', cta2:'',
-          code:'', input:false, countdown:'', rating:3,
+          code:'', input:false, countdown:'', rating:3, scaleLo:'Not likely', scaleHi:'Very likely',
           bg:'branded', bgImage:'', blur:true },
   };
   const siteName=()=>state.osm.site;
@@ -333,14 +335,14 @@
     return `<div class="osm-banner ${pos}"><div class="msg">${o.headline?`<span>${fmtLite(o.headline)}</span>`:''}${o.countdown?cdHTML(cdSecs()||0):''}</div>${o.cta?`<div class="cta${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</div>`:''}${o.cta2?`<div class="cta ghost${ck(true)}"${optAttr({reply:o.cta2})}>${esc(o.cta2)}</div>`:''}<div class="bx${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div></div>`; }
 
   function ovNudge(){ const o=state.osm; const img=o.image?`<img class="thumb" src="${esc(o.image)}" alt="${esc(kwFor(o.headline))}">`:'';
-    return `<div class="osm-nudge"><div class="nx${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div><div class="row">${img}<div class="tx">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="bd">${fmtLite(o.body)}</div>`:''}${o.cta?`<span class="cta${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</span>`:''}</div></div></div>`; }
+    return `<div class="osm-nudge"><div class="nx${ck(true)}"${optAttr({reply:'Dismiss'})}>${IC.x}</div><div class="row">${img}<div class="tx">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="bd">${fmtLite(o.body)}</div>`:''}${o.cta?`<span class="cta${ck(true)}"${optAttr({reply:o.cta})}>${esc(o.cta)}</span>`:''}${cta2Link()}</div></div></div>`; }
 
   function ovFull(){ const o=state.osm; const src=o.image||photo(KW[ctxId()]||'product',1200,900);
     return `<div class="osm-full"><img class="osm-full-img" src="${esc(src)}" alt="${esc(kwFor(o.headline)||'promo')}"><div class="scrim"></div>${xBtn(false)}<div class="in">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}${o.countdown?cdHTML(cdSecs()||0):''}<div>${ctaBtn()}</div>${cta2Link()}</div></div>`; }
 
   function ovSurvey(){ const o=state.osm; const emo=['😞','🙁','😐','🙂','😍'];
     const rate=emo.map((e,i)=>`<span class="e${state.play&&i+1===o.rating?' on':''}${ck(true)}"${optAttr({reply:'Rated '+(i+1)+'/5'})}>${e}</span>`).join('');
-    return `<div class="osm-center"><div class="osm-modal sm">${xBtn(true)}<div class="bd">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}<div class="osm-rate">${rate}</div><div class="osm-scale"><span>Not likely</span><span>Very likely</span></div><div style="margin-top:20px">${ctaBtn('block')}</div></div></div></div>`; }
+    return `<div class="osm-center"><div class="osm-modal sm">${xBtn(true)}<div class="bd">${o.headline?`<div class="hl">${esc(o.headline)}</div>`:''}${o.body?`<div class="tx">${fmtLite(o.body)}</div>`:''}<div class="osm-rate">${rate}</div><div class="osm-scale"><span>${esc(o.scaleLo||'Not likely')}</span><span>${esc(o.scaleHi||'Very likely')}</span></div><div style="margin-top:20px">${ctaBtn('block')}</div></div></div></div>`; }
 
   const INTRUSIVE={ popup:1, full:1, survey:1 };
   function overlayHTML(){
@@ -428,6 +430,7 @@
     const o=state.osm;
     o.headline=f.headline||''; o.body=f.body||''; o.image=f.image||''; o.cta=f.cta||''; o.cta2=f.cta2||'';
     o.code=f.code||''; o.input=!!f.input; o.countdown=f.countdown||'';
+    o.scaleLo=f.scaleLo||'Not likely'; o.scaleHi=f.scaleHi||'Very likely';
     applyFieldVis(); syncEditor(); render(); toast('Template applied'+(t.flow?' · hit Simulate to try it':''));
   }
 
@@ -448,6 +451,8 @@
     $('#wBody').style.display = 'block';
     $('#wImg').style.display = (f==='popup'||f==='full'||isNudge)?'':'none';
     $('#wCta2').style.display = (isSurvey)?'none':'';
+    $('#wScaleLo').style.display = isSurvey?'':'none';
+    $('#wScaleHi').style.display = isSurvey?'':'none';
     $('#wCode').style.display = (f==='popup')?'':'none';
     $('#wInput').style.display = (f==='popup')?'':'none';
     $('#wCd').style.display = (f==='popup'||isBanner||f==='full')?'':'none';
@@ -461,6 +466,7 @@
     const o=state.osm;
     $('#osmSite').value=o.site||''; $('#osmUrl').value=o.url||'';
     $('#osmHl').value=o.headline||''; $('#osmBody').value=o.body||''; $('#osmCta').value=o.cta||''; $('#osmCta2').value=o.cta2||'';
+    $('#osmScaleLo').value=o.scaleLo||''; $('#osmScaleHi').value=o.scaleHi||'';
     $('#osmCode').value=o.code||''; $('#osmInput').checked=!!o.input; $('#osmCd').value=o.countdown||''; $('#osmBlur').checked=!!o.blur;
     const mi=$('#osmImg'); mi.innerHTML=''; mi.appendChild(imageField(()=>o.image, v=>{ o.image=v; render(); }));
     const bi=$('#bgImg'); bi.innerHTML=''; bi.appendChild(imageField(()=>o.bgImage, v=>{ o.bgImage=v; render(); }));
@@ -475,6 +481,8 @@
   $('#osmBody').addEventListener('input',e=>{ state.osm.body=e.target.value; render(); });
   $('#osmCta').addEventListener('input',e=>{ state.osm.cta=e.target.value; render(); });
   $('#osmCta2').addEventListener('input',e=>{ state.osm.cta2=e.target.value; render(); });
+  $('#osmScaleLo').addEventListener('input',e=>{ state.osm.scaleLo=e.target.value; render(); });
+  $('#osmScaleHi').addEventListener('input',e=>{ state.osm.scaleHi=e.target.value; render(); });
   $('#osmCode').addEventListener('input',e=>{ state.osm.code=e.target.value; render(); });
   $('#osmInput').addEventListener('change',e=>{ state.osm.input=e.target.checked; render(); });
   $('#osmCd').addEventListener('input',e=>{ state.osm.countdown=e.target.value; render(); });
@@ -503,7 +511,8 @@
     const o=state.osm; o.headline='Your headline'; o.body='Your message goes here.'; o.image=''; o.cta='Get started'; o.cta2=''; o.code=''; o.input=false; o.countdown='';
     syncEditor(); render();
   });
-  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>h.closest('[data-group]').classList.toggle('collapsed')));
+  // Single-open accordion: opening one section collapses the others (no long scroll).
+  document.querySelectorAll('[data-head]').forEach(h=>h.addEventListener('click',()=>{ const g=h.closest('[data-group]'); const willOpen=g.classList.contains('collapsed'); document.querySelectorAll('[data-group]').forEach(x=>x.classList.add('collapsed')); if(willOpen) g.classList.remove('collapsed'); }));
 
   $('#btnPlay').addEventListener('click',()=>{ state.play=!state.play; const b=$('#btnPlay'); b.classList.toggle('on',state.play); b.innerHTML=state.play?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Editing':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Simulate'; render(); toast(state.play?'Simulate on — try the message':'Back to editing'); });
 

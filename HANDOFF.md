@@ -11,7 +11,7 @@ whole history. Read this first.
 
 A set of **self-contained, static HTML tools** that produce **pixel-accurate channel
 mockups** (Gmail, WhatsApp, RCS, SMS) for marketing/campaign screenshots to drop into
-decks. Built for a MoEngage-style use case. **No backend, no build, no framework, no
+decks. Built for a lifecycle-marketing use case. **No backend, no build, no framework, no
 AI at runtime.** Everything is plain HTML/CSS/vanilla JS in single files. The user
 (repo owner) is **non-technical** — interacts via the deployed Vercel site and by
 pasting things into chat; do not assume they can run terminals/scripts.
@@ -133,7 +133,7 @@ them in headless Chromium via the global Playwright at
   `state.push={appName,title,body,image,actions,time}` + `state.expanded/surface/wallpaper/appLogo`.
   Templates = `PUSH_ARCH` (6: 2 Promo / 2 Txn / 2 Flow) × `PACKS`. Simulate makes the
   action buttons tappable (toast feedback) — push has no branching conversation.
-- **In-App (done):** MoEngage-style messages over the dimmed `appBackdrop()` (scrim
+- **In-App (done):** lifecycle-marketing messages over the dimmed `appBackdrop()` (scrim
   `.abd-scrim`). Topbar **type seg** (`#inappSeg`, `IATYPES`): **Modal / Banner / Full /
   Sheet / Image**. Editor fields adapt per type (`applyInappFieldVis()`): image (hidden
   for banner), headline + body (hidden for image-only), 1–2 **CTAs** via a block builder
@@ -181,7 +181,7 @@ them in headless Chromium via the global Playwright at
   `CH_LABEL`, and a `CH_WORDS` entry so "an instagram story for…" hands off here).
 
 ### osm-preview-tool (Onsite Messaging — web)
-- MoEngage-style **web** onsite messaging. Unlike In-App (mobile app), OSM renders on a
+- lifecycle-marketing **web** onsite messaging. Unlike In-App (mobile app), OSM renders on a
   **web browser frame**: `state.device` is `desktop` (a `.osm-win` browser window — traffic
   lights + address bar) or `mobile` (the shared `.phone` frame + a mobile-browser `.osm-mbar`).
   `state.osm={site,url,headline,body,image,cta,cta2,code,input,countdown,rating,bg,bgImage,blur}`.
@@ -391,7 +391,7 @@ prematurely close the script — this bit us once in the gmail tool).
 ## 10. Status & possible next steps
 
 **Done 2026-07-23 (Onsite Messaging — a new WEB channel + tool):** Added a **sixth tool**,
-`osm-preview-tool/index.html`, hosting the **Onsite Messaging** channel — MoEngage-style web
+`osm-preview-tool/index.html`, hosting the **Onsite Messaging** channel — lifecycle-marketing web
 messages on a desktop-browser or mobile-web frame, with all six formats (Popup, Banner
 top/bottom, Nudge, Full-screen, Survey/Feedback), a live countdown timer, a 12-template
 library, and the **Background control** (branded skeleton / upload screenshot / neutral +
@@ -646,11 +646,10 @@ image system, block builder, device frame + export, dropdown nav). The owner app
 - **Notify app backdrop** — see §4: replaced the grey skeleton with a realistic
   vertical-aware app home.
 
-**Smaller cleanups to fold in:** Gmail state still has a stale `"Social Development Bank"`
-default (harmless — overwritten by the first template on load, but should become a generic
-brand). The Gmail email body could later become the same block builder. Review the
-`family` photo (telecom) per the "US, no Indians" ask. AI panel: could add durable rate
-limiting (Vercel KV) and an optional real image-gen source later.
+**Smaller cleanups to fold in:** Gmail defaults are now a generic fictional brand (Nova) —
+the real client campaign was removed as part of the white-label sweep. The Gmail email body
+could later become the same block builder. AI panel: could add durable rate limiting
+(Vercel KV) and an optional real image-gen source later.
 
 **Cross-repo note:** This project was first built by mistake inside
 `zaidassadi94/SamuhaWorldCup` on branch `claude/gmail-preview-tool-2pg33e`, then moved
