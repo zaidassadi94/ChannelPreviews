@@ -10,11 +10,14 @@ migrated and verified** — WhatsApp (the original reference) plus RCS, SMS, Pus
 In-App, Gamification, Gmail, Onsite Messaging, Instagram Ads and Facebook Ads.
 Each has its render (channel-owned frame → `PhoneFrame`/`DesktopFrame`, scaled by
 `StageFit`), section panels, and per-vertical templates. No "Migrating" stubs
-remain. The remaining work is the **shared features still stubbed in the shell**:
-Export PNG, Copy, Record, AI panel, and real (network) images/logos — see below.
+remain. **All the shared shell features are now ported too** — Export PNG, Copy,
+Record (WebM/GIF + trim studio), the ✨ AI panel, and real photos/logos. The app is
+at parity with the six legacy tools; the last step is promoting `studio/` on Vercel
+(exact settings in §5).
 
-- **Branch:** `claude/channel-ux-audit-vw4qf6`. Do NOT push to `main` yet — the
-  owner said "we'll push to main later." Keep committing to this branch.
+- **Branch:** originally `claude/channel-ux-audit-vw4qf6`; the shared-shell port
+  continued on `claude/studio-shared-shell-port-jozeu8` (based on it). Do NOT push to
+  `main` yet — the owner said "we'll push to main later." Keep committing to the branch.
 - **Commit footer:** end messages with the Co-Authored-By + Claude-Session lines
   (see previous commits). Don't put the model id anywhere in the repo.
 - **Live preview link (keep it stable):** https://claude.ai/code/artifact/d3da92cb-53ea-4957-b406-ee0255c54cbc
@@ -109,10 +112,25 @@ redrawing. For channel `X`:
 5. **Register.** In `registry.tsx`, set the channel's `sections` + `Preview`.
 6. **Verify.** `npm run build` green, Playwright smoke test, screenshot.
 
-## Shared features still to port — the whole next-session backlog
-All five are **shell-level** (wire once, every channel benefits). Each root entry
-point + its exact API + the studio-specific gotcha is below. The TopBar already has
-the buttons; three currently just `toast('… being ported')` (`TopBar.tsx`).
+## Shared features — ✅ ALL PORTED
+All five are **shell-level** (wire once, every channel benefits). **They are now done**
+— the notes below are kept as a reference to what shipped and where it lives. What
+landed, per feature:
+1. **Export PNG + Copy** → `lib/useCapture.ts` (html2canvas bundled dep; neutralises the
+   `<StageFit>` ancestor transform; wired to the TopBar Copy/Export buttons).
+2. **Record** → `public/recorder.js` + `public/gif-encoder.js` loaded via `index.html`,
+   attached to a childless TopBar button by `lib/useRecorder.ts`.
+3. **AI panel** → `shell/AiPanel.tsx` + `store/useAiPanel.ts` + `lib/detectChannel.ts`;
+   per-channel adapters in `lib/applyAi.ts` map the schema message onto each store slice.
+   A studio gotcha was solved: the preview auto-first-template effect (now the shared
+   `lib/useAutoTemplate.ts`) checks an `aiSuppressCtx` store flag so it can't clobber AI
+   content when the AI switches the industry — deterministic, order-independent.
+4. **Real images + logos** → `lib/media.ts` (`photoFor` / `resolveBrandLogo` over
+   `/api/photo` + `/api/logo`) with `content/pximg.ts` (pre-resolved photos + synonyms).
+   `phImg` stays the offline fallback; real (remote) URLs are used ONLY on the network/AI
+   path (`applyAI`, which never runs in the offline artifact), so the core render path
+   stays self-contained.
+5. **Ship it** → see §5 for the exact Vercel settings.
 
 Shared plumbing you'll add first:
 - **`#capture`** — every frame already sets `id="capture"` (`PhoneFrame`,
@@ -202,12 +220,42 @@ Shared plumbing you'll add first:
   `PEXELS_KEY` (live photos — optional); `LOGODEV_KEY` (crisp logos — optional, favicons
   work keyless). All optional; with none set the core app is unchanged.
 
-### 5. Ship it (when the shared features are in)
-Promote `studio/` to the deploy root (or point Vercel's root/output at `studio/` with a
-Vite build step) and keep the `api/` functions at the repo root. Today the site is
-**no-build static** at the repo root; the studio needs `npm run build` → serve `dist/`.
-The owner handles Vercel — provide the exact Project settings (Framework: Vite; Root
-Directory: `studio`; keep `api/` as functions) when you get there.
+### 5. Ship it — exact Vercel settings to promote `studio/`
+The studio needs a build (`npm run build` → serve `dist/`), and the `api/` serverless
+functions must keep living at the **repo root** (they're shared with the legacy tools).
+
+**Key gotcha:** do NOT set Vercel's *Root Directory* to `studio`. Vercel only detects the
+`api/` folder that sits at the deployment root, so if the root is `studio/` the functions
+(`/api/generate`, `/api/photo`, `/api/logo`) silently stop deploying and AI/photos/logos
+break. Keep the Root Directory at the repo root and point the *build* at `studio/`.
+
+**Vercel → Project → Settings → Build & Development Settings:**
+| Setting | Value |
+| --- | --- |
+| Root Directory | *(leave as the repository root — do not set `studio`)* |
+| Framework Preset | Other (or Vite) |
+| Install Command | `npm install --prefix studio` |
+| Build Command | `npm run build --prefix studio` |
+| Output Directory | `studio/dist` |
+
+`api/` at the repo root is auto-detected as Node serverless functions — nothing to
+configure. **Environment Variables** (all optional): `GROQ_API_KEY` **or**
+`GEMINI_API_KEY` (AI copy), `PEXELS_KEY` (live photos), `LOGODEV_KEY` (crisp logos).
+
+Equivalent as a committed `vercel.json` at the **repo root** (drop-in alternative to the
+dashboard fields — add it only when you're ready to flip the deploy from the legacy root
+tools to the studio, since it changes what the site serves):
+```json
+{
+  "installCommand": "npm install --prefix studio",
+  "buildCommand": "npm run build --prefix studio",
+  "outputDirectory": "studio/dist"
+}
+```
+After promotion the root `index.html`/`*-preview-tool/` static tools are no longer
+served (the output becomes `studio/dist`); the `api/` functions are unaffected. The
+self-contained artifact preview (§Preview workflow) keeps working regardless, since it
+never depends on `/api` or remote hosts.
 
 ## Conventions / gotchas
 - **TypeScript strict** + `noUnusedLocals`; keep `npm run build` green.
@@ -265,31 +313,43 @@ Every channel is migrated. How the code is organised now:
   Notification card text is `.body` — pinned to `display:block` (it inherits the shell
   layout's `.body{display:grid}` otherwise).
 
-### What's left (shared features — still stubbed in the shell)
-1. **Export PNG + Copy** — TopBar buttons toast "being ported"; port a `useCapture()`
-   over `#capture` (html2canvas). Each frame already carries `id="capture"`.
-2. **Record** (webm/gif) — root `recorder.js` + `gif-encoder.js`.
-3. **AI panel** — root `ai.js` → `/api/generate`; make it a shell component.
-4. **Real images / logos** — network-based (`api/photo.js`/`api/logo.js`); studio is
-   offline-first with `phImg` placeholders, so keep those as the fallback.
-Then, at parity: promote `studio/` to the site root + point Vercel at it (owner handles
-Vercel; provide exact steps). Keep `npm run build` GREEN + smoke-test per change.
+### What's left — ✅ nothing (shared features all shipped)
+1. **Export PNG + Copy** — ✅ `lib/useCapture.ts`, wired to the TopBar buttons.
+2. **Record** (webm/gif) — ✅ `public/recorder.js` + `public/gif-encoder.js` via
+   `lib/useRecorder.ts` + a TopBar Record button.
+3. **AI panel** — ✅ `shell/AiPanel.tsx` → `/api/generate`; adapters in `lib/applyAi.ts`.
+4. **Real images / logos** — ✅ `lib/media.ts` + `content/pximg.ts`; `phImg` stays the
+   offline fallback.
+The one remaining human step is **promoting `studio/` on Vercel** (exact settings in §5;
+the owner handles Vercel). Keep `npm run build` GREEN + smoke-test per change.
 
 ## Kickoff prompt for the next chat (paste this)
-> Continue the `studio/` React app on branch `claude/channel-ux-audit-vw4qf6`.
-> Read `studio/HANDOFF.md` first. All 11 channels are already migrated and verified —
-> now port the shared shell features, one at a time, in this order: (1) **Export PNG +
-> Copy** (html2canvas over `#capture`; neutralise the `<StageFit>` ancestor transform;
-> wire the stubbed TopBar buttons), (2) **Record** WebM/GIF + review studio (reuse root
-> `recorder.js` + `gif-encoder.js` as a library from `studio/public/`, add a Record
-> button), (3) **AI panel** (a shell `AiPanel.tsx` porting `ai.js`'s panel; per-channel
-> `applyAI(msg)` maps the schema message onto that channel's store slice; POSTs to
-> `/api/generate`), (4) **Real images + logos** (`lib/media.ts` = `photoFor` / `resolveBrandLogo`
-> hitting `/api/photo` + `/api/logo`, with `phImg` staying the offline fallback; optionally
-> port `images.js`'s pre-resolved set). See "Shared features still to port" for the exact
-> APIs, entry points, and studio gotchas. Run `npm run build` (tsc strict) + a Chromium
-> smoke test after EACH feature, then refresh the existing preview artifact (same URL,
-> `force:true` on 409) and commit per feature. Don't push to main. Keep it white-label
-> (no MoEngage / real-client / personal names; American names; dollars; genOtp()); keep
-> the core render path self-contained so the artifact preview + keyless deploys never break.
-> Finally, when parity is reached, write the exact Vercel settings to promote `studio/`.
+> Continue the `studio/` React app (branch `claude/studio-shared-shell-port-jozeu8`, based
+> on `claude/channel-ux-audit-vw4qf6`). Read `studio/HANDOFF.md` first. All 11 channels AND
+> all shared shell features (Export/Copy, Record, AI panel, real photos/logos) are ported,
+> verified (build + Chromium smoke tests) and committed; the preview artifact is current.
+> The remaining step is **promoting `studio/` on Vercel** — the exact settings are in §5
+> (keep Root Directory at the repo root so `api/` still deploys; build/output point at
+> `studio/`). The owner handles Vercel. If you make further changes: `npm run build` (tsc
+> strict) + a Chromium smoke test per change, refresh the SAME preview artifact (`force:true`
+> on 409), commit per change, DON'T push to `main`. Keep it white-label (no MoEngage /
+> real-client / personal names; American names; dollars; `genOtp()`) and keep the core
+> render path self-contained so the artifact preview + keyless deploys never break.
+
+## Session log — shared-shell port (branch `claude/studio-shared-shell-port-jozeu8`)
+Ported the five shared features on top of the 11-channel migration, one commit each, each
+build-green (tsc strict) + Chromium-smoke-tested, refreshing the same preview artifact:
+- **Export PNG + Copy** — `lib/useCapture.ts`; neutralises the `<StageFit>` ancestor
+  transform (not the node's own — the studio scales the parent); html2canvas as a bundled
+  dep so it works in the artifact too. Verified phone/desktop/ad frames export at 2×.
+- **Record** — vendored `public/recorder.js` + `public/gif-encoder.js` via `index.html`,
+  attached by `lib/useRecorder.ts` to a childless TopBar button (React never manages its
+  DOM; a StrictMode-safe once-guard). The inliner also inlines the two libs into the
+  artifact. Verified record→review→WebM/GIF with a mocked `getDisplayMedia`.
+- **AI panel** — `shell/AiPanel.tsx` + `store/useAiPanel.ts` + `lib/detectChannel.ts`;
+  per-channel adapters in `lib/applyAi.ts`. Fixed the auto-first-template clobber with the
+  shared `lib/useAutoTemplate.ts` + an `aiSuppressCtx` store flag (deterministic). Verified
+  end-to-end with mocked `/api/*` (industry switch, no clobber, in-app channel switch).
+- **Real images + logos** — `lib/media.ts` (`photoFor`/`resolveBrandLogo`) + `content/pximg.ts`
+  (56 pre-resolved photos + 151 synonyms). Remote URLs only on the AI/network path; `phImg`
+  stays the self-contained default so the artifact never breaks.
