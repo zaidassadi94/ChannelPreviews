@@ -5,11 +5,11 @@ shell (nav rail, top bar, device frame) where switching channels swaps only the
 sidebar + preview — **no page reloads**. It replaces the six separate standalone
 HTML tools at the repo root.
 
-**Status:** all **11 channels** are migrated — WhatsApp, RCS, SMS (messaging); Gmail;
-Push, In-App, In-App Gamification (notify); Onsite Messaging (web); Instagram Ads and
-Facebook Ads. The shared top-bar features are wired too: **Export PNG / Copy**, screen
-**Record** (WebM/GIF + trim studio), and a **✨ AI** generate panel with real
-photos/logos. Everything degrades gracefully offline (see below).
+**Status:** all **13 channels** are live — WhatsApp, RCS, SMS (messaging); Gmail; Push,
+In-App, In-App Gamification, **Cards / App Inbox** (notify); Onsite Messaging and **Web
+Push** (web); Instagram Ads and Facebook Ads. The shared top-bar features are wired too:
+**Export PNG / Copy**, screen **Record** (WebM/GIF + trim studio), and a **✨ AI** generate
+panel with real photos/logos. Everything degrades gracefully offline (see below).
 
 ## Run it
 

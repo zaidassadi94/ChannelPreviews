@@ -5,9 +5,11 @@ This is the working note for continuing the **`studio/`** rebuild. Read this fir
 ## TL;DR
 We are consolidating six standalone HTML tools (at the repo root) into ONE
 React + Vite + TypeScript single-page app in `studio/`, where switching channels
-swaps only the sidebar + preview (no page reload). **ALL 11 channels are now
+swaps only the sidebar + preview (no page reload). **ALL 13 channels are now
 migrated and verified** — WhatsApp (the original reference) plus RCS, SMS, Push,
-In-App, Gamification, Gmail, Onsite Messaging, Instagram Ads and Facebook Ads.
+In-App, Gamification, Gmail, Onsite Messaging, Instagram Ads, Facebook Ads, and the two
+newest MoEngage channels **Web Push** (browser notification, DesktopFrame) and **Cards /
+App Inbox** (in-app card feed, PhoneFrame).
 Each has its render (channel-owned frame → `PhoneFrame`/`DesktopFrame`, scaled by
 `StageFit`), section panels, and per-vertical templates. No "Migrating" stubs
 remain. **All the shared shell features are now ported too** — Export PNG, Copy,
