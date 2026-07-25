@@ -7,6 +7,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Shared screen recorder + review studio (vanilla libs, treated as a library like
+         the root tools do). gif-encoder must load before recorder. Loaded as classic
+         scripts so window.gifenc / window.ChannelStudioRecorder exist before the app's
+         effects run; the app degrades gracefully if they're absent (e.g. artifact CSP). -->
+    <script src="/gif-encoder.js"></script>
+    <script src="/recorder.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

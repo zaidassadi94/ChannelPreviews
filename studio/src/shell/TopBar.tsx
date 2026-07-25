@@ -2,6 +2,7 @@ import { useStudio, INDUSTRIES } from '@/store/useStudio'
 import { industryById } from '@/content/model'
 import { Icon } from '@/lib/icons'
 import { useCapture } from '@/lib/useCapture'
+import { useRecorder } from '@/lib/useRecorder'
 import { ChannelPicker } from './ChannelPicker'
 
 export function TopBar() {
@@ -15,6 +16,7 @@ export function TopBar() {
   const setSim = useStudio((s) => s.setSim)
   const simReset = useStudio((s) => s.simReset)
   const { onExport, onCopy } = useCapture()
+  const recRef = useRecorder()
   const ind = industryById(industry)
   const subs = ind ? ind.subs : []
 
@@ -49,6 +51,8 @@ export function TopBar() {
         {sim ? Icon.pause : Icon.play}{sim ? 'Editing' : 'Simulate'}
       </button>
       {sim && <button className="btn ghost" onClick={simReset}>↺ Reset</button>}
+      {/* Record — the recorder owns this button's content + class (childless on purpose). */}
+      <button ref={recRef} className="btn ghost" title="Record the preview (Chrome/Edge)" />
       <button className="btn ghost" onClick={onCopy}>Copy</button>
       <button className="btn primary" onClick={onExport}>{Icon.download}Export</button>
     </div>
