@@ -5,13 +5,15 @@ import { phImg, hueOf } from '@/lib/util'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface PushBuild { appName: string; title: string; body: string; image: string; actions: string; expanded: boolean }
+export interface PushOptin { style: string; title: string; body: string; allow: string; deny: string }
 export interface PushTemplate {
   name: string
   kind: 'Promotional' | 'Transactional' | 'Flow'
   icon: string
   desc: string
   flow?: boolean
-  build: (p: Pack, ctxId: string) => PushBuild
+  build?: (p: Pack, ctxId: string) => PushBuild
+  optin?: (p: Pack, ctxId: string) => PushOptin
 }
 
 const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
@@ -47,12 +49,39 @@ export const PUSH_TEMPLATES: PushTemplate[] = [
   },
 ]
 
+/** Permission opt-in prompts — the system "Allow notifications?" alert + a two-step (soft) ask. */
+export const PUSH_OPTIN_TEMPLATES: PushTemplate[] = [
+  {
+    name: 'System prompt', kind: 'Transactional', icon: '🔔', desc: 'iOS / Android Allow',
+    optin: () => ({ style: 'native', title: '', body: '', allow: 'Allow', deny: "Don't Allow" }),
+  },
+  {
+    name: 'Two-step opt-in', kind: 'Flow', icon: '✋', desc: 'Branded pre-permission', flow: true,
+    optin: (p) => ({ style: 'twostep', title: 'Turn on notifications', body: `Get order updates and members-only offers from ${p.brand} the moment they go live.`, allow: 'Turn on notifications', deny: 'Not now' }),
+  },
+  {
+    name: 'Offers opt-in', kind: 'Promotional', icon: '🎁', desc: 'Two-step · perks led',
+    optin: (p) => ({ style: 'twostep', title: 'Get the good stuff first', body: `Allow notifications for early access to drops and deals at ${p.brand}.`, allow: 'Sounds good', deny: 'Maybe later' }),
+  },
+]
+
+const NOTIF_SURFACES = ['lock', 'banner', 'heads', 'shade']
+
 export function applyPushTemplate(t: PushTemplate, announce = true) {
   const s = useStudio.getState()
   const p = packFor(s.ctxId())
   if (!p) return
+  if (t.optin) {
+    const o = t.optin(p, s.ctxId())
+    s.setNotify({ appName: p.brand, surface: 'optin', optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
+    if (announce) useToast.getState().show('Opt-in prompt applied')
+    return
+  }
+  if (!t.build) return
   const f = t.build(p, s.ctxId())
-  s.setNotify({ appName: f.appName, expanded: f.expanded })
+  // if we're currently showing the opt-in prompt, drop back to a real notification surface
+  const surface = NOTIF_SURFACES.includes(s.notify.surface) ? {} : { surface: s.device === 'ios' ? 'lock' : 'heads' }
+  s.setNotify({ appName: f.appName, expanded: f.expanded, ...surface })
   s.setPush({ title: f.title, body: f.body, image: f.image, actions: f.actions, time: 'now' })
   if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap actions' : ''))
 }

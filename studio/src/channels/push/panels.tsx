@@ -2,7 +2,7 @@ import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { WALLS } from '@/channels/notify/shared'
-import { PUSH_TEMPLATES, applyPushTemplate } from './templates'
+import { PUSH_TEMPLATES, PUSH_OPTIN_TEMPLATES, applyPushTemplate } from './templates'
 
 function TemplatesPanel() {
   const setPush = useStudio((s) => s.setPush)
@@ -17,7 +17,47 @@ function TemplatesPanel() {
           </button>
         ))}
       </div>
+      <p className="panel-hint" style={{ marginTop: 18 }}><b>Permission opt-in</b> — the "Allow notifications?" ask, shown before the first push. Fine-tune the wording under <b>Opt-in</b>.</p>
+      <div className="tpl-grid">
+        {PUSH_OPTIN_TEMPLATES.map((t, i) => (
+          <button key={i} className="tpl" onClick={() => applyPushTemplate(t)}>
+            <span className="ti">{t.icon}</span>
+            <span className="tc"><span className="tt">{t.name}{t.flow && <span className="flow">FLOW</span>}</span><span className="td">{t.desc}</span></span>
+          </button>
+        ))}
+      </div>
       <button className="btn ghost block" style={{ marginTop: 12 }} onClick={() => setPush({ title: 'New notification', body: 'Your message here.', image: '', actions: '' })}>{Icon.refresh}Clear &amp; start blank</button>
+    </>
+  )
+}
+
+function OptinPanel() {
+  const device = useStudio((s) => s.device)
+  const n = useStudio((s) => s.notify)
+  const setNotify = useStudio((s) => s.setNotify)
+  const showing = n.surface === 'optin'
+  const styles: [string, string][] = [['native', device === 'ios' ? 'iOS system' : 'Android system'], ['twostep', 'Two-step (soft)']]
+  return (
+    <>
+      <div className="toggle-row"><span>Show opt-in prompt in preview</span>
+        <label className="switch"><input type="checkbox" checked={showing} onChange={(e) => setNotify({ surface: e.target.checked ? 'optin' : (device === 'ios' ? 'lock' : 'heads') })} /><span className="slider" /></label>
+      </div>
+      <div className="field"><span>Style</span>
+        <div className="seg-in">{styles.map(([v, l]) => <button key={v} className={n.optinStyle === v ? 'on' : ''} onClick={() => setNotify({ surface: 'optin', optinStyle: v })}>{l}</button>)}</div>
+      </div>
+      {n.optinStyle === 'native'
+        ? <p className="panel-hint">The operating system's own permission alert — its wording and buttons are fixed by iOS / Android, so only the app name shows. Use <b>Two-step</b> to ask in your own words first.</p>
+        : (
+          <>
+            <p className="panel-hint">A branded pre-permission ask shown <i>before</i> the system alert — the recommended two-step opt-in.</p>
+            <label className="field"><span>Title</span><input type="text" value={n.optinTitle} onChange={(e) => setNotify({ optinTitle: e.target.value })} /></label>
+            <label className="field"><span>Body</span><textarea value={n.optinBody} onChange={(e) => setNotify({ optinBody: e.target.value })} /></label>
+            <div className="mc-row">
+              <label className="field"><span>Allow button</span><input type="text" value={n.optinAllow} onChange={(e) => setNotify({ optinAllow: e.target.value })} /></label>
+              <label className="field"><span>Dismiss button</span><input type="text" value={n.optinDeny} onChange={(e) => setNotify({ optinDeny: e.target.value })} /></label>
+            </div>
+          </>
+        )}
     </>
   )
 }
@@ -97,5 +137,6 @@ export const pushSections: SectionDef[] = [
   { id: 'notification', label: 'Notification', icon: Icon.convo, Panel: NotificationPanel },
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'surface', label: 'Surface', icon: Icon.context, Panel: SurfacePanel },
+  { id: 'optin', label: 'Opt-in', icon: Icon.context, Panel: OptinPanel },
   { id: 'app', label: 'App', icon: Icon.sender, Panel: AppPanel },
 ]

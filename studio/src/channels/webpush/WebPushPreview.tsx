@@ -1,5 +1,5 @@
 import './webpush.css'
-import type { ReactNode } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { useAutoTemplate } from '@/lib/useAutoTemplate'
@@ -20,6 +20,7 @@ const WI: Record<string, ReactNode> = {
   search: <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" /><path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   cart: <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h2l2 12h10l2-8H7" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><circle cx="9" cy="20" r="1.4" fill="currentColor" /><circle cx="18" cy="20" r="1.4" fill="currentColor" /></svg>,
   user: <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.9" /><path d="M5 20a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>,
+  bell: <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6zM9.5 20a2.5 2.5 0 005 0" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" /></svg>,
 }
 
 const parseActions = (raw: string) => (raw || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 2)
@@ -86,16 +87,54 @@ function NotifCard() {
   )
 }
 
+/** The "Allow notifications?" opt-in — native browser prompt or a branded two-step ask. */
+function OptinOverlay() {
+  const w = useStudio((s) => s.webpush)
+  const { sim, onTap } = useWpSim()
+  const icon = w.logo || brandMark(w.site, 96)
+  const origin = (w.url || 'example.com').replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+  if (w.optinStyle === 'native') {
+    return (
+      <div className="wp-native-wrap">
+        <div className="wp-native">
+          <div className="hd"><img className="fav" src={icon} alt="" /><b>{origin} wants to</b></div>
+          <div className="perm"><span className="bi">{WI.bell}</span>Show notifications</div>
+          <div className="btns">
+            <button className={'block' + (sim ? ' clickable' : '')} onClick={() => onTap('Block')}>{w.optinDeny || 'Block'}</button>
+            <button className={'allow' + (sim ? ' clickable' : '')} onClick={() => onTap('Allow')}>{w.optinAllow || 'Allow'}</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="wp-optin-scrim">
+      <div className="wp-optin" style={{ ['--brand']: avColor(w.site) } as CSSProperties}>
+        <div className="bell">{WI.bell}</div>
+        {w.optinTitle && <div className="ti">{w.optinTitle}</div>}
+        {w.optinBody && <div className="bd">{fmtLite(w.optinBody)}</div>}
+        <div className="acts">
+          <button className={'allow' + (sim ? ' clickable' : '')} onClick={() => onTap('Allow')}>{w.optinAllow || 'Allow'}</button>
+          <button className={'deny' + (sim ? ' clickable' : '')} onClick={() => onTap('Dismiss')}>{w.optinDeny || 'Maybe later'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function WebPushPreview() {
   const ctxId = useStudio((s) => s.ctxId())
   useAutoTemplate(ctxId, () => applyWebpushTemplate(WEBPUSH_TEMPLATES[0], false))
   const os = useStudio((s) => s.webpush.os)
   const url = useStudio((s) => s.webpush.url)
+  const mode = useStudio((s) => s.webpush.mode)
   return (
     <DesktopFrame url={url || 'example.com'} width={1040}>
       <div className={'wp-view ' + (os === 'mac' ? 'mac' : 'win')}>
         <SiteBackdrop />
-        <div className={'wp-slot ' + (os === 'mac' ? 'tr' : 'br')}><NotifCard /></div>
+        {mode === 'optin'
+          ? <OptinOverlay />
+          : <div className={'wp-slot ' + (os === 'mac' ? 'tr' : 'br')}><NotifCard /></div>}
       </div>
     </DesktopFrame>
   )

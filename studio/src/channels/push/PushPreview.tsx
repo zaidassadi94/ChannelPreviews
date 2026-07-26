@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
+import { avColor } from '@/lib/util'
 import { PhoneFrame } from '@/shell/PhoneFrame'
 import { StatusBar } from '@/shell/StatusBar'
 import { AppIcon, AppBackdrop, NIcon, fmtLite, wallBg } from '@/channels/notify/shared'
@@ -94,6 +96,62 @@ function AndShade() {
   )
 }
 
+/** The system "Allow notifications?" opt-in — native iOS/Android alert or a branded two-step ask. */
+function PushOptin() {
+  const device = useStudio((s) => s.device)
+  const n = useStudio((s) => s.notify)
+  const sim = useStudio((s) => s.sim)
+  const show = useToast((s) => s.show)
+  const tap = (l: string) => { if (sim) show('▸ ' + l) }
+  const cls = (extra: string) => extra + (sim ? ' clickable' : '')
+  const native = n.optinStyle === 'native'
+  let card
+  if (native && device === 'ios') {
+    card = (
+      <div className="po-ios">
+        <div className="hd">
+          <div className="ttl">“{n.appName}” Would Like to Send You Notifications</div>
+          <div className="sub">Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.</div>
+        </div>
+        <div className="btns">
+          <button className={cls('deny')} onClick={() => tap(n.optinDeny || "Don't Allow")}>{n.optinDeny || "Don't Allow"}</button>
+          <button className={cls('allow')} onClick={() => tap(n.optinAllow || 'Allow')}>{n.optinAllow || 'Allow'}</button>
+        </div>
+      </div>
+    )
+  } else if (native) {
+    card = (
+      <div className="po-and">
+        <div className="ic"><AppIcon cls="ai" /></div>
+        <div className="q">Allow {n.appName} to send you notifications?</div>
+        <div className="btns">
+          <button className={cls('allow')} onClick={() => tap(n.optinAllow || 'Allow')}>{n.optinAllow || 'Allow'}</button>
+          <button className={cls('deny')} onClick={() => tap(n.optinDeny || "Don't allow")}>{(n.optinDeny || "Don't allow") === "Don't Allow" ? "Don't allow" : (n.optinDeny || "Don't allow")}</button>
+        </div>
+      </div>
+    )
+  } else {
+    card = (
+      <div className="po-two" style={{ ['--brand']: avColor(n.appName) } as CSSProperties}>
+        <div className="bell">{NIcon.bell}</div>
+        {n.optinTitle && <div className="ti">{n.optinTitle}</div>}
+        {n.optinBody && <div className="bd">{fmtLite(n.optinBody)}</div>}
+        <div className="acts">
+          <button className={cls('allow')} onClick={() => tap(n.optinAllow || 'Allow')}>{n.optinAllow || 'Allow'}</button>
+          <button className={cls('deny')} onClick={() => tap(n.optinDeny || 'Not now')}>{n.optinDeny || 'Not now'}</button>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="po-wrap">
+      <AppBackdrop />
+      <div className="po-scrim" />
+      <div className="po-center">{card}</div>
+    </div>
+  )
+}
+
 export function PushPreview() {
   const ctxId = useStudio((s) => s.ctxId())
   useAutoTemplate(ctxId, () => applyPushTemplate(PUSH_TEMPLATES[0], false))
@@ -101,14 +159,15 @@ export function PushPreview() {
   const device = useStudio((s) => s.device)
   const surface = useStudio((s) => s.notify.surface)
   const setNotify = useStudio((s) => s.setNotify)
-  // keep the surface valid for the current device (lock/banner ↔ heads/shade)
+  // keep the surface valid for the current device (lock/banner ↔ heads/shade · optin shared)
   useEffect(() => {
-    const opts = device === 'ios' ? ['lock', 'banner'] : ['heads', 'shade']
+    const opts = device === 'ios' ? ['lock', 'banner', 'optin'] : ['heads', 'shade', 'optin']
     if (!opts.includes(surface)) setNotify({ surface: opts[0] })
   }, [device, surface, setNotify])
 
   let screen
-  if (device === 'ios') screen = surface === 'banner' ? <><AppBackdrop /><div className="ovl banner-top"><PushCardIOS /></div></> : <IosLock />
+  if (surface === 'optin') screen = <PushOptin />
+  else if (device === 'ios') screen = surface === 'banner' ? <><AppBackdrop /><div className="ovl banner-top"><PushCardIOS /></div></> : <IosLock />
   else screen = surface === 'shade' ? <AndShade /> : <><AppBackdrop /><div className="ovl heads-top"><PushCardAnd /></div></>
 
   return <PhoneFrame bare>{screen}</PhoneFrame>

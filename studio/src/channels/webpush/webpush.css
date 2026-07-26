@@ -66,3 +66,32 @@
 .wp-card.win .ic-win{ width:44px; height:44px; border-radius:6px; object-fit:cover; margin-left:auto; flex:none; }
 .wp-card.win .wp-acts{ display:flex; gap:8px; padding:10px 12px 12px; }
 .wp-card.win .wp-act{ flex:1; text-align:center; padding:9px; font-size:12.5px; font-weight:600; color:#fff; background:#3d3d3d; border-radius:5px; }
+
+/* ---- opt-in: native browser permission prompt (anchored under the address bar) ---- */
+.wp-native-wrap{ position:absolute; top:6px; left:18px; z-index:30; }
+.wp-native{ width:312px; background:#fff; border-radius:10px; box-shadow:0 12px 40px rgba(10,12,25,.26); border:1px solid rgba(0,0,0,.06); padding:16px 16px 12px; }
+.wp-native .hd{ display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+.wp-native .hd .fav{ width:20px; height:20px; border-radius:5px; object-fit:cover; }
+.wp-native .hd b{ font-size:14px; font-weight:600; color:#202124; }
+.wp-native .perm{ display:flex; align-items:center; gap:9px; font-size:13px; color:#3c4043; padding:2px 0 14px; }
+.wp-native .perm .bi{ width:17px; height:17px; color:#5f6368; display:flex; }
+.wp-native .perm .bi svg{ width:17px; height:17px; }
+.wp-native .btns{ display:flex; justify-content:flex-end; gap:8px; }
+.wp-native .btns button{ font-size:13px; font-weight:600; padding:7px 14px; border-radius:6px; font-family:inherit; }
+.wp-native .btns .block{ background:none; color:#1a73e8; }
+.wp-native .btns .allow{ background:#1a73e8; color:#fff; }
+
+/* ---- opt-in: branded two-step (soft) ask ---- */
+.wp-optin-scrim{ position:absolute; inset:0; z-index:30; background:rgba(16,18,30,.34); display:flex; align-items:center; justify-content:center; }
+.wp-optin{ width:400px; max-width:calc(100% - 48px); background:#fff; border-radius:20px; box-shadow:0 24px 70px rgba(10,12,25,.4); padding:30px 30px 24px; text-align:center; }
+.wp-optin .bell{ width:56px; height:56px; margin:0 auto 16px; border-radius:16px; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; }
+.wp-optin .bell svg{ width:28px; height:28px; }
+.wp-optin .ti{ font-size:20px; font-weight:800; letter-spacing:-.3px; color:#14151a; }
+.wp-optin .bd{ font-size:13.5px; color:#5b6070; line-height:1.55; margin-top:8px; }
+.wp-optin .acts{ margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+.wp-optin .acts .allow{ background:var(--brand); color:#fff; font-size:14px; font-weight:700; padding:13px; border-radius:11px; font-family:inherit; }
+.wp-optin .acts .deny{ background:none; color:#8a8f99; font-size:13.5px; font-weight:600; padding:4px; font-family:inherit; }
+
+/* editor: two fields side by side */
+.mc-row{ display:flex; gap:10px; }
+.mc-row .field{ flex:1; }

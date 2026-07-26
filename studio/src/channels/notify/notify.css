@@ -167,3 +167,38 @@
 .ia-full .ia-cta.text{ color:rgba(255,255,255,.9); }
 .ia-imgonly{ position:relative; width:100%; max-width:300px; }
 .ia-imgonly img{ width:100%; display:block; aspect-ratio:3/4; object-fit:cover; border-radius:20px; box-shadow:0 22px 55px rgba(8,10,20,.4); background:#e7e9ee; }
+
+/* ---- opt-in permission prompts (native iOS/Android + branded two-step) ---- */
+.po-wrap{ position:absolute; inset:0; }
+.po-scrim{ position:absolute; inset:0; background:rgba(8,10,16,.5); }
+.po-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:26px; }
+
+/* iOS system alert */
+.po-ios{ width:270px; background:rgba(250,250,252,.94); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-radius:14px; overflow:hidden; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+.po-ios .hd{ padding:19px 16px 15px; }
+.po-ios .ttl{ font-size:15px; font-weight:600; color:#111; letter-spacing:-.2px; line-height:1.3; }
+.po-ios .sub{ font-size:12px; color:#3c4049; line-height:1.4; margin-top:5px; }
+.po-ios .btns{ display:flex; border-top:1px solid rgba(0,0,0,.12); }
+.po-ios .btns button{ flex:1; padding:12px; font-size:15px; color:#007aff; font-family:inherit; background:none; }
+.po-ios .btns .deny{ font-weight:400; border-right:1px solid rgba(0,0,0,.12); }
+.po-ios .btns .allow{ font-weight:600; }
+
+/* Android 13 system dialog */
+.po-and{ width:300px; background:#1f1f23; border-radius:28px; padding:26px 24px 18px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.45); }
+.po-and .ic{ margin:0 auto 16px; width:52px; height:52px; }
+.po-and .ic .ai{ width:52px; height:52px; border-radius:50%; object-fit:cover; display:block; }
+.po-and .q{ font-size:16px; font-weight:500; color:#e3e3e6; line-height:1.4; margin-bottom:22px; }
+.po-and .btns{ display:flex; flex-direction:column; gap:8px; }
+.po-and .btns button{ padding:12px; border-radius:22px; font-size:14px; font-weight:600; font-family:inherit; }
+.po-and .btns .allow{ background:#a8c7fa; color:#062e6f; }
+.po-and .btns .deny{ background:none; color:#a8c7fa; }
+
+/* branded two-step (soft) ask */
+.po-two{ width:300px; background:#fff; border-radius:24px; padding:28px 26px 22px; text-align:center; box-shadow:0 24px 70px rgba(0,0,0,.4); }
+.po-two .bell{ width:56px; height:56px; margin:0 auto 16px; border-radius:16px; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; }
+.po-two .bell svg{ width:28px; height:28px; }
+.po-two .ti{ font-size:19px; font-weight:800; letter-spacing:-.3px; color:#14151a; }
+.po-two .bd{ font-size:13px; color:#5b6070; line-height:1.5; margin-top:8px; }
+.po-two .acts{ margin-top:20px; display:flex; flex-direction:column; gap:9px; }
+.po-two .acts .allow{ background:var(--brand); color:#fff; font-size:14px; font-weight:700; padding:13px; border-radius:13px; font-family:inherit; }
+.po-two .acts .deny{ background:none; color:#8a8f99; font-size:13px; font-weight:600; padding:3px; font-family:inherit; }

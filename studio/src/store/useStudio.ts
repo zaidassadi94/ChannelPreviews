@@ -69,9 +69,14 @@ interface MsgSlice { messages: MMsg[]; played: MMsg[]; typing: boolean }
 export interface NotifyState {
   appName: string
   appLogo: string | null
-  surface: string   // ios: lock|banner · android: heads|shade
+  surface: string   // ios: lock|banner · android: heads|shade · optin
   wallpaper: string
   expanded: boolean
+  optinStyle: string // native | twostep
+  optinTitle: string
+  optinBody: string
+  optinAllow: string
+  optinDeny: string
   push: { title: string; body: string; image: string; actions: string; time: string }
   inapp: { type: string; image: string; headline: string; body: string; ctas: string; close: boolean; bannerPos: string }
   appBg: { mode: string; image: string; blur: boolean }
@@ -134,6 +139,12 @@ export interface WebpushState {
   body: string
   image: string
   actions: string   // up to 2, one per line
+  mode: string      // notification | optin
+  optinStyle: string // native | twostep
+  optinTitle: string
+  optinBody: string
+  optinAllow: string
+  optinDeny: string
 }
 
 /* ---- cards / app inbox model ---- */
@@ -256,7 +267,7 @@ interface StudioState {
   msgSimReset: (ch: string) => void
 
   // notify actions
-  setNotify: (patch: Partial<Pick<NotifyState, 'appName' | 'appLogo' | 'surface' | 'wallpaper' | 'expanded'>>) => void
+  setNotify: (patch: Partial<Pick<NotifyState, 'appName' | 'appLogo' | 'surface' | 'wallpaper' | 'expanded' | 'optinStyle' | 'optinTitle' | 'optinBody' | 'optinAllow' | 'optinDeny'>>) => void
   setPush: (patch: Partial<NotifyState['push']>) => void
   setInapp: (patch: Partial<NotifyState['inapp']>) => void
   setAppBg: (patch: Partial<NotifyState['appBg']>) => void
@@ -300,6 +311,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   msg: { rcs: emptyMsg(), sms: emptyMsg() },
   notify: {
     appName: 'Nova', appLogo: null, surface: 'lock', wallpaper: 'aurora', expanded: true,
+    optinStyle: 'twostep', optinTitle: 'Turn on notifications', optinBody: 'Get order updates and members-only offers the moment they go live.', optinAllow: 'Turn on notifications', optinDeny: 'Not now',
     push: { title: '', body: '', image: '', actions: '', time: 'now' },
     inapp: { type: 'modal', image: '', headline: '', body: '', ctas: '', close: true, bannerPos: 'top' },
     appBg: { mode: 'branded', image: '', blur: true },
@@ -322,7 +334,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
   ig: { format: 'feed', brand: 'Nova', handle: 'nova', verified: true, logo: null, media: '', caption: '', cta: 'Shop Now', likes: '2,438', comments: '86', time: '2 hours ago' },
   fb: { format: 'feed', page: 'Nova', verified: true, logo: null, media: '', primary: '', headline: '', desc: '', url: 'nova.shop', price: '$89', cta: 'Shop Now', reactions: '1,204', comments: '86', shares: '32', time: '2h' },
-  webpush: { os: 'mac', site: 'Nova', url: 'nova.shop', logo: null, title: '', body: '', image: '', actions: '' },
+  webpush: { os: 'mac', site: 'Nova', url: 'nova.shop', logo: null, title: '', body: '', image: '', actions: '', mode: 'notification', optinStyle: 'twostep', optinTitle: 'Never miss a drop', optinBody: 'Get browser alerts for new arrivals, restocks and members-only offers.', optinAllow: 'Allow notifications', optinDeny: 'Maybe later' },
   cards: { appName: 'Nova', logo: null, screenTitle: 'Updates', items: [] },
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),

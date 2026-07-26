@@ -5,13 +5,15 @@ import { phImg, hueOf } from '@/lib/util'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface WebpushBuild { site: string; url: string; title: string; body: string; image: string; actions: string }
+export interface WebpushOptin { style: string; title: string; body: string; allow: string; deny: string }
 export interface WebpushTemplate {
   name: string
   kind: 'Promotional' | 'Transactional' | 'Flow'
   icon: string
   desc: string
   flow?: boolean
-  build: (p: Pack, ctxId: string) => WebpushBuild
+  build?: (p: Pack, ctxId: string) => WebpushBuild
+  optin?: (p: Pack, ctxId: string) => WebpushOptin
 }
 
 const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
@@ -43,11 +45,34 @@ export const WEBPUSH_TEMPLATES: WebpushTemplate[] = [
   },
 ]
 
+/** Permission opt-in prompts — the "Allow notifications?" ask, native + two-step (soft). */
+export const WEBPUSH_OPTIN_TEMPLATES: WebpushTemplate[] = [
+  {
+    name: 'Native browser prompt', kind: 'Transactional', icon: '🔔', desc: 'Chrome Allow / Block',
+    optin: () => ({ style: 'native', title: '', body: '', allow: 'Allow', deny: 'Block' }),
+  },
+  {
+    name: 'Two-step opt-in', kind: 'Flow', icon: '✋', desc: 'Branded soft ask', flow: true,
+    optin: (p) => ({ style: 'twostep', title: 'Never miss a drop', body: `Get browser alerts from ${p.brand} for new arrivals, restocks and members-only offers.`, allow: 'Allow notifications', deny: 'Maybe later' }),
+  },
+  {
+    name: 'Deals opt-in', kind: 'Promotional', icon: '🏷️', desc: 'Two-step · offer led',
+    optin: (p) => ({ style: 'twostep', title: `Get ${p.offer} first`, body: `Turn on alerts and be first to know about drops and deals at ${p.brand}.`, allow: 'Yes, notify me', deny: 'No thanks' }),
+  },
+]
+
 export function applyWebpushTemplate(t: WebpushTemplate, announce = true) {
   const s = useStudio.getState()
   const p = packFor(s.ctxId())
   if (!p) return
+  if (t.optin) {
+    const o = t.optin(p, s.ctxId())
+    s.setWebpush({ mode: 'optin', site: p.brand, optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
+    if (announce) useToast.getState().show('Opt-in prompt applied')
+    return
+  }
+  if (!t.build) return
   const f = t.build(p, s.ctxId())
-  s.setWebpush({ site: f.site, url: f.url, title: f.title, body: f.body, image: f.image, actions: f.actions })
+  s.setWebpush({ mode: 'notification', site: f.site, url: f.url, title: f.title, body: f.body, image: f.image, actions: f.actions })
   if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to click' : ''))
 }
