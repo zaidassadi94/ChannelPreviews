@@ -1,5 +1,13 @@
 # Channel Studio
 
+> **Heads up — the live app is now the unified `studio/` React app.** A `vercel.json` at the
+> repo root promotes `studio/` (a single-page app with a shared shell where switching channels
+> swaps only the sidebar + preview) as the live deploy. The standalone tools described in this
+> README are the **legacy** single-file versions — still useful as design reference and fully
+> functional if opened directly, but no longer what the live site serves. For the current app
+> see [`studio/README.md`](studio/README.md) and [`studio/HANDOFF.md`](studio/HANDOFF.md). The
+> shared `api/` serverless functions at the repo root are used by both.
+
 Realistic, self-contained **channel mockup tools** for building marketing/campaign
 previews to drop into decks and screenshots — no build step; everything runs in the
 browser. Built for producing polished lifecycle-marketing creative mocks across email, messaging, social

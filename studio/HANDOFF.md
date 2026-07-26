@@ -14,12 +14,21 @@ Each has its render (channel-owned frame → `PhoneFrame`/`DesktopFrame`, scaled
 `StageFit`), section panels, and per-vertical templates. No "Migrating" stubs
 remain. **All the shared shell features are now ported too** — Export PNG, Copy,
 Record (WebM/GIF + trim studio), the ✨ AI panel, and real photos/logos. The app is
-at parity with the six legacy tools; the last step is promoting `studio/` on Vercel
-(exact settings in §5).
+at parity with the six legacy tools.
 
-- **Branch:** originally `claude/channel-ux-audit-vw4qf6`; the shared-shell port
-  continued on `claude/studio-shared-shell-port-jozeu8` (based on it). Do NOT push to
-  `main` yet — the owner said "we'll push to main later." Keep committing to the branch.
+**Promotion is wired.** A `vercel.json` at the repo root flips the live deploy to
+`studio/dist` (exact settings in §5); the owner just needs to trigger a redeploy on Vercel.
+On top of that, a round of **live-testing UX polish** shipped: collapsible (Canva-style)
+editor panel, real colored channel icons in the picker, a brand favicon + head meta,
+**hover-only Simulate** (no persistent ring on any channel), realistic WhatsApp footers,
+an opt-in-button export fix, logo reset on template apply, Gmail opening on the email, and
+AI jumping to the content editor after generating. See the **Session logs** at the end.
+
+- **Branch:** originally `claude/channel-ux-audit-vw4qf6`; the shared-shell port + UX polish
+  continued on `claude/studio-shared-shell-port-jozeu8` (based on it). **The owner now works
+  trunk-based** (see root `CLAUDE.md`): finished work is fast-forwarded onto `main` and pushed.
+  `main`, `origin/main`, and this branch are currently in sync at the latest commit. (An
+  earlier draft of this doc said "don't push to main yet" — that has been superseded.)
 - **Commit footer:** end messages with the Co-Authored-By + Claude-Session lines
   (see previous commits). Don't put the model id anywhere in the repo.
 - **Live preview link (keep it stable):** https://claude.ai/code/artifact/d3da92cb-53ea-4957-b406-ee0255c54cbc
@@ -273,9 +282,13 @@ never depends on `/api` or remote hosts.
   names. Use the fictional demo brands (Nova, Meridian, Streamly, SkyHigh,
   QuickBite, LearnSphere, PixelForge, ConnectTel, GlowLab), **American** names,
   **dollar** amounts. OTPs are randomized via `genOtp()` — never hardcode.
-- **Simulate on WhatsApp:** buttons must NOT change appearance (owner feedback);
-  see the `.sim-on .wa-cta` override in `whatsapp.css`. Other channels can use the
-  default `.sim-on .clickable` ring if it looks right.
+- **Simulate cue is hover-only (global):** Simulate no longer draws a persistent ring on
+  every `.clickable` at rest — that looked wrong on already-styled CTAs (e.g. Instagram
+  "Shop Now"). The cue now appears **only on hover** (one rule in `global.css`), so buttons
+  stay clean at rest on every channel. WhatsApp CTAs stay fully clean via their existing
+  `.sim-on .wa-cta` override in `whatsapp.css` (owner feedback: they must not change at all).
+  If the owner ever wants *no* cue whatsoever (not even on hover, exactly like WhatsApp),
+  that's a one-line follow-up.
 - **Keep it self-contained** so the artifact preview keeps working: inline assets,
   no external fetches in the core render path (network features degrade gracefully).
 - The **section rail is per-channel** (from `registry`); the **channel dropdown**
@@ -334,17 +347,44 @@ The one remaining human step is **promoting `studio/` on Vercel** (exact setting
 the owner handles Vercel). Keep `npm run build` GREEN + smoke-test per change.
 
 ## Kickoff prompt for the next chat (paste this)
-> Continue the `studio/` React app (branch `claude/studio-shared-shell-port-jozeu8`, based
-> on `claude/channel-ux-audit-vw4qf6`). Read `studio/HANDOFF.md` first. All 11 channels AND
-> all shared shell features (Export/Copy, Record, AI panel, real photos/logos) are ported,
-> verified (build + Chromium smoke tests) and committed; the preview artifact is current.
-> The remaining step is **promoting `studio/` on Vercel** — the exact settings are in §5
-> (keep Root Directory at the repo root so `api/` still deploys; build/output point at
-> `studio/`). The owner handles Vercel. If you make further changes: `npm run build` (tsc
-> strict) + a Chromium smoke test per change, refresh the SAME preview artifact (`force:true`
-> on 409), commit per change, DON'T push to `main`. Keep it white-label (no MoEngage /
-> real-client / personal names; American names; dollars; `genOtp()`) and keep the core
-> render path self-contained so the artifact preview + keyless deploys never break.
+> Continue the `studio/` React app (repo `zaidassadi94/ChannelPreviews`). Read
+> `studio/HANDOFF.md` first, then the **Backlog** section below. All **13 channels** AND all
+> shared shell features (Export/Copy, Record, AI panel, real photos/logos) are ported,
+> verified (build + Chromium smoke tests) and committed, plus a full round of live-testing UX
+> polish (collapsible panel, real channel icons, favicon, hover-only Simulate, realistic WA
+> footers). The preview artifact is current and a `vercel.json` at the repo root already flips
+> the live deploy to `studio/dist` (the owner triggers the Vercel redeploy). Workflow: the
+> owner is **trunk-based** — for each change run `npm run build` (tsc strict) + a Chromium
+> smoke test, refresh the SAME preview artifact (`force:true` on 409), commit, then
+> fast-forward `main` and `git push origin main`. Keep it white-label (no MoEngage /
+> real-client / personal names; American names; dollars; `genOtp()`) and keep the core render
+> path self-contained so the artifact preview + keyless deploys never break.
+
+## Backlog / ideas for next (nothing is blocking)
+Ordered rough-priority. None of these are required for the app to ship — it's at parity and
+promoted. These are polish + reach.
+1. **Confirm the Vercel redeploy actually flipped.** `vercel.json` is committed but the owner
+   must trigger a deploy; verify the live site serves the studio (not the legacy root tools)
+   and that `/api/generate`, `/api/photo`, `/api/logo` still 200. This is the one open loop.
+2. **Simulate cue — decide the final look.** It's hover-only now. Owner may want it fully off
+   everywhere (like WhatsApp) — trivial one-line change in `global.css` if so.
+3. **Port remaining `content.js` fields.** `content/model.ts` was noted as WhatsApp-first;
+   audit for any per-channel copy overrides (email/push variants) still living only in the
+   root `../content.js` and bring them across so every channel's packs are complete.
+4. **Automated smoke test in CI.** Today verification is a manual Chromium `node -e` snippet
+   per change. A tiny Playwright script (load build, iterate channels×sections, assert zero
+   console errors + a screenshot) run in a GitHub Action would catch regressions on push.
+5. **Export/Record parity sweep.** Confirm Export PNG + Record look right on the *newest*
+   channels (Web Push desktop frame, Cards) and the ad Story frames at 2× — these landed after
+   the capture code and haven't had a dedicated capture pass.
+6. **Accessibility pass.** Keyboard focus order, `aria-label`s on icon-only buttons (the new
+   channel-icon picker, the collapse pill, Export/Record/AI), and color-contrast on the
+   simulate hover cue.
+7. **Retire the legacy root tools (optional).** Once the studio deploy is confirmed good, the
+   root `*-preview-tool/` HTML tools are dead weight on the live site (still handy as design
+   reference). Decide whether to keep them in-repo (documented as legacy) or remove.
+8. **Real-logo polish.** `resolveBrandLogo` falls back to favicons without `LOGODEV_KEY`;
+   consider a small curated logo set for the demo brands so mockups look crisp keyless.
 
 ## Session log — shared-shell port (branch `claude/studio-shared-shell-port-jozeu8`)
 Ported the five shared features on top of the 11-channel migration, one commit each, each
@@ -363,3 +403,36 @@ build-green (tsc strict) + Chromium-smoke-tested, refreshing the same preview ar
 - **Real images + logos** — `lib/media.ts` (`photoFor`/`resolveBrandLogo`) + `content/pximg.ts`
   (56 pre-resolved photos + 151 synonyms). Remote URLs only on the AI/network path; `phImg`
   stays the self-contained default so the artifact never breaks.
+
+## Session log — Vercel promotion + UX polish (same branch)
+After the shared-shell port, added the two newest MoEngage channels (**Web Push**,
+**Cards / App Inbox** → 13 total), made the shell responsive, baked the curated Pexels photos
+into the build, then committed `vercel.json` to flip the live deploy to `studio/dist` (§5).
+On top of that, a round of fixes from **live testing on the deploy**, one commit each,
+build-green (tsc strict) + Chromium-smoke-tested, refreshing the same preview artifact:
+- **Opt-in export fix** — the opt-in prompt buttons (`po-*`, `wp-native/wp-optin`) had no
+  explicit `border`, so html2canvas painted the UA default (a black box on Export). Added
+  `border:0` (the more-specific iOS divider stays).
+- **Logo reset on template apply** — AI sets a real-brand logo; applying a template reset the
+  brand name but not the logo, so a real logo stuck on pack content. `applyPush/Webpush/Cards
+  Template` now reset `appLogo/logo` to null (→ pack monogram), incl. the opt-in branches.
+- **Collapsible editor panel (Canva-style)** — store flag `panelOpen`; a prominent pill button
+  centered on the panel/stage seam folds the panel away so the preview takes full width (icon
+  rail stays; clicking a rail icon toggles it back). Desktop/tablet only — phones keep the
+  Editor/Preview tab. `.body.panel-collapsed` grid + rail active-state gated on open.
+- **AI opens the editor** — after Generate, jump to the channel's content section (and ensure
+  the panel is open) so the copy is right there to edit, instead of leaving the user on Templates.
+- **Favicon + head meta** — `public/favicon.svg` (brand chat-bubble) + 32/180/512 PNG
+  fallbacks, apple-touch-icon, theme-color, meta description wired in `index.html`.
+- **Realistic WhatsApp footers** — dropped the redundant brand-name footer for real WA-style
+  copy per template ("Reply STOP to unsubscribe", "Questions? Just reply here", …); verification
+  keeps "Expires in 10 minutes".
+- **Gmail opens on the email** — default `view: 'inbox' → 'open'` so the channel lands on the
+  rendered email, not the inbox list.
+- **Real channel icons** — replaced the arbitrary/wrong emoji set with a colored SVG icon set
+  (`src/channels/channelIcons.tsx`): accurate brand marks (WhatsApp/Gmail/Instagram/Facebook),
+  a Google-Messages bubble for RCS, and clean glyphs for the rest. Dropped the `emoji()` helper.
+- **Hover-only Simulate** — Simulate drew a persistent ring on every `.clickable` at rest, which
+  looked wrong on styled CTAs (Instagram "Shop Now"). Made the cue hover-only globally (one rule
+  in `global.css`); buttons stay clean at rest on every channel. WhatsApp stays clean via its
+  existing `.sim-on .wa-cta` override.

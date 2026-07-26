@@ -11,6 +11,13 @@ Push** (web); Instagram Ads and Facebook Ads. The shared top-bar features are wi
 **Export PNG / Copy**, screen **Record** (WebM/GIF + trim studio), and a **✨ AI** generate
 panel with real photos/logos. Everything degrades gracefully offline (see below).
 
+The UI has a **collapsible (Canva-style) editor panel**, a real colored **channel-icon**
+picker, a brand **favicon**, and a **hover-only Simulate** cue (interactive elements hint on
+hover but stay clean at rest on every channel). A committed `vercel.json` at the repo root
+promotes this app as the live deploy (`studio/dist`) while keeping the shared `api/`
+serverless functions at the repo root — see **`HANDOFF.md` §5** for the exact Vercel settings
+and the **Backlog** section for what's next.
+
 ## Run it
 
 ```

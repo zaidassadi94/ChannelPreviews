@@ -1,6 +1,12 @@
 # Channel Studio — Handoff / Full Context
 
-Last updated: 2026-07-25. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**, no build step; static site + three optional serverless functions under `api/`: `generate.js`, `photo.js`, `logo.js`). **11 channels across 6 tools** (see §2/§4).
+Last updated: 2026-07-26. Repo: **`zaidassadi94/ChannelPreviews`** (branch `main`, hosted on **Vercel**; three optional serverless functions under `api/`: `generate.js`, `photo.js`, `logo.js`). **11 channels across 6 tools** (see §2/§4).
+
+> **⚠️ This doc describes the LEGACY standalone tools.** The project has since been consolidated
+> into a unified **`studio/`** React + Vite app (13 channels, shared shell, no page reloads),
+> and a committed `vercel.json` now makes **`studio/dist` the live deploy**. Start from
+> [`studio/HANDOFF.md`](studio/HANDOFF.md) for the current app; this file remains accurate for
+> the legacy single-file tools and the shared `api/` functions (unchanged, used by both).
 
 This doc gives a new session everything needed to continue without re-reading the
 whole history. Read this first.
