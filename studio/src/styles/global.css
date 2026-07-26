@@ -194,3 +194,42 @@ textarea{ resize:vertical; min-height:66px; line-height:1.55; }
 .cs-ai-spin{ width:15px; height:15px; border:2px solid rgba(255,255,255,.5); border-top-color:#fff; border-radius:50%; animation:cs-ai-sp .7s linear infinite; }
 @keyframes cs-ai-sp{ to{ transform:rotate(360deg); } }
 @media (max-width:920px){ .cs-ai{ top:0; width:100vw; max-width:100vw; } }
+
+/* ============ Responsive ============ */
+/* The bar carries a lot of controls; rather than clip or squish them on smaller
+   screens, it wraps to a second row (which also keeps the channel-picker popover
+   un-clipped, unlike an overflow-scroll bar would). */
+.topbar{ flex-wrap:wrap; height:auto; min-height:58px; row-gap:8px; padding-top:8px; padding-bottom:8px; }
+.tb-brand,.chpick,.tb-sel,.seg,.topbar .btn{ flex-shrink:0; }
+
+/* mobile Editor / Preview switch (hidden on desktop) */
+.mobile-tabs{ display:none; flex:none; gap:7px; padding:8px 12px; background:#fff; border-bottom:1px solid var(--line); z-index:15; }
+.mobile-tabs button{ flex:1; padding:9px; border:1px solid var(--line); background:var(--panel-2); border-radius:9px; font-size:13px; font-weight:660; color:var(--muted); font-family:inherit; cursor:pointer; letter-spacing:-.1px; transition:.12s; }
+.mobile-tabs button.on{ background:#14151c; color:#fff; border-color:#14151c; }
+
+/* drop the wordmark text early so the bar stays a single row on laptops */
+@media (max-width:1500px){ .tb-brand h1{ display:none; } }
+
+/* medium: give the stage more room */
+@media (max-width:1200px){
+  .body{ grid-template-columns:80px 300px 1fr; }
+  .tb-sep{ display:none; }
+}
+@media (max-width:960px){
+  .body{ grid-template-columns:74px 280px 1fr; }
+  .chpick-btn{ min-width:140px; }
+  .tb-sel > select{ max-width:150px; text-overflow:ellipsis; }
+}
+
+/* phones: show one pane at a time via the Editor / Preview toggle */
+@media (max-width:760px){
+  .mobile-tabs{ display:flex; }
+  .tb-brand{ display:none; }
+  .grow{ display:none; }
+  .topbar{ gap:8px; padding:8px 10px; }
+  .body{ grid-template-columns:1fr; }
+  .body.mobile-edit{ grid-template-columns:66px 1fr; }
+  .body.mobile-edit .stage{ display:none; }
+  .body.mobile-preview .rail,
+  .body.mobile-preview .panel{ display:none; }
+}

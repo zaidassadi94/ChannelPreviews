@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStudio } from '@/store/useStudio'
 import { channelById } from '@/channels/registry'
 import { TopBar } from './TopBar'
@@ -10,11 +11,17 @@ export function AppShell() {
   const sim = useStudio((s) => s.sim)
   const def = channelById(channel)
   const Preview = def?.Preview
+  // On phones the editor and preview can't share the width — toggle between them.
+  const [mView, setMView] = useState<'edit' | 'preview'>('preview')
 
   return (
     <div className="app">
       <TopBar />
-      <div className="body">
+      <div className="mobile-tabs" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={mView === 'edit'} className={mView === 'edit' ? 'on' : ''} onClick={() => setMView('edit')}>Editor</button>
+        <button role="tab" aria-selected={mView === 'preview'} className={mView === 'preview' ? 'on' : ''} onClick={() => setMView('preview')}>Preview</button>
+      </div>
+      <div className={'body mobile-' + mView}>
         <SectionRail />
         <SectionPanel />
         <div className={'stage' + (sim ? ' sim-on' : '')}>
