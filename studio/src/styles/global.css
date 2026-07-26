@@ -43,6 +43,7 @@ button{ font-family:inherit; }
 .chpick-grp{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); padding:8px 9px 4px; }
 .chpick-item{ display:flex; align-items:center; gap:10px; width:100%; border:0; background:none; padding:8px 9px; border-radius:9px; cursor:pointer; text-align:left; transition:.12s; }
 .chpick-item .em{ font-size:17px; width:20px; text-align:center; }
+.chpick .em svg{ width:20px; height:20px; display:block; }
 .chpick-item .nm{ font-size:13px; font-weight:560; color:var(--ink-2); flex:1; }
 .chpick-item:hover{ background:var(--panel-2); }
 .chpick-item.on{ background:var(--accent-weak); } .chpick-item.on .nm{ color:var(--accent-ink); font-weight:680; }
