@@ -346,19 +346,66 @@ Every channel is migrated. How the code is organised now:
 The one remaining human step is **promoting `studio/` on Vercel** (exact settings in §5;
 the owner handles Vercel). Keep `npm run build` GREEN + smoke-test per change.
 
-## Kickoff prompt for the next chat (paste this)
-> Continue the `studio/` React app (repo `zaidassadi94/ChannelPreviews`). Read
-> `studio/HANDOFF.md` first, then the **Backlog** section below. All **13 channels** AND all
-> shared shell features (Export/Copy, Record, AI panel, real photos/logos) are ported,
-> verified (build + Chromium smoke tests) and committed, plus a full round of live-testing UX
-> polish (collapsible panel, real channel icons, favicon, hover-only Simulate, realistic WA
-> footers). The preview artifact is current and a `vercel.json` at the repo root already flips
-> the live deploy to `studio/dist` (the owner triggers the Vercel redeploy). Workflow: the
-> owner is **trunk-based** — for each change run `npm run build` (tsc strict) + a Chromium
-> smoke test, refresh the SAME preview artifact (`force:true` on 409), commit, then
-> fast-forward `main` and `git push origin main`. Keep it white-label (no MoEngage /
-> real-client / personal names; American names; dollars; `genOtp()`) and keep the core render
-> path self-contained so the artifact preview + keyless deploys never break.
+## Kickoff prompt for the next session (paste this)
+> **Project.** Channel Studio — a React + Vite + TypeScript single-page app in `studio/` (repo
+> `zaidassadi94/ChannelPreviews`) that renders pixel-accurate marketing-channel mockups. **13
+> channels** share one shell (top bar + per-channel section rail + device frame); switching
+> channels swaps only the sidebar + preview, no page reload. Shared features are all wired:
+> Export PNG / Copy, screen Record (WebM/GIF + trim studio), a ✨ AI generate panel
+> (`/api/generate`), and real photos/logos (`/api/photo`, `/api/logo`). A committed `vercel.json`
+> at the repo root promotes `studio/dist` as the live deploy while the shared `api/` serverless
+> functions stay at the repo root. A full round of UX polish shipped (collapsible Canva-style
+> panel, real colored channel icons, favicon, hover-only Simulate, realistic WhatsApp footers).
+>
+> **Read first (in order).** `studio/HANDOFF.md` — architecture, the per-channel migrate recipe,
+> conventions/gotchas, the **Backlog**, and the session logs. Then `studio/README.md`. The root
+> `README.md` / `HANDOFF.md` describe the **legacy** standalone HTML tools (now superseded by the
+> studio) — reference only.
+>
+> **Confirm the starting state before doing ANYTHING — verify, don't assume:**
+> 1. **Git.** `git status` clean; `main`, `origin/main`, and branch
+>    `claude/studio-shared-shell-port-jozeu8` all at the same HEAD (owner is trunk-based, so main
+>    carries the latest).
+> 2. **Build is green.** `cd studio && npm install && npm run build` (= `tsc --noEmit` strict +
+>    `vite build`). Zero errors required — this is the release gate.
+> 3. **Smoke test the build.** `npm run preview -- --port 4173`, load in Chromium (Playwright:
+>    `NODE_PATH=/opt/node22/lib/node_modules`, `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`),
+>    switch through **every channel × every section**, toggle Simulate, assert **zero console
+>    errors**. (Exact `node -e` snippets are in the git history.)
+> 4. **Offline / artifact integrity.** The standalone inlined HTML must render with **zero
+>    external requests** — the core render path uses `phImg` data-URIs; `/api/*` + remote photos
+>    only light up on the deploy. Confirm before relying on the preview link.
+> 5. **Deploy flip (ask the owner).** `vercel.json` is committed but the **owner** triggers the
+>    Vercel redeploy. Confirm whether it's live; if so, verify the site serves the studio (not the
+>    legacy root tools) and `/api/generate`, `/api/photo`, `/api/logo` all return 200. **This is
+>    the one open loop from the last session.**
+>
+> **Workflow (owner is trunk-based).** Per change → `npm run build` green + a Chromium smoke test
+> → refresh the SAME preview artifact (Artifact tool, same `url`; `force:true` on a 409) → commit
+> → fast-forward `main` and `git push origin main`. Keep it **white-label**: fictional demo brands
+> only (Nova, Meridian, Streamly, SkyHigh, QuickBite, LearnSphere, PixelForge, ConnectTel,
+> GlowLab), American names, dollar amounts, OTPs via `genOtp()` (never hardcoded), no MoEngage /
+> real-client / personal names. Keep the core render path self-contained so the artifact preview
+> and keyless deploys never break.
+>
+> **Next items — each must be CONFIRMED before acting (detail in the Backlog section):** none are
+> blocking; the app is at parity and promoted.
+> - **(highest leverage) CI smoke test.** First confirm there's still no `.github/` and no `test`
+>   script (only `build`/`typecheck`/`prefetch:photos`). Then add a Playwright script + a GitHub
+>   Action: build → iterate channels×sections → assert zero console errors → upload per-channel
+>   screenshots. Confirm it goes green before relying on it.
+> - **Export/Record spot-check on Web Push + Cards.** Confirm the 2× PNG + recording look right on
+>   those two newest surfaces (they reuse already-verified frames, so expected-fine but unproven).
+> - **Simulate cue — owner decision.** It's hover-only now; confirm whether the owner wants it
+>   fully off everywhere (like WhatsApp) before touching it.
+> - **Per-channel template parity.** Shared content is fully ported (verified 1:1); confirm each
+>   channel's `templates.ts` still covers every vertical its legacy tool did (spot-check
+>   gmail/whatsapp/push/inapp, which build templates in a non-array shape).
+> - **Accessibility pass · real-logo polish · retire the legacy root tools** — each needs a
+>   confirm/decision first; none blocking.
+>
+> Confirm the state above, surface anything that fails confirmation, then pick the highest-value
+> confirmed item.
 
 ## Backlog / ideas for next (nothing is blocking)
 Ordered rough-priority. None of these are required for the app to ship — it's at parity and
