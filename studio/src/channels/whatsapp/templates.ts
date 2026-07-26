@@ -20,18 +20,18 @@ const cap = (x: string) => (x ? x.charAt(0).toUpperCase() + x.slice(1) : x)
 export const WA_TEMPLATES: WATemplate[] = [
   {
     name: 'Seasonal offer', kind: 'Promotional', icon: '🏷️', desc: 'Image + offer + CTA',
-    build: (p) => [makeMsg('template', { img: hero(p), body: `${p.emoji} *${p.offer}* just went live at ${p.brand}.\nYou're on the early list — first pick, best of the lot.`, footer: p.brand, buttons: `Shop the drop | url | https://${p.url}` })],
+    build: (p) => [makeMsg('template', { img: hero(p), body: `${p.emoji} *${p.offer}* just went live at ${p.brand}.\nYou're on the early list — first pick, best of the lot.`, footer: 'Reply STOP to unsubscribe', buttons: `Shop the drop | url | https://${p.url}` })],
   },
   {
     name: 'Confirmation', kind: 'Transactional', icon: '✅', desc: 'Order / booking confirmed',
     build: (p, ctxId) => {
       const c = confirmFor(ctxId)
-      return [makeMsg('template', { body: `Your ${c.noun} *#${p.orderId}* is confirmed ✅\n${c.line}`, footer: p.brand, buttons: `${c.cta} | url | https://${p.url}${c.ship ? '/track' : ''}\nContact support | call | +18005550199` })]
+      return [makeMsg('template', { body: `Your ${c.noun} *#${p.orderId}* is confirmed ✅\n${c.line}`, footer: 'Questions? Just reply here', buttons: `${c.cta} | url | https://${p.url}${c.ship ? '/track' : ''}\nContact support | call | +18005550199` })]
     },
   },
   {
     name: 'Interactive flow', kind: 'Flow', icon: '🔀', desc: 'Tap buttons to branch', flow: true,
-    build: (p) => [makeMsg('template', { img: heroPhoto(p, 'x', 600, 340), body: p.flow.intro, footer: p.brand, buttons: optStr(p.flow.opts) })],
+    build: (p) => [makeMsg('template', { img: heroPhoto(p, 'x', 600, 340), body: p.flow.intro, footer: 'Reply STOP to unsubscribe', buttons: optStr(p.flow.opts) })],
   },
   {
     name: 'Verification code', kind: 'Transactional', icon: '🔐', desc: 'OTP + copy button',
@@ -43,7 +43,7 @@ export const WA_TEMPLATES: WATemplate[] = [
   {
     name: 'Feedback request', kind: 'Flow', icon: '⭐', desc: 'Rating replies branch', flow: true,
     build: (p) => [makeMsg('template', {
-      body: `Thanks for choosing ${p.brand} 🙌\n${p.feedbackQ || 'How did we do?'}`, footer: p.brand,
+      body: `Thanks for choosing ${p.brand} 🙌\n${p.feedbackQ || 'How did we do?'}`, footer: 'Takes less than a minute',
       buttons: `😍 Loved it | reply >> Amazing — thank you! 💛 Mind leaving a quick review? ${p.url}/review\n🙂 It was OK | reply >> Thanks for the honest feedback — we're always improving.\n😞 Not great | reply >> So sorry. Reply here and we'll make it right.`,
     })],
   },

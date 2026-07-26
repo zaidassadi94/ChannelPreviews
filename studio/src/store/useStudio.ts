@@ -321,7 +321,7 @@ export const useStudio = create<StudioState>((set, get) => ({
     game: { type: 'scratch', eyebrow: 'Exclusive reward', headline: '', sub: '', prize: '', prizeCap: '', cta: '', segments: '', close: true },
   },
   gmail: {
-    skin: 'desktop', view: 'inbox', senderName: 'Nova', senderEmail: 'hello@nova.shop', logo: null,
+    skin: 'desktop', view: 'open', senderName: 'Nova', senderEmail: 'hello@nova.shop', logo: null,
     subject: '🎉 Your weekend sale is here — up to 40% off', snippet: 'First pick of the new arrivals — up to 40% off, this weekend only…',
     timestamp: '9:15 AM', toLine: 'to me', unread: true, starred: false, important: false,
     category: 'promotions', labelChip: 'Inbox', bodyMode: 'template', html: '',

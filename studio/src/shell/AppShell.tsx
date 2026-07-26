@@ -10,6 +10,7 @@ export function AppShell() {
   const channel = useStudio((s) => s.channel)
   const sim = useStudio((s) => s.sim)
   const panelOpen = useStudio((s) => s.panelOpen)
+  const setPanelOpen = useStudio((s) => s.setPanelOpen)
   const def = channelById(channel)
   const Preview = def?.Preview
   // On phones the editor and preview can't share the width — toggle between them.
@@ -28,6 +29,18 @@ export function AppShell() {
         <div className={'stage' + (sim ? ' sim-on' : '')}>
           {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
         </div>
+        <button
+          className="panel-toggle"
+          title={panelOpen ? 'Collapse panel' : 'Expand panel'}
+          aria-label={panelOpen ? 'Collapse panel' : 'Expand panel'}
+          onClick={() => setPanelOpen(!panelOpen)}
+        >
+          <svg viewBox="0 0 24 24" fill="none">
+            {panelOpen
+              ? <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              : <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />}
+          </svg>
+        </button>
       </div>
     </div>
   )

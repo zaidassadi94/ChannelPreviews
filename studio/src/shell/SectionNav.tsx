@@ -1,6 +1,5 @@
 import { useStudio } from '@/store/useStudio'
 import { channelById } from '@/channels/registry'
-import { Icon } from '@/lib/icons'
 
 /** The thin left rail = the active channel's sections (Templates, Chat, …).
     Clicking one opens its panel; clicking the already-open one collapses it (Canva-style). */
@@ -42,7 +41,6 @@ export function SectionRail() {
 export function SectionPanel() {
   const channel = useStudio((s) => s.channel)
   const section = useStudio((s) => s.section)
-  const setPanelOpen = useStudio((s) => s.setPanelOpen)
   const def = channelById(channel)
   const sections = def?.sections ?? []
 
@@ -63,10 +61,7 @@ export function SectionPanel() {
   const Panel = active.Panel
   return (
     <aside className="panel">
-      <div className="panel-head">
-        <h2>{active.label}</h2>
-        <button className="panel-collapse" title="Collapse panel" aria-label="Collapse panel" onClick={() => setPanelOpen(false)}>{Icon.back}</button>
-      </div>
+      <div className="panel-head"><h2>{active.label}</h2></div>
       <div className="panel-body"><Panel /></div>
     </aside>
   )
