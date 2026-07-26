@@ -194,6 +194,7 @@ interface StudioState {
   // shared context
   channel: string
   section: string
+  panelOpen: boolean
   device: 'ios' | 'android'
   industry: string
   sub: string | null
@@ -232,6 +233,7 @@ interface StudioState {
   // shared actions
   setChannel: (c: string) => void
   setSection: (s: string) => void
+  setPanelOpen: (v: boolean) => void
   setDevice: (d: 'ios' | 'android') => void
   setIndustry: (id: string) => void
   setSub: (s: string) => void
@@ -300,6 +302,7 @@ const emptyMsg = (): MsgSlice => ({ messages: [makeM('text')], played: [], typin
 export const useStudio = create<StudioState>((set, get) => ({
   channel: 'whatsapp',
   section: '',
+  panelOpen: true,
   device: 'ios',
   industry: 'ecom',
   sub: 'fashion',
@@ -339,6 +342,7 @@ export const useStudio = create<StudioState>((set, get) => ({
 
   setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
+  setPanelOpen: (v) => set({ panelOpen: v }),
   setDevice: (d) => set({ device: d }),
   setIndustry: (id) => {
     const ind = industryById(id)

@@ -202,3 +202,5 @@
 .po-two .acts{ margin-top:20px; display:flex; flex-direction:column; gap:9px; }
 .po-two .acts .allow{ background:var(--brand); color:#fff; font-size:14px; font-weight:700; padding:13px; border-radius:13px; font-family:inherit; }
 .po-two .acts .deny{ background:none; color:#8a8f99; font-size:13px; font-weight:600; padding:3px; font-family:inherit; }
+/* no default button border (else the export renderer draws a black box); iOS divider stays (more specific) */
+.po-ios .btns button, .po-and .btns button, .po-two .acts button{ border:0; }

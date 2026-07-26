@@ -91,6 +91,8 @@
 .wp-optin .acts{ margin-top:22px; display:flex; flex-direction:column; gap:10px; }
 .wp-optin .acts .allow{ background:var(--brand); color:#fff; font-size:14px; font-weight:700; padding:13px; border-radius:11px; font-family:inherit; }
 .wp-optin .acts .deny{ background:none; color:#8a8f99; font-size:13.5px; font-weight:600; padding:4px; font-family:inherit; }
+/* no default button border (else the export renderer draws a black box) */
+.wp-native .btns button, .wp-optin .acts button{ border:0; }
 
 /* editor: two fields side by side */
 .mc-row{ display:flex; gap:10px; }

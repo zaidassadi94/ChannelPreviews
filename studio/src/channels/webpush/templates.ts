@@ -67,12 +67,12 @@ export function applyWebpushTemplate(t: WebpushTemplate, announce = true) {
   if (!p) return
   if (t.optin) {
     const o = t.optin(p, s.ctxId())
-    s.setWebpush({ mode: 'optin', site: p.brand, optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
+    s.setWebpush({ mode: 'optin', site: p.brand, logo: null, optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
     if (announce) useToast.getState().show('Opt-in prompt applied')
     return
   }
   if (!t.build) return
   const f = t.build(p, s.ctxId())
-  s.setWebpush({ mode: 'notification', site: f.site, url: f.url, title: f.title, body: f.body, image: f.image, actions: f.actions })
+  s.setWebpush({ mode: 'notification', site: f.site, url: f.url, logo: null, title: f.title, body: f.body, image: f.image, actions: f.actions })
   if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to click' : ''))
 }

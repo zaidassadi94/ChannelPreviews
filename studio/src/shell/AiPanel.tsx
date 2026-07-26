@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
+import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
 import { applyAiMessage } from '@/lib/applyAi'
 import { resolveBrandLogo, type AiMessage } from '@/lib/media'
@@ -57,6 +58,11 @@ export function AiPanel() {
       const msg: AiMessage = data.message || {}
       const logo = await resolveBrandLogo({ brief: text, domain: msg.domain, brand: msg.brand })
       await applyAiMessage(channel, msg, { logo })
+      // open the content editor so the generated copy is right there to tweak
+      const cdef = channelById(channel)
+      const contentId = cdef?.sections?.[1]?.id || cdef?.sections?.[0]?.id
+      if (contentId) s.setSection(contentId)
+      s.setPanelOpen(true)
       useToast.getState().show('✨ AI message generated')
       const note = target && target !== from ? `Switched to ${CH_LABEL[target] || target}. ` : ''
       setStatus({ kind: 'ok', text: note + 'Done — edit any field on the left, or generate again.' })

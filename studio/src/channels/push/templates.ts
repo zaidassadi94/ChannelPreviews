@@ -73,7 +73,7 @@ export function applyPushTemplate(t: PushTemplate, announce = true) {
   if (!p) return
   if (t.optin) {
     const o = t.optin(p, s.ctxId())
-    s.setNotify({ appName: p.brand, surface: 'optin', optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
+    s.setNotify({ appName: p.brand, appLogo: null, surface: 'optin', optinStyle: o.style, optinTitle: o.title, optinBody: o.body, optinAllow: o.allow, optinDeny: o.deny })
     if (announce) useToast.getState().show('Opt-in prompt applied')
     return
   }
@@ -81,7 +81,7 @@ export function applyPushTemplate(t: PushTemplate, announce = true) {
   const f = t.build(p, s.ctxId())
   // if we're currently showing the opt-in prompt, drop back to a real notification surface
   const surface = NOTIF_SURFACES.includes(s.notify.surface) ? {} : { surface: s.device === 'ios' ? 'lock' : 'heads' }
-  s.setNotify({ appName: f.appName, expanded: f.expanded, ...surface })
+  s.setNotify({ appName: f.appName, appLogo: null, expanded: f.expanded, ...surface })
   s.setPush({ title: f.title, body: f.body, image: f.image, actions: f.actions, time: 'now' })
   if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap actions' : ''))
 }
