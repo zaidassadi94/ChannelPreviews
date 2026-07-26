@@ -368,15 +368,24 @@ promoted. These are polish + reach.
    and that `/api/generate`, `/api/photo`, `/api/logo` still 200. This is the one open loop.
 2. **Simulate cue — decide the final look.** It's hover-only now. Owner may want it fully off
    everywhere (like WhatsApp) — trivial one-line change in `global.css` if so.
-3. **Port remaining `content.js` fields.** `content/model.ts` was noted as WhatsApp-first;
-   audit for any per-channel copy overrides (email/push variants) still living only in the
-   root `../content.js` and bring them across so every channel's packs are complete.
+3. **(Mostly done — verify only) Per-channel template parity vs the legacy tools.** The shared
+   `content.js` → `content/model.ts` port is **complete** (verified 1:1: all 8 INDUSTRIES, 15
+   PACKS incl. `push`/`email` overrides, 15 CONFIRM, `resolveIndustry`/SYN). The old
+   "WhatsApp-first" architecture note is stale. What's *not* independently re-counted is each
+   channel's own `templates.ts` vs its legacy tool (osm 12 ✓, instagram 6 ✓, facebook 6 ✓;
+   gmail/whatsapp/push/inapp generate templates in a different shape — spot-check they still
+   cover every vertical the legacy tool did). Low priority; nothing looks missing.
 4. **Automated smoke test in CI.** Today verification is a manual Chromium `node -e` snippet
-   per change. A tiny Playwright script (load build, iterate channels×sections, assert zero
-   console errors + a screenshot) run in a GitHub Action would catch regressions on push.
-5. **Export/Record parity sweep.** Confirm Export PNG + Record look right on the *newest*
-   channels (Web Push desktop frame, Cards) and the ad Story frames at 2× — these landed after
-   the capture code and haven't had a dedicated capture pass.
+   per change (no `.github/`, no `test` script — only `build`/`typecheck`/`prefetch:photos`).
+   A tiny Playwright script (load the build, iterate channels×sections, assert zero console
+   errors + snapshot) run in a GitHub Action would catch regressions on push. Highest-leverage
+   open item — turns the manual per-change check into an automatic gate.
+5. **(Mostly done — spot-check only) Confirm Export/Record on the two newest surfaces.**
+   Export PNG + Record are wired to **all 13** channels via the shared `id="capture"` frames
+   (`PhoneFrame`/`DesktopFrame`), and were verified on phone/desktop/**ad** frames when they
+   landed. Web Push (`DesktopFrame width=1040`) and Cards (`PhoneFrame`) were added *after* that
+   pass but reuse those same verified frames, so capture works mechanically — they just lack a
+   dedicated confirmation screenshot at 2×. A 5-minute check, not a sweep.
 6. **Accessibility pass.** Keyboard focus order, `aria-label`s on icon-only buttons (the new
    channel-icon picker, the collapse pill, Export/Record/AI), and color-contrast on the
    simulate hover cue.
