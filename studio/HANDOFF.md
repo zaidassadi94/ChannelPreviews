@@ -250,10 +250,18 @@ tools to the studio, since it changes what the site serves):
 ```json
 {
   "installCommand": "npm install --prefix studio",
-  "buildCommand": "npm run build --prefix studio",
+  "buildCommand": "npm run prefetch:photos --prefix studio && npm run build --prefix studio",
   "outputDirectory": "studio/dist"
 }
 ```
+(A committed `vercel.json` with exactly this now lives at the repo root.) The build runs
+`prefetch:photos` first — `scripts/prefetch-photos.mjs` downloads the curated Pexels
+photos (no key needed) into `src/content/photos.ts` so template mockups ship **real,
+stored** photos with zero runtime fetches. It's fail-safe: if the harvest can't reach
+Pexels it writes an empty map and the build continues, and `tphoto()` falls back to the
+gradient placeholder. To bake the photos into the **offline artifact preview** too, run
+`npm run prefetch:photos` once on any machine that can reach Pexels and commit the
+generated `src/content/photos.ts`.
 After promotion the root `index.html`/`*-preview-tool/` static tools are no longer
 served (the output becomes `studio/dist`); the `api/` functions are unaffected. The
 self-contained artifact preview (§Preview workflow) keeps working regardless, since it
