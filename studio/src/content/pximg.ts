@@ -233,3 +233,21 @@ export function pxFor(kw?: string): string | null {
   if (!k) return null
   return PXIMG[k] || PXIMG[normKw(k)] || null
 }
+
+/** Resolve a free-text subject (possibly multi-word, e.g. "Cargo Pants", "Vit-C Serum")
+    to a PXIMG keyword — whole string first, then each word via the synonym map. Null if
+    nothing maps (caller then falls back to the gradient placeholder). */
+export function kwForSubject(subject?: string): string | null {
+  if (!subject) return null
+  const s = subject.toLowerCase()
+  const whole = s.replace(/[^a-z0-9]/g, '')
+  if (PXIMG[whole]) return whole
+  const nw = normKw(whole)
+  if (PXIMG[nw]) return nw
+  for (const w of s.split(/[^a-z0-9]+/).filter(Boolean)) {
+    if (PXIMG[w]) return w
+    const k = normKw(w)
+    if (PXIMG[k]) return k
+  }
+  return null
+}

@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface WebpushBuild { site: string; url: string; title: string; body: string; image: string; actions: string }
@@ -16,7 +16,7 @@ export interface WebpushTemplate {
   optin?: (p: Pack, ctxId: string) => WebpushOptin
 }
 
-const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
+const hero = (p: Pack, seed = '') => heroPhoto(p, seed, 600, 340)
 
 export const WEBPUSH_TEMPLATES: WebpushTemplate[] = [
   {

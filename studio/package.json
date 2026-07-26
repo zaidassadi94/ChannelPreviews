@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prefetch:photos": "node scripts/prefetch-photos.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

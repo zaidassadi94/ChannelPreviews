@@ -1,7 +1,8 @@
 import { makeMsg, useStudio, type WAMsg } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, confirmFor, packFor } from '@/content/model'
-import { phImg, genOtp, hueOf } from '@/lib/util'
+import { genOtp } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 
 export interface WATemplate {
   name: string
@@ -13,7 +14,7 @@ export interface WATemplate {
 }
 
 const optStr = (opts: [string, string][]) => opts.map((o) => `${o[0]} | reply >> ${o[1]}`).join('\n')
-const hero = (p: Pack) => phImg(p.brand, null, hueOf(p.brand), 600, 340)
+const hero = (p: Pack) => heroPhoto(p, '', 600, 340)
 const cap = (x: string) => (x ? x.charAt(0).toUpperCase() + x.slice(1) : x)
 
 export const WA_TEMPLATES: WATemplate[] = [
@@ -30,7 +31,7 @@ export const WA_TEMPLATES: WATemplate[] = [
   },
   {
     name: 'Interactive flow', kind: 'Flow', icon: '🔀', desc: 'Tap buttons to branch', flow: true,
-    build: (p) => [makeMsg('template', { img: phImg(p.brand, 'offer', hueOf(p.brand + 'x'), 600, 340), body: p.flow.intro, footer: p.brand, buttons: optStr(p.flow.opts) })],
+    build: (p) => [makeMsg('template', { img: heroPhoto(p, 'x', 600, 340), body: p.flow.intro, footer: p.brand, buttons: optStr(p.flow.opts) })],
   },
   {
     name: 'Verification code', kind: 'Transactional', icon: '🔐', desc: 'OTP + copy button',

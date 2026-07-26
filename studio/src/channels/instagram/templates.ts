@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, packFor } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export const handleFromBrand = (b: string) => (b || 'brand').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '').slice(0, 24) || 'brand'
@@ -16,7 +16,7 @@ export interface IgTemplate {
   build: (p: Pack) => IgBuild
 }
 
-const media = (p: Pack, seed: string) => phImg(p.brand, p.offer, hueOf(p.brand + seed), 800, 1000)
+const media = (p: Pack, seed: string) => heroPhoto(p, seed, 800, 1000)
 const base = (p: Pack, o: Partial<IgBuild>): IgBuild => ({ brand: p.brand, handle: handleFromBrand(p.brand), verified: true, time: '2 hours ago', caption: '', cta: 'Shop Now', media: '', likes: '', comments: '', ...o })
 
 export const IG_TEMPLATES: IgTemplate[] = [

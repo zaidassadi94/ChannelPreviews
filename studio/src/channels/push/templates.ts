@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, confirmFor, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface PushBuild { appName: string; title: string; body: string; image: string; actions: string; expanded: boolean }
@@ -16,7 +16,7 @@ export interface PushTemplate {
   optin?: (p: Pack, ctxId: string) => PushOptin
 }
 
-const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
+const hero = (p: Pack, seed = '') => heroPhoto(p, seed, 600, 340)
 
 export const PUSH_TEMPLATES: PushTemplate[] = [
   {

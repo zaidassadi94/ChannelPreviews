@@ -1,7 +1,7 @@
 import { makeM, useStudio, type MMsg } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, confirmFor, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 
 export interface RcsTemplate {
   name: string
@@ -12,7 +12,7 @@ export interface RcsTemplate {
   build: (p: Pack, ctxId: string) => MMsg[]
 }
 
-const hero = (p: Pack, sub: string | null, seed = '') => phImg(p.brand, sub, hueOf(p.brand + seed), 600, 340)
+const hero = (p: Pack, _sub: string | null, seed = '') => heroPhoto(p, seed, 600, 340)
 const chipStr = (opts: [string, string][]) => opts.map((o) => `${o[0]} >> ${o[1]}`).join('\n')
 const carouselStr = (p: Pack) => p.carousel.map((c) => ` | ${c[0]} | ${c[1]} | View | https://${p.url}`).join('\n')
 

@@ -1,7 +1,7 @@
 import { useStudio, type CardItem } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, confirmFor, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto, tphoto } from '@/lib/photo'
 
 export interface CardsBuild { screenTitle: string; items: CardItem[] }
 export interface CardsTemplate {
@@ -13,8 +13,8 @@ export interface CardsTemplate {
   build: (p: Pack, ctxId: string) => CardsBuild
 }
 
-const banner = (p: Pack, seed: string) => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 300)
-const prod = (name: string, seed: string) => phImg(name, null, hueOf(name + seed), 600, 300)
+const banner = (p: Pack, seed: string) => heroPhoto(p, seed, 600, 300)
+const prod = (name: string, _seed: string) => tphoto(name, 600, 300)
 const mk = (o: Partial<CardItem>): CardItem => ({ image: '', title: '', body: '', tag: '', time: 'now', unread: false, ...o })
 
 export const CARDS_TEMPLATES: CardsTemplate[] = [

@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface InappBuild { type: string; image: string; headline: string; body: string; ctas: string; close: boolean; bannerPos?: string }
@@ -14,8 +14,8 @@ export interface InappTemplate {
   build: (p: Pack) => InappBuild
 }
 
-const hero = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 600, 340)
-const portrait = (p: Pack, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), 700, 900)
+const hero = (p: Pack, seed = '') => heroPhoto(p, seed, 600, 340)
+const portrait = (p: Pack, seed = '') => heroPhoto(p, seed, 700, 900)
 
 export const INAPP_TEMPLATES: InappTemplate[] = [
   {

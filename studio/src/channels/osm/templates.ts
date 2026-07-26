@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface OsmBuild { site: string; url: string; format: string; headline: string; body: string; image: string; cta: string; cta2: string; code: string; input: boolean; countdown: string; scaleLo?: string; scaleHi?: string }
@@ -15,7 +15,7 @@ export interface OsmTemplate {
   build: (p: Pack) => OsmBuild
 }
 
-const img = (p: Pack, w: number, h: number, seed = '') => phImg(p.brand, p.offer, hueOf(p.brand + seed), w, h)
+const img = (p: Pack, w: number, h: number, seed = '') => heroPhoto(p, seed, w, h)
 const mk = (p: Pack, format: string, o: Partial<OsmBuild>): OsmBuild => ({ site: p.brand, url: p.url || '', format, headline: '', body: '', image: '', cta: '', cta2: '', code: '', input: false, countdown: '', ...o })
 
 export const OSM_TEMPLATES: OsmTemplate[] = [

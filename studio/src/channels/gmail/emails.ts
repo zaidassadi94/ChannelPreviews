@@ -1,10 +1,11 @@
 import { type EmailPack, emailPackFor, confirmFor, cap } from '@/content/model'
-import { phImg, hueOf, genOtp } from '@/lib/util'
+import { genOtp } from '@/lib/util'
+import { tphoto } from '@/lib/photo'
 
 /* Email HTML builders (ported from gmail-preview-tool). Produce inline-styled HTML
    strings rendered into the reading pane. Placeholder images via phImg (offline-safe). */
 
-const ePhoto = (kw: string, seed: number | string) => phImg(cap(kw), null, hueOf(String(kw) + seed), 600, 300)
+const ePhoto = (kw: string, _seed: number | string) => tphoto(cap(kw), 600, 300)
 const eBtn = (p: EmailPack, l: string) => `<a href="#" style="display:inline-block;background:${p.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${l}</a>`
 const eBrand = (p: EmailPack) => `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${p.accent};">${p.brand}</span></div>`
 const eHeroImg = (p: EmailPack, seed: number | string) => `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(p.brand, seed)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;"></div>`

@@ -1,7 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { type Pack, packFor, cap } from '@/content/model'
-import { phImg, hueOf } from '@/lib/util'
+import { heroPhoto } from '@/lib/photo'
 import { oneLine } from '@/channels/notify/shared'
 
 export interface FbBuild { page: string; verified: boolean; url: string; time: string; price: string; primary: string; headline: string; desc: string; cta: string; media: string; reactions: string; comments: string; shares: string }
@@ -14,7 +14,7 @@ export interface FbTemplate {
   build: (p: Pack) => FbBuild
 }
 
-const media = (p: Pack, seed: string) => phImg(p.brand, p.offer, hueOf(p.brand + seed), 800, 1000)
+const media = (p: Pack, seed: string) => heroPhoto(p, seed, 800, 1000)
 const base = (p: Pack, o: Partial<FbBuild>): FbBuild => ({ page: p.brand, verified: true, url: p.url || '', time: '2h', price: p.carousel[0] ? p.carousel[0][1] : '$49', primary: '', headline: '', desc: '', cta: 'Shop Now', media: '', reactions: '', comments: '', shares: '', ...o })
 
 export const FB_TEMPLATES: FbTemplate[] = [
