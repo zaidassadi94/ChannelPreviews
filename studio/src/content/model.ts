@@ -157,6 +157,7 @@ export const CONFIRM: Record<string, Confirm> = {
 /** A resolved email pack (base merged with its `email` override) for the Gmail channel. */
 export interface EmailPack {
   brand: string
+  logo?: string
   from: string
   accent: string
   offer: string

@@ -7,7 +7,11 @@ import { tphoto } from '@/lib/photo'
 
 const ePhoto = (kw: string, _seed: number | string) => tphoto(cap(kw), 600, 300)
 const eBtn = (p: EmailPack, l: string) => `<a href="#" style="display:inline-block;background:${p.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${l}</a>`
-const eBrand = (p: EmailPack) => `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${p.accent};">${p.brand}</span></div>`
+/** The email header. Uses the full brand logo when one is available (that's the
+    real mark a recipient recognises); falls back to the brand name in the accent
+    color when there's no logo. */
+const brandHeader = (brand: string, accent: string, logo?: string) => `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;">${logo ? `<img src="${logo}" alt="${brand}" style="max-height:34px;max-width:180px;width:auto;vertical-align:middle;">` : `<span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${accent};">${brand}</span>`}</div>`
+const eBrand = (p: EmailPack) => brandHeader(p.brand, p.accent, p.logo)
 const eHeroImg = (p: EmailPack, seed: number | string) => `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(p.brand, seed)}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;"></div>`
 const eGrid = (p: EmailPack) => `<div style="padding:14px 22px;">` + p.products.map((pr, i) => `<div style="display:inline-block;width:46%;vertical-align:top;margin:1.5%;text-align:center;"><div style="height:120px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,${p.accent},#3a3a5a);"><img src="${ePhoto(pr[0], i + 10)}" width="260" height="120" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-size:14px;font-weight:600;color:#111;margin-top:8px;">${pr[0]}</div><div style="font-size:14px;color:${p.accent};font-weight:700;">${pr[1]}</div></div>`).join('') + `</div>`
 const eOrderTable = (p: EmailPack) => { const rows = p.products.map((pr) => `<tr><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;color:#333;font-size:14px;">${pr[0]}</td><td style="padding:11px 0;border-bottom:1px solid #f1f1f1;text-align:right;color:#333;font-size:14px;">${pr[1]}</td></tr>`).join(''); return `<table style="width:100%;border-collapse:collapse;">${rows}<tr><td style="padding:13px 0;font-weight:800;color:#111;">Total</td><td style="padding:13px 0;text-align:right;font-weight:800;color:${p.accent};">${p.total}</td></tr></table>` }
@@ -57,9 +61,11 @@ export const GMAIL_TEMPLATES: GmailTemplate[] = [
 
 /** Build a rich AI-generated email (brand bar + optional hero + heading/body/CTA), reusing
     the same inline-styled builders as the templates so it renders identically in the pane. */
-export function buildAiEmail(o: { brand: string; accent: string; image?: string; heading: string; body: string; btn?: string }): string {
+export function buildAiEmail(o: { brand: string; logo?: string; accent: string; image?: string; heading: string; body: string; btn?: string }): string {
   const esc = (s: string) => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  const brandBar = `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${o.accent};">${esc(o.brand)}</span></div>`
+  const brandBar = o.logo
+    ? `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><img src="${o.logo}" alt="${esc(o.brand)}" style="max-height:34px;max-width:180px;width:auto;vertical-align:middle;"></div>`
+    : `<div style="padding:20px 30px;text-align:center;border-bottom:1px solid #f1f1f1;"><span style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:${o.accent};">${esc(o.brand)}</span></div>`
   const hero = o.image ? `<div style="height:220px;overflow:hidden;background:linear-gradient(135deg,${o.accent},#3a3a5a);"><img src="${o.image}" width="600" height="220" style="width:100%;height:100%;object-fit:cover;display:block;"></div>` : ''
   const btn = o.btn ? `<div style="margin-top:16px;"><a href="#" style="display:inline-block;background:${o.accent};color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:9px;font-size:15px;font-weight:700;">${esc(o.btn)}</a></div>` : ''
   const body = `<div style="padding:32px 34px;text-align:center;"><h1 style="margin:0 0 12px;font-size:24px;color:#111;">${esc(o.heading)}</h1><p style="margin:0;font-size:15px;color:#555;line-height:1.6;white-space:pre-wrap;">${esc(o.body)}</p>${btn}</div>`

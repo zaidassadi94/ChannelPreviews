@@ -180,6 +180,7 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .panel-body{ padding:16px 20px 26px; }
 .panel-hint{ font-size:11.5px; color:var(--muted); margin-bottom:13px; line-height:1.55; letter-spacing:-.1px; }
 .panel-hint code, .field code{ background:var(--accent-weak); color:var(--accent-ink); padding:1px 5px; border-radius:4px; font-size:10.5px; font-family:'SF Mono',ui-monospace,monospace; }
+.field-hint{ display:block; font-size:11px; color:var(--muted); margin-top:6px; line-height:1.5; letter-spacing:-.1px; }
 
 /* form controls */
 .field{ display:block; margin-bottom:14px; }

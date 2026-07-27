@@ -116,7 +116,7 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
         <button className="icobtn" title="Move down" onClick={() => onMove(1)} disabled={idx === count - 1}>↓</button>
         <button className="icobtn" title="Delete" onClick={onDel}>✕</button>
       </div>
-      <div className="field"><span>Type</span>
+      <div className="field"><span>Format</span>
         <div className="seg-in">{TYPES.map(([v, l]) => <button key={v} className={msg.type === v ? 'on' : ''} onClick={() => onType(v as WAType)}>{l}</button>)}</div>
       </div>
       <div className="seg-from">
