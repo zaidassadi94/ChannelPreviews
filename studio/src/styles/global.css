@@ -294,7 +294,23 @@ textarea{ resize:vertical; min-height:66px; line-height:1.55; }
 .cs-ai-status.err{ background:#fff4f2; color:#c0392b; border:1px solid #f7d6d0; }
 .cs-ai-status.ok{ background:#e9fbf1; color:#0b7a43; border:1px solid #b6ebcc; }
 .cs-ai-spin{ width:15px; height:15px; border:2px solid rgba(255,255,255,.5); border-top-color:#fff; border-radius:50%; animation:cs-ai-sp .7s linear infinite; }
+.cs-ai-spin.dark{ border-color:rgba(0,0,0,.25); border-top-color:var(--accent); }
 @keyframes cs-ai-sp{ to{ transform:rotate(360deg); } }
+/* Brand-website field (optional) — a quieter sub-label than the uppercase section labels. */
+.cs-ai-sub{ font-size:12px; font-weight:600; color:var(--ink); display:flex; align-items:baseline; gap:6px; margin-top:-3px; }
+.cs-ai-sub span{ font-size:11px; font-weight:400; color:var(--muted); letter-spacing:0; text-transform:none; }
+.cs-ai-url{ width:100%; padding:9px 12px; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:9px;
+  background:var(--panel-2); color:var(--ink); margin-top:-4px; }
+.cs-ai-url:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; outline:0; }
+/* Secondary "New image" action — a Pexels re-roll, no AI request. */
+.cs-ai-reimg{ width:100%; border:1px solid var(--line); border-radius:10px; padding:10px; font-size:13px; font-weight:600; cursor:pointer;
+  font-family:inherit; background:var(--panel-2); color:var(--ink); display:flex; align-items:center; justify-content:center; gap:8px; }
+.cs-ai-reimg:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-weak); }
+.cs-ai-reimg:disabled{ opacity:.6; cursor:default; }
+/* Cycling feature tip, pinned under the panel. */
+.cs-ai-tip{ display:flex; gap:8px; align-items:flex-start; font-size:11.5px; line-height:1.5; color:var(--muted);
+  background:var(--accent-weak); border:1px solid var(--line); border-radius:9px; padding:9px 11px; margin-top:2px; }
+.cs-ai-tip-ic{ flex:0 0 auto; }
 @media (max-width:920px){ .cs-ai{ top:0; width:100vw; max-width:100vw; } }
 
 /* ============ Responsive ============ */

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { INDUSTRIES, industryById } from '@/content/model'
+import type { AiMessage } from '@/lib/media'
 
 let _uid = 1
 export const nid = () => 'm' + _uid++
@@ -219,10 +220,17 @@ interface StudioState {
       the fly. `aiDone` tracks which channels already have this campaign's content.
       Cleared when the industry changes (a new brand context). */
   aiBrief: string
+  /** Optional brand website the user pinned in the AI panel, so every channel's
+      generation resolves the same (correct) brand + logo — key for smaller brands. */
+  aiSite: string
   aiLogo: string | null
   aiDone: string[]
   /** The channel a background campaign generation is currently running for (spinner). */
   aiBusyChannel: string | null
+  /** The last AI message applied, per channel, so "New image" can re-fetch just the
+      photo (a Pexels call, no LLM) without spending the generator's rate limit.
+      `hasImage` gates the button — it's only shown when the message actually has one. */
+  lastAi: { channel: string; m: AiMessage; logo: string | null; hasImage: boolean } | null
 
   // whatsapp slice
   wa: { messages: WAMsg[]; played: WAMsg[]; encNotice: boolean; typing: boolean }
@@ -265,10 +273,11 @@ interface StudioState {
   setDateChip: (v: string) => void
   setAiSuppress: (ctx: string) => void
   clearAiSuppress: () => void
-  startAiCampaign: (brief: string, logo: string | null, channel: string) => void
+  startAiCampaign: (brief: string, site: string, logo: string | null, channel: string) => void
   markAiDone: (channel: string) => void
   clearAiCampaign: () => void
   setAiBusyChannel: (c: string | null) => void
+  setLastAi: (v: { channel: string; m: AiMessage; logo: string | null; hasImage: boolean } | null) => void
 
   // whatsapp actions
   waSetMessages: (msgs: WAMsg[]) => void
@@ -342,9 +351,11 @@ export const useStudio = create<StudioState>((set, get) => ({
   dateChip: 'Today',
   aiSuppressCtx: null,
   aiBrief: '',
+  aiSite: '',
   aiLogo: null,
   aiDone: [],
   aiBusyChannel: null,
+  lastAi: null,
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
   msg: { rcs: emptyMsg(), sms: emptyMsg() },
   notify: {
@@ -411,10 +422,11 @@ export const useStudio = create<StudioState>((set, get) => ({
   setDateChip: (v) => set({ dateChip: v }),
   setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),
   clearAiSuppress: () => set({ aiSuppressCtx: null }),
-  startAiCampaign: (brief, logo, channel) => set({ aiBrief: brief, aiLogo: logo, aiDone: [channel] }),
+  startAiCampaign: (brief, site, logo, channel) => set({ aiBrief: brief, aiSite: site, aiLogo: logo, aiDone: [channel] }),
   markAiDone: (channel) => set((st) => (st.aiDone.includes(channel) ? {} : { aiDone: [...st.aiDone, channel] })),
-  clearAiCampaign: () => set({ aiBrief: '', aiLogo: null, aiDone: [], aiBusyChannel: null }),
+  clearAiCampaign: () => set({ aiBrief: '', aiSite: '', aiLogo: null, aiDone: [], aiBusyChannel: null }),
   setAiBusyChannel: (c) => set({ aiBusyChannel: c }),
+  setLastAi: (v) => set({ lastAi: v }),
 
   waSetMessages: (msgs) => set({ wa: { ...get().wa, messages: msgs, played: [] } }),
   waAdd: (type) => set({ wa: { ...get().wa, messages: [...get().wa.messages, makeMsg(type)] } }),

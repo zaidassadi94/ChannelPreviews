@@ -227,17 +227,34 @@ export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo
   if (m.brand) useStudio.getState().setBrandIdentity(m.brand, opts.logo)
   const logo = opts.logo
   switch (channel) {
-    case 'whatsapp': return applyWa(m, logo)
-    case 'rcs': return applyRcs(m, logo)
-    case 'sms': return applySms(m, logo)
-    case 'push': return applyPush(m, logo)
-    case 'inapp': return applyInapp(m, logo)
-    case 'game': return applyGame(m)
-    case 'gmail': return applyGmail(m, logo)
-    case 'osm': return applyOsm(m, logo)
-    case 'instagram': return applyIg(m, logo)
-    case 'facebook': return applyFb(m, logo)
-    case 'webpush': return applyWebpush(m, logo)
-    case 'cards': return applyCards(m, logo)
+    case 'whatsapp': await applyWa(m, logo); break
+    case 'rcs': await applyRcs(m, logo); break
+    case 'sms': await applySms(m, logo); break
+    case 'push': await applyPush(m, logo); break
+    case 'inapp': await applyInapp(m, logo); break
+    case 'game': applyGame(m); break
+    case 'gmail': await applyGmail(m, logo); break
+    case 'osm': await applyOsm(m, logo); break
+    case 'instagram': await applyIg(m, logo); break
+    case 'facebook': await applyFb(m, logo); break
+    case 'webpush': await applyWebpush(m, logo); break
+    case 'cards': await applyCards(m, logo); break
+    default: return
+  }
+  // Remember this generation so "New image" can re-fetch just the photo (no LLM).
+  useStudio.getState().setLastAi({ channel, m, logo, hasImage: producedImage(channel, m) })
+}
+
+/** Did this channel's adapter actually place a photo? (Gates the "New image" button —
+    mirrors each adapter's own image decision.) */
+function producedImage(channel: string, m: AiMessage): boolean {
+  switch (channel) {
+    case 'instagram': case 'facebook': return true
+    case 'game': return false
+    case 'whatsapp': case 'rcs': return (m.type || '') !== 'text'
+    case 'sms': return m.type === 'image'
+    case 'inapp': { const t = m.type || ''; return t === 'full' || t === 'image' || (t !== 'banner' && hasImg(m)) }
+    case 'osm': { const t = m.type || ''; return t === 'full' || ((t === 'popup' || t === 'nudge') && hasImg(m)) }
+    default: return hasImg(m)   // push / webpush / cards / gmail
   }
 }

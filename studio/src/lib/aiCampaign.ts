@@ -16,7 +16,7 @@ export async function fetchGeneratedMessage(channel: string, brief: string): Pro
   const industry = industryById(s.industry)?.name || s.industry
   const r = await fetch('/api/generate', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ channel, brand: s.brand.name, industry, brief }),
+    body: JSON.stringify({ channel, brand: s.brand.name, industry, brief, domain: s.aiSite || '' }),
   })
   const data = await r.json().catch(() => ({ ok: false, error: 'Bad response from server' }))
   if (!r.ok || !data.ok) throw new Error(data?.error || `Request failed (${r.status})`)
@@ -30,6 +30,17 @@ export async function generateChannelForCampaign(channel: string, brief: string)
   const msg = await fetchGeneratedMessage(channel, brief)
   const logo = useStudio.getState().aiLogo
   await applyAiMessage(channel, msg, { logo, skipIdentity: true })
+}
+
+/** Re-fetch just the photo for the last generation and re-apply it — a Pexels call
+    with a fresh seed, NO LLM request, so it doesn't spend the generator's rate limit.
+    Re-dispatches the stored message (copy is deterministic from it, so only the image
+    changes). Returns false if there's nothing with an image to re-roll. */
+export async function regenerateImage(): Promise<boolean> {
+  const last = useStudio.getState().lastAi
+  if (!last || !last.hasImage) return false
+  await applyAiMessage(last.channel, last.m, { logo: last.logo, skipIdentity: true })
+  return true
 }
 
 /** One background generation at a time (module-level so effect re-runs from our own
