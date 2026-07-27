@@ -2,6 +2,7 @@ import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { BackdropField } from '@/shell/BackdropField'
+import { avColor } from '@/lib/util'
 import { OSM_TEMPLATES, applyOsmTemplate } from './templates'
 
 const FORMATS: [string, string][] = [['popup', 'Popup'], ['bannerTop', 'Banner — top'], ['bannerBottom', 'Banner — bottom'], ['nudge', 'Nudge (slide-in)'], ['full', 'Full screen'], ['survey', 'Survey / Feedback']]
@@ -41,14 +42,25 @@ function FormatPanel() {
   )
 }
 
+const hex6 = (c: string) => (/^#[0-9a-f]{6}$/i.test(c) ? c : '')
+
 function WebsitePanel() {
   const o = useStudio((s) => s.osm)
   const setOsm = useStudio((s) => s.setOsm)
+  const auto = avColor(o.site)
+  const swatch = hex6(o.accent) || hex6(auto) || '#635bff'
   return (
     <>
       <label className="field"><span>Site / brand name</span><input type="text" value={o.site} onChange={(e) => setOsm({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL</span><input type="text" value={o.url} onChange={(e) => setOsm({ url: e.target.value })} /></label>
       <label className="field"><span>Logo URL (blank = monogram)</span><input type="text" value={o.logo || ''} onChange={(e) => setOsm({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Accent color (banners &amp; buttons)</span>
+        <div className="color-row">
+          <input type="color" className="color-swatch" value={swatch} onChange={(e) => setOsm({ accent: e.target.value })} aria-label="Accent color" />
+          <input type="text" value={o.accent} placeholder={`${auto} (auto)`} onChange={(e) => setOsm({ accent: e.target.value })} />
+          {o.accent && <button type="button" className="btn ghost" onClick={() => setOsm({ accent: '' })}>Auto</button>}
+        </div>
+      </div>
     </>
   )
 }
@@ -62,7 +74,7 @@ function BackgroundPanel() {
       <div className="field"><span>Background</span>
         <div className="seg-in">{[['branded', 'Branded'], ['upload', 'Upload'], ['neutral', 'Neutral']].map(([v, l]) => <button key={v} className={o.bg === v ? 'on' : ''} onClick={() => setOsm({ bg: v })}>{l}</button>)}</div>
       </div>
-      {o.bg === 'upload' && <div className="field"><span>Your site backdrop</span><BackdropField value={o.bgImage} onChange={(v) => setOsm({ bgImage: v })} siteUrl={o.url} noun="site" /></div>}
+      {o.bg === 'upload' && <div className="field"><span>Your site backdrop</span><BackdropField value={o.bgImage} onChange={(v) => setOsm({ bgImage: v })} /></div>}
       <div className="toggle-row"><span>Dim &amp; blur (intrusive formats)</span><label className="switch"><input type="checkbox" checked={o.blur} onChange={(e) => setOsm({ blur: e.target.checked })} /><span className="slider" /></label></div>
     </>
   )
@@ -85,7 +97,12 @@ function MessagePanel() {
       {isSurvey && <label className="field"><span>Survey scale — high label</span><input type="text" value={o.scaleHi} onChange={(e) => setOsm({ scaleHi: e.target.value })} /></label>}
       {o.format === 'popup' && <label className="field"><span>Coupon code (optional)</span><input type="text" value={o.code} onChange={(e) => setOsm({ code: e.target.value })} /></label>}
       {o.format === 'popup' && <div className="toggle-row"><span>Email capture input</span><label className="switch"><input type="checkbox" checked={o.input} onChange={(e) => setOsm({ input: e.target.checked })} /><span className="slider" /></label></div>}
-      {(o.format === 'popup' || isBanner || o.format === 'full') && <label className="field"><span>Countdown (HH:MM:SS, blank = off)</span><input type="text" value={o.countdown} onChange={(e) => setOsm({ countdown: e.target.value })} placeholder="05:59:59" /></label>}
+      {(o.format === 'popup' || isBanner || o.format === 'full') && (
+        <>
+          <div className="toggle-row"><span>Countdown timer</span><label className="switch"><input type="checkbox" checked={!!o.countdown} onChange={(e) => setOsm({ countdown: e.target.checked ? '05:59:59' : '' })} /><span className="slider" /></label></div>
+          {o.countdown && <label className="field"><span>Time (HH:MM:SS)</span><input type="text" value={o.countdown} onChange={(e) => setOsm({ countdown: e.target.value })} placeholder="05:59:59" /></label>}
+        </>
+      )}
     </>
   )
 }

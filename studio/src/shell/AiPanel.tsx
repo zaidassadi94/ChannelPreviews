@@ -4,9 +4,8 @@ import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, applyBackdropShot, BACKDROP_CHANNELS } from '@/lib/applyAi'
-import { resolveBrandLogo, cleanDomain, guessDomain, type AiMessage } from '@/lib/media'
-import { captureSite } from '@/lib/backdrop'
+import { applyAiMessage, BACKDROP_SECTION } from '@/lib/applyAi'
+import { resolveBrandLogo, type AiMessage } from '@/lib/media'
 import { detectChannel, CH_LABEL } from '@/lib/detectChannel'
 
 const EXAMPLES = [
@@ -59,17 +58,12 @@ export function AiPanel() {
       const msg: AiMessage = data.message || {}
       const logo = await resolveBrandLogo({ brief: text, domain: msg.domain, brand: msg.brand })
       await applyAiMessage(channel, msg, { logo })
-      // For channels with a page/app backdrop, best-effort capture the brand's
-      // real site and drop it in when it resolves — non-blocking, so the message
-      // shows instantly and the backdrop fills in a moment later (or not at all).
-      if (BACKDROP_CHANNELS.includes(channel)) {
-        const site = cleanDomain(msg.domain) || guessDomain(msg.brand)
-        if (site) captureSite(site).then((shot) => { if (shot) applyBackdropShot(channel, shot) })
-      }
-      // open the content editor so the generated copy is right there to tweak
+      // Open a relevant section on the left. For channels with a page/app
+      // backdrop, open the Backdrop section so it's obvious you can drop in a
+      // real screenshot; otherwise open the content editor to tweak the copy.
       const cdef = channelById(channel)
-      const contentId = cdef?.sections?.[1]?.id || cdef?.sections?.[0]?.id
-      if (contentId) s.setSection(contentId)
+      const sectionId = BACKDROP_SECTION[channel] || cdef?.sections?.[1]?.id || cdef?.sections?.[0]?.id
+      if (sectionId) s.setSection(sectionId)
       s.setPanelOpen(true)
       useToast.getState().show('✨ AI message generated')
       const note = target && target !== from ? `Switched to ${CH_LABEL[target] || target}. ` : ''

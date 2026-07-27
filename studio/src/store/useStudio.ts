@@ -113,6 +113,7 @@ export interface OsmState {
   site: string
   url: string
   logo: string | null
+  accent: string   // banner/button color; '' = auto from brand name
   headline: string
   body: string
   image: string
@@ -333,7 +334,7 @@ export const useStudio = create<StudioState>((set, get) => ({
     filler: { on: true, position: 0 },
   },
   osm: {
-    device: 'desktop', format: 'popup', site: 'Nova', url: 'nova.shop', logo: null,
+    device: 'desktop', format: 'popup', site: 'Nova', url: 'nova.shop', logo: null, accent: '',
     headline: '', body: '', image: '', cta: 'Shop Now', cta2: '', code: '', input: false,
     countdown: '', rating: 3, scaleLo: 'Not likely', scaleHi: 'Very likely',
     bg: 'branded', bgImage: '', blur: true,

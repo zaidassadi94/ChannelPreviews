@@ -2,7 +2,6 @@ import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { BackdropField } from '@/shell/BackdropField'
-import { guessDomain } from '@/lib/media'
 import { INAPP_TEMPLATES, applyInappTemplate } from './templates'
 
 const IATYPES: [string, string][] = [['modal', 'Modal'], ['banner', 'Banner'], ['full', 'Full'], ['sheet', 'Sheet'], ['image', 'Image']]
@@ -103,14 +102,13 @@ function LayoutPanel() {
 function BackgroundPanel() {
   const appBg = useStudio((s) => s.notify.appBg)
   const setAppBg = useStudio((s) => s.setAppBg)
-  const appName = useStudio((s) => s.notify.appName)
   return (
     <>
       <p className="panel-hint">The app behind the message won't be your customer's real app — pick how to handle it.</p>
       <div className="field"><span>Background</span>
         <div className="seg-in">{[['branded', 'Branded'], ['upload', 'Upload'], ['neutral', 'Neutral']].map(([v, l]) => <button key={v} className={appBg.mode === v ? 'on' : ''} onClick={() => setAppBg({ mode: v })}>{l}</button>)}</div>
       </div>
-      {appBg.mode === 'upload' && <div className="field"><span>Your app / site backdrop</span><BackdropField value={appBg.image} onChange={(v) => setAppBg({ image: v })} siteUrl={guessDomain(appName) || ''} noun="site" /></div>}
+      {appBg.mode === 'upload' && <div className="field"><span>Your app / site backdrop</span><BackdropField value={appBg.image} onChange={(v) => setAppBg({ image: v })} /></div>}
       <div className="toggle-row"><span>Dim &amp; blur (except banner)</span>
         <label className="switch"><input type="checkbox" checked={appBg.blur} onChange={(e) => setAppBg({ blur: e.target.checked })} /><span className="slider" /></label>
       </div>
