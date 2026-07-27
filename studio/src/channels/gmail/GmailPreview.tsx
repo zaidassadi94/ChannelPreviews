@@ -1,5 +1,5 @@
 import './gmail.css'
-import { type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type GmailState } from '@/store/useStudio'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -46,7 +46,32 @@ function resolveBody(g: GmailState): string {
 }
 function EmailBody() {
   const g = useStudio((s) => s.gmail)
-  return <div className="email-body" dangerouslySetInnerHTML={{ __html: resolveBody(g) }} />
+  const html = resolveBody(g)
+  // Pasted HTML can carry its own <style> + @media rules and global selectors. Render it
+  // in a sandboxed iframe (as the original tool did) so those rules apply against the
+  // device width — the email wraps for mobile — and can't leak into the studio. Our own
+  // emails are inline-only and fluid, so they render fine (and edit live) in a plain div.
+  if (g.bodyMode === 'html') return <EmailFrame html={html} />
+  return <div className="email-body" dangerouslySetInnerHTML={{ __html: html }} />
+}
+
+/** A content-sized, sandboxed iframe for arbitrary email HTML. Auto-sizes to its content
+    and forwards wheel scrolling to the reading pane (the iframe would otherwise swallow it). */
+function EmailFrame({ html }: { html: string }) {
+  const ref = useRef<HTMLIFrameElement>(null)
+  const [h, setH] = useState(600)
+  const onLoad = () => {
+    const f = ref.current, d = f?.contentDocument
+    if (!f || !d) return
+    setH(Math.max(d.body?.scrollHeight || 0, d.documentElement?.scrollHeight || 0, 120))
+    const scroller = f.closest('.gm-open-scroll, .gm-d-open, .dev-scroll, .stage') as HTMLElement | null
+    if (scroller) d.addEventListener('wheel', (ev) => { scroller.scrollTop += ev.deltaY; ev.preventDefault() }, { passive: false })
+  }
+  return (
+    <iframe ref={ref} className="email-body email-frame" title="Email preview"
+      srcDoc={html} onLoad={onLoad}
+      style={{ width: '100%', height: h, border: 0, display: 'block', background: '#fff' }} />
+  )
 }
 
 function Annot() {

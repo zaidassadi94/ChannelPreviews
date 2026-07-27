@@ -62,6 +62,18 @@ async function grab(toast: (m: string) => void): Promise<HTMLCanvasElement | nul
       useCORS: true,
       allowTaint: false,
       logging: false,
+      // html2canvas can't render into an iframe, so in the throwaway clone swap any email
+      // iframe for a div holding the same HTML — otherwise the pasted email exports blank.
+      onclone: (doc: Document) => {
+        doc.querySelectorAll('iframe.email-frame').forEach((fr) => {
+          const src = fr.getAttribute('srcdoc') || ''
+          const div = doc.createElement('div')
+          div.style.width = '100%'
+          div.innerHTML = src
+          div.querySelectorAll('img').forEach((im) => im.setAttribute('crossorigin', 'anonymous'))
+          fr.replaceWith(div)
+        })
+      },
     })
     return roundToFrame(raw, node)
   } catch (err) {
