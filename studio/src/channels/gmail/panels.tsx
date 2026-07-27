@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { GMAIL_TEMPLATES, applyGmailTemplate } from './templates'
 
 function ViewPanel() {
@@ -44,7 +45,7 @@ function SenderPanel() {
     <>
       <label className="field"><span>Sender name</span><input type="text" value={g.senderName} onChange={(e) => setGmail({ senderName: e.target.value })} /></label>
       <label className="field"><span>Sender email</span><input type="email" value={g.senderEmail} onChange={(e) => setGmail({ senderEmail: e.target.value })} /></label>
-      <label className="field"><span>Sender logo URL (blank = monogram)</span><input type="text" value={g.logo || ''} onChange={(e) => setGmail({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Sender logo</span><ImageField value={g.logo || ''} onChange={(v) => setGmail({ logo: v || null })} placeholder="or paste a logo URL (blank = monogram)" /></div>
     </>
   )
 }

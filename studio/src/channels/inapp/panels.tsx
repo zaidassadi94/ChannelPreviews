@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { BackdropField } from '@/shell/BackdropField'
 import { INAPP_TEMPLATES, applyInappTemplate } from './templates'
 
@@ -44,7 +45,7 @@ function ContentPanel() {
       <div className="field"><span>Type</span>
         <div className="seg-in">{IATYPES.map(([v, l]) => <button key={v} className={a.type === v ? 'on' : ''} onClick={() => pickType(v)}>{l}</button>)}</div>
       </div>
-      {a.type !== 'banner' && <label className="field"><span>Image URL (blank = placeholder)</span><input type="text" value={a.image} onChange={(e) => setInapp({ image: e.target.value })} /></label>}
+      {a.type !== 'banner' && <div className="field"><span>Image</span><ImageField value={a.image} onChange={(v) => setInapp({ image: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>}
       {a.type !== 'image' && <label className="field"><span>Headline</span><input type="text" value={a.headline} onChange={(e) => setInapp({ headline: e.target.value })} /></label>}
       {a.type !== 'image' && <label className="field"><span>Body</span><textarea value={a.body} onChange={(e) => setInapp({ body: e.target.value })} /></label>}
       <div className="toggle-row"><span>Close (✕) button</span>

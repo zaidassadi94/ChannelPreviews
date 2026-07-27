@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { WALLS } from '@/channels/notify/shared'
 import { PUSH_TEMPLATES, PUSH_OPTIN_TEMPLATES, applyPushTemplate } from './templates'
 
@@ -71,7 +72,7 @@ function NotificationPanel() {
     <>
       <label className="field"><span>Title (bold line)</span><input type="text" value={push.title} onChange={(e) => setPush({ title: e.target.value })} /></label>
       <label className="field"><span>Body</span><textarea value={push.body} onChange={(e) => setPush({ body: e.target.value })} /></label>
-      <label className="field"><span>Big image URL (shows when expanded)</span><input type="text" value={push.image} onChange={(e) => setPush({ image: e.target.value })} /></label>
+      <div className="field"><span>Big image (shows when expanded)</span><ImageField value={push.image} onChange={(v) => setPush({ image: v })} /></div>
       <label className="field"><span>Timestamp</span><input type="text" value={push.time} onChange={(e) => setPush({ time: e.target.value })} /></label>
       <div className="toggle-row"><span>Expanded (rich / big picture)</span>
         <label className="switch"><input type="checkbox" checked={expanded} onChange={(e) => setNotify({ expanded: e.target.checked })} /><span className="slider" /></label>
@@ -127,7 +128,7 @@ function AppPanel() {
   return (
     <>
       <label className="field"><span>App name</span><input type="text" value={appName} onChange={(e) => setNotify({ appName: e.target.value })} /></label>
-      <label className="field"><span>App icon URL (blank = monogram)</span><input type="text" value={appLogo || ''} onChange={(e) => setNotify({ appLogo: e.target.value || null })} /></label>
+      <div className="field"><span>App icon</span><ImageField value={appLogo || ''} onChange={(v) => setNotify({ appLogo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { useStudio, type CardItem } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { CARDS_TEMPLATES, applyCardsTemplate } from './templates'
 
 function TemplatesPanel() {
@@ -47,7 +48,7 @@ function CardsPanel() {
             <label className="field"><span>Tag / label</span><input type="text" value={c.tag} onChange={(e) => upd(i, { tag: e.target.value })} placeholder="e.g. Offer" /></label>
             <label className="field"><span>Time</span><input type="text" value={c.time} onChange={(e) => upd(i, { time: e.target.value })} placeholder="e.g. 2h" /></label>
           </div>
-          <label className="field"><span>Image URL (optional banner)</span><input type="text" value={c.image} onChange={(e) => upd(i, { image: e.target.value })} /></label>
+          <div className="field"><span>Banner image</span><ImageField value={c.image} onChange={(v) => upd(i, { image: v })} placeholder="or paste an image URL (optional)" /></div>
           <div className="toggle-row"><span>Unread</span>
             <label className="switch"><input type="checkbox" checked={c.unread} onChange={(e) => upd(i, { unread: e.target.checked })} /><span className="slider" /></label>
           </div>
@@ -65,7 +66,7 @@ function AppPanel() {
     <>
       <label className="field"><span>App name</span><input type="text" value={cards.appName} onChange={(e) => setCards({ appName: e.target.value })} /></label>
       <label className="field"><span>Screen title</span><input type="text" value={cards.screenTitle} onChange={(e) => setCards({ screenTitle: e.target.value })} placeholder="Updates" /></label>
-      <label className="field"><span>App icon URL (blank = monogram)</span><input type="text" value={cards.logo || ''} onChange={(e) => setCards({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>App icon</span><ImageField value={cards.logo || ''} onChange={(v) => setCards({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { useStudio, WA_DEFAULTS, type WAMsg, type WAType } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { WA_TEMPLATES, applyWATemplate } from './templates'
 
 const TYPES: [WAType, string][] = [
@@ -128,14 +129,14 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
       )}
       {msg.type === 'image' && (
         <>
-          <label className="field"><span>Image URL (blank = placeholder)</span><input type="text" value={msg.img || ''} onChange={(e) => onField({ img: e.target.value })} /></label>
+          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Caption</span><textarea value={msg.caption || ''} onChange={(e) => onField({ caption: e.target.value })} /></label>
           <ButtonsField value={msg.buttons || ''} onChange={(v) => onField({ buttons: v })} />
         </>
       )}
       {msg.type === 'template' && (
         <>
-          <label className="field"><span>Header image URL (optional)</span><input type="text" value={msg.img || ''} onChange={(e) => onField({ img: e.target.value })} /></label>
+          <div className="field"><span>Header image (optional)</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} /></div>
           <label className="field"><span>Body (*bold* _italic_)</span><textarea value={msg.body || ''} onChange={(e) => onField({ body: e.target.value })} /></label>
           <label className="field"><span>Footer (small print)</span><input type="text" value={msg.footer || ''} onChange={(e) => onField({ footer: e.target.value })} /></label>
           <ButtonsField value={msg.buttons || ''} onChange={(v) => onField({ buttons: v })} />

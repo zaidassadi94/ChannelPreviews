@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { IG_TEMPLATES, applyIgTemplate } from './templates'
 
 const IG_CTAS = ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Watch More', 'Contact Us']
@@ -42,7 +43,7 @@ function AdvertiserPanel() {
       <label className="field"><span>Business name</span><input type="text" value={g.brand} onChange={(e) => setIg({ brand: e.target.value })} /></label>
       <label className="field"><span>Handle (@username)</span><input type="text" value={g.handle} onChange={(e) => setIg({ handle: e.target.value })} /></label>
       <div className="toggle-row"><span>Verified badge</span><label className="switch"><input type="checkbox" checked={g.verified} onChange={(e) => setIg({ verified: e.target.checked })} /><span className="slider" /></label></div>
-      <label className="field"><span>Profile photo URL (blank = monogram)</span><input type="text" value={g.logo || ''} onChange={(e) => setIg({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Profile photo</span><ImageField value={g.logo || ''} onChange={(v) => setIg({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
     </>
   )
 }
@@ -52,7 +53,7 @@ function CreativePanel() {
   const setIg = useStudio((s) => s.setIg)
   return (
     <>
-      <label className="field"><span>Ad media URL (blank = placeholder)</span><input type="text" value={g.media} onChange={(e) => setIg({ media: e.target.value })} /></label>
+      <div className="field"><span>Ad media</span><ImageField value={g.media} onChange={(v) => setIg({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
       <label className="field"><span>Call-to-action button</span>
         <select value={g.cta} onChange={(e) => setIg({ cta: e.target.value })} style={selStyle}>{IG_CTAS.map((c) => <option key={c} value={c}>{c}</option>)}</select>
       </label>

@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { BackdropField } from '@/shell/BackdropField'
 import { WEBPUSH_TEMPLATES, WEBPUSH_OPTIN_TEMPLATES, applyWebpushTemplate } from './templates'
 
@@ -67,7 +68,7 @@ function NotificationPanel() {
     <>
       <label className="field"><span>Title (bold line)</span><input type="text" value={w.title} onChange={(e) => setWebpush({ title: e.target.value })} /></label>
       <label className="field"><span>Body</span><textarea value={w.body} onChange={(e) => setWebpush({ body: e.target.value })} /></label>
-      <label className="field"><span>Image URL (large image, optional)</span><input type="text" value={w.image} onChange={(e) => setWebpush({ image: e.target.value })} /></label>
+      <div className="field"><span>Large image (optional)</span><ImageField value={w.image} onChange={(v) => setWebpush({ image: v })} /></div>
     </>
   )
 }
@@ -102,7 +103,7 @@ function SitePanel() {
       </div>
       <label className="field"><span>Site / brand name</span><input type="text" value={w.site} onChange={(e) => setWebpush({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL (shown in the notification)</span><input type="text" value={w.url} onChange={(e) => setWebpush({ url: e.target.value })} /></label>
-      <label className="field"><span>Site icon URL (blank = monogram)</span><input type="text" value={w.logo || ''} onChange={(e) => setWebpush({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Site icon</span><ImageField value={w.logo || ''} onChange={(v) => setWebpush({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

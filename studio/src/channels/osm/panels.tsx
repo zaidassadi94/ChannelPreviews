@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { BackdropField } from '@/shell/BackdropField'
 import { avColor } from '@/lib/util'
 import { OSM_TEMPLATES, applyOsmTemplate } from './templates'
@@ -53,7 +54,7 @@ function WebsitePanel() {
     <>
       <label className="field"><span>Site / brand name</span><input type="text" value={o.site} onChange={(e) => setOsm({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL</span><input type="text" value={o.url} onChange={(e) => setOsm({ url: e.target.value })} /></label>
-      <label className="field"><span>Logo URL (blank = monogram)</span><input type="text" value={o.logo || ''} onChange={(e) => setOsm({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Logo</span><ImageField value={o.logo || ''} onChange={(v) => setOsm({ logo: v || null })} placeholder="or paste a logo URL (blank = monogram)" /></div>
       <div className="field"><span>Accent color (banners &amp; buttons)</span>
         <div className="color-row">
           <input type="color" className="color-swatch" value={swatch} onChange={(e) => setOsm({ accent: e.target.value })} aria-label="Accent color" />
@@ -90,7 +91,7 @@ function MessagePanel() {
     <>
       <label className="field"><span>Headline</span><input type="text" value={o.headline} onChange={(e) => setOsm({ headline: e.target.value })} /></label>
       {!isBanner && <label className="field"><span>Body</span><textarea value={o.body} onChange={(e) => setOsm({ body: e.target.value })} /></label>}
-      {showImg && <label className="field"><span>Image URL (optional)</span><input type="text" value={o.image} onChange={(e) => setOsm({ image: e.target.value })} /></label>}
+      {showImg && <div className="field"><span>Image</span><ImageField value={o.image} onChange={(v) => setOsm({ image: v })} placeholder="or paste an image URL (optional)" /></div>}
       <label className="field"><span>{isBanner ? 'Primary button' : 'Button'}</span><input type="text" value={o.cta} onChange={(e) => setOsm({ cta: e.target.value })} /></label>
       {!isSurvey && <label className="field"><span>Secondary link (optional)</span><input type="text" value={o.cta2} onChange={(e) => setOsm({ cta2: e.target.value })} /></label>}
       {isSurvey && <label className="field"><span>Survey scale — low label</span><input type="text" value={o.scaleLo} onChange={(e) => setOsm({ scaleLo: e.target.value })} /></label>}

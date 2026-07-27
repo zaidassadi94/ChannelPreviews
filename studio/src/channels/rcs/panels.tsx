@@ -1,6 +1,7 @@
 import { useStudio, type MMsg, type MType } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { RCS_TEMPLATES, applyRcsTemplate } from './templates'
 
 const CH = 'rcs'
@@ -126,13 +127,13 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
       )}
       {msg.type === 'image' && (
         <>
-          <label className="field"><span>Image URL (blank = placeholder)</span><input type="text" value={msg.img || ''} onChange={(e) => onField({ img: e.target.value })} /></label>
+          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Caption</span><textarea value={msg.caption || ''} onChange={(e) => onField({ caption: e.target.value })} /></label>
         </>
       )}
       {msg.type === 'card' && (
         <>
-          <label className="field"><span>Image URL (blank = placeholder)</span><input type="text" value={msg.img || ''} onChange={(e) => onField({ img: e.target.value })} /></label>
+          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Title</span><input type="text" value={msg.title || ''} onChange={(e) => onField({ title: e.target.value })} /></label>
           <label className="field"><span>Description</span><textarea value={msg.desc || ''} onChange={(e) => onField({ desc: e.target.value })} /></label>
           <ButtonsField value={msg.buttons || ''} onChange={(v) => onField({ buttons: v })} />

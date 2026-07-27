@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { FB_TEMPLATES, applyFbTemplate } from './templates'
 
 const FB_CTAS = ['Shop Now', 'Learn More', 'Sign Up', 'Install Now', 'Get Offer', 'Book Now', 'Order Now', 'Download', 'Send Message', 'Contact Us']
@@ -41,7 +42,7 @@ function AdvertiserPanel() {
     <>
       <label className="field"><span>Page name</span><input type="text" value={f.page} onChange={(e) => setFb({ page: e.target.value })} /></label>
       <div className="toggle-row"><span>Verified badge</span><label className="switch"><input type="checkbox" checked={f.verified} onChange={(e) => setFb({ verified: e.target.checked })} /><span className="slider" /></label></div>
-      <label className="field"><span>Page photo URL (blank = monogram)</span><input type="text" value={f.logo || ''} onChange={(e) => setFb({ logo: e.target.value || null })} /></label>
+      <div className="field"><span>Page photo</span><ImageField value={f.logo || ''} onChange={(v) => setFb({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
     </>
   )
 }
@@ -53,7 +54,7 @@ function CreativePanel() {
   const isMkt = f.format === 'marketplace'
   return (
     <>
-      <label className="field"><span>Ad media URL (blank = placeholder)</span><input type="text" value={f.media} onChange={(e) => setFb({ media: e.target.value })} /></label>
+      <div className="field"><span>Ad media</span><ImageField value={f.media} onChange={(v) => setFb({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
       {isFeed && <label className="field"><span>Primary text</span><textarea value={f.primary} onChange={(e) => setFb({ primary: e.target.value })} /></label>}
       {(isFeed || isMkt) && <label className="field"><span>{isMkt ? 'Listing title' : 'Headline (link)'}</span><input type="text" value={f.headline} onChange={(e) => setFb({ headline: e.target.value })} /></label>}
       {isMkt && <label className="field"><span>Price</span><input type="text" value={f.price} onChange={(e) => setFb({ price: e.target.value })} /></label>}
