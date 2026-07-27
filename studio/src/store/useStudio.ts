@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { INDUSTRIES, industryById } from '@/content/model'
+import { avColor } from '@/lib/util'
 
 let _uid = 1
 export const nid = () => 'm' + _uid++
@@ -204,7 +205,7 @@ interface StudioState {
   sub: string | null
   brand: Brand
   /** Global brand accent for own-brand surfaces (In-App, Push, Web Push, Onsite,
-      Gmail, Gamification). '' = auto (derived from the brand name per channel). */
+      Gmail, Gamification). Auto-seeded from the brand, editable in the rail. */
   brandColor: string
   sim: boolean
   dateChip: string
@@ -315,7 +316,9 @@ export const useStudio = create<StudioState>((set, get) => ({
   industry: 'ecom',
   sub: 'fashion',
   brand: { name: 'Nova', sub: 'online', logo: null, verified: true, phone: '+1 (800) 555-0199', desc: 'Official account · Customer care', agentCard: true },
-  brandColor: '',
+  // Auto-seeded from the brand so own-brand surfaces share one color out of the
+  // box; fully editable via the Brand swatch in the section rail.
+  brandColor: avColor('Nova'),
   sim: false,
   dateChip: 'Today',
   aiSuppressCtx: null,

@@ -3,6 +3,20 @@ import { channelById } from '@/channels/registry'
 
 /** The thin left rail = the active channel's sections (Templates, Chat, …).
     Clicking one opens its panel; clicking the already-open one collapses it (Canva-style). */
+/** Global brand-color swatch, pinned to the bottom of the rail. Themes buttons
+    & accents across the own-brand channels; auto-seeded, click to edit. */
+function BrandSwatch() {
+  const brandColor = useStudio((s) => s.brandColor)
+  const setBrandColor = useStudio((s) => s.setBrandColor)
+  return (
+    <label className="rail-brand" title="Brand color — themes buttons & accents on your own-brand channels (In-App, Push, Web Push, Onsite, Gmail, Gamification)">
+      <span className="sw" style={{ background: brandColor }} />
+      <span>Brand</span>
+      <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} aria-label="Brand color" />
+    </label>
+  )
+}
+
 export function SectionRail() {
   const channel = useStudio((s) => s.channel)
   const section = useStudio((s) => s.section)
@@ -13,7 +27,7 @@ export function SectionRail() {
   const sections = def?.sections ?? []
   const active = section || sections[0]?.id
 
-  if (!sections.length) return <nav className="rail"><div className="rail-empty">Sections appear here once this channel is migrated.</div></nav>
+  if (!sections.length) return <nav className="rail"><div className="rail-empty">Sections appear here once this channel is migrated.</div><BrandSwatch /></nav>
 
   const onClick = (id: string) => {
     if (panelOpen && id === active) setPanelOpen(false) // click the open section again → collapse
@@ -33,6 +47,7 @@ export function SectionRail() {
           <span>{s.label}</span>
         </button>
       ))}
+      <BrandSwatch />
     </nav>
   )
 }

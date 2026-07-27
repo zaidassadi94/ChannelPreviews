@@ -11,8 +11,6 @@ export function TopBar() {
   const sub = useStudio((s) => s.sub)
   const setIndustry = useStudio((s) => s.setIndustry)
   const setSub = useStudio((s) => s.setSub)
-  const brandColor = useStudio((s) => s.brandColor)
-  const setBrandColor = useStudio((s) => s.setBrandColor)
   const device = useStudio((s) => s.device)
   const setDevice = useStudio((s) => s.setDevice)
   const sim = useStudio((s) => s.sim)
@@ -45,15 +43,6 @@ export function TopBar() {
           </select>
         </div>
       )}
-
-      <div className="tb-bc">
-        <label className="tb-bc-pick" title="Brand color — themes buttons & accents on your own-brand channels (In-App, Push, Web Push, Onsite, Gmail, Gamification). Blank = auto.">
-          <span className="dot" style={brandColor ? { background: brandColor } : undefined} />
-          <span className="lb">Brand</span>
-          <input type="color" value={brandColor || '#635bff'} onChange={(e) => setBrandColor(e.target.value)} aria-label="Brand color" />
-        </label>
-        {brandColor && <button type="button" className="tb-bc-x" title="Reset to auto color" onClick={() => setBrandColor('')}>✕</button>}
-      </div>
 
       <div className="grow" />
 

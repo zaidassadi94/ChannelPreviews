@@ -108,15 +108,12 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .color-swatch::-webkit-color-swatch{ border:0; border-radius:6px; }
 .color-swatch::-moz-color-swatch{ border:0; border-radius:6px; }
 
-/* ---- top-bar global Brand color control ---- */
-.tb-bc{ display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.tb-bc-pick{ position:relative; display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--panel-2); border-radius:10px; padding:7px 11px; cursor:pointer; transition:.14s; }
-.tb-bc-pick:hover{ border-color:#d6d8e3; background:#fff; box-shadow:var(--shadow-sm); }
-.tb-bc .dot{ width:16px; height:16px; border-radius:5px; border:1px solid rgba(0,0,0,.12); background:conic-gradient(from 180deg,#ff5f6d,#ffc371,#47e0a0,#5b9dff,#b28bff,#ff5f6d); }
-.tb-bc .lb{ font-size:12.5px; font-weight:640; letter-spacing:-.1px; color:var(--ink-2); }
-.tb-bc-pick input[type=color]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; padding:0; margin:0; cursor:pointer; }
-.tb-bc-x{ border:0; background:none; color:var(--muted); cursor:pointer; font-size:11px; width:20px; height:20px; border-radius:6px; line-height:1; }
-.tb-bc-x:hover{ background:var(--panel-2); color:var(--ink-2); }
+/* ---- global Brand color swatch, pinned to the bottom of the section rail ---- */
+.rail-brand{ position:relative; margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:5px; padding:11px 4px 6px; border-radius:12px; cursor:pointer; color:var(--muted); font-size:10.5px; font-weight:640; letter-spacing:-.1px; transition:.14s; }
+.rail-brand::before{ content:""; position:absolute; top:0; left:14px; right:14px; height:1px; background:var(--line); }
+.rail-brand:hover{ background:var(--panel-2); color:var(--ink-2); }
+.rail-brand .sw{ width:24px; height:24px; border-radius:8px; border:1px solid rgba(0,0,0,.14); box-shadow:0 1px 2px rgba(0,0,0,.1); }
+.rail-brand input[type=color]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; padding:0; margin:0; cursor:pointer; }
 
 /* ---- section rail (thin, icon+label; opens its panel) ---- */
 .rail{ background:#fbfbfe; border-right:1px solid var(--line); display:flex; flex-direction:column; align-items:stretch; padding:12px 10px; gap:5px; overflow-y:auto; }
@@ -262,7 +259,7 @@ textarea{ resize:vertical; min-height:66px; line-height:1.55; }
    screens, it wraps to a second row (which also keeps the channel-picker popover
    un-clipped, unlike an overflow-scroll bar would). */
 .topbar{ flex-wrap:wrap; height:auto; min-height:58px; row-gap:8px; padding-top:8px; padding-bottom:8px; }
-.tb-brand,.chpick,.tb-sel,.tb-bc,.seg,.topbar .btn{ flex-shrink:0; }
+.tb-brand,.chpick,.tb-sel,.seg,.topbar .btn{ flex-shrink:0; }
 
 /* mobile Editor / Preview switch (hidden on desktop) */
 .mobile-tabs{ display:none; flex:none; gap:7px; padding:8px 12px; background:#fff; border-bottom:1px solid var(--line); z-index:15; }
