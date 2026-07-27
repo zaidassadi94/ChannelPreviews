@@ -218,9 +218,16 @@ async function applyCards(m: AiMessage, logo: string | null) {
   s.setCards({ appName: brand, logo, screenTitle: s.cards.screenTitle || 'Updates', items: [aiCard, ...filler] })
 }
 
-/** Channels whose preview has a page/app backdrop → the panel section to open
-    after generating, so it's obvious you can drop in a real screenshot. */
-export const BACKDROP_SECTION: Record<string, string> = { osm: 'background', inapp: 'background', webpush: 'backdrop' }
+/** After "Generate", open the section that holds the copy the user will want to tweak.
+    An explicit map beats guessing the 2nd rail item — that guess lands on Presets for
+    Gmail and the Format toggle for the ad channels. Backdrop channels (osm/inapp/webpush)
+    also land on the copy now; the "drop in a real screenshot" nudge lives in the tips. */
+export const COPY_SECTION: Record<string, string> = {
+  whatsapp: 'conversation', rcs: 'conversation', sms: 'conversation',
+  push: 'notification', webpush: 'notification',
+  gmail: 'content', inapp: 'content', game: 'reward', cards: 'cards',
+  osm: 'message', instagram: 'creative', facebook: 'creative',
+}
 
 /** Dispatch a generated message to the active channel's adapter (identity applied first).
     `skipIdentity` is set for background per-channel campaign runs — the industry/brand are

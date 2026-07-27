@@ -47,35 +47,17 @@ function SenderPanel() {
   )
 }
 
-function MessagePanel() {
-  const g = useStudio((s) => s.gmail)
-  const setGmail = useStudio((s) => s.setGmail)
-  return (
-    <>
-      <label className="field"><span>Subject</span><input type="text" value={g.subject} onChange={(e) => setGmail({ subject: e.target.value })} /></label>
-      <label className="field"><span>Preview / snippet text</span><input type="text" value={g.snippet} onChange={(e) => setGmail({ snippet: e.target.value })} /></label>
-      <label className="field"><span>Timestamp</span><input type="text" value={g.timestamp} onChange={(e) => setGmail({ timestamp: e.target.value })} /></label>
-      <label className="field"><span>"to" line</span><input type="text" value={g.toLine} onChange={(e) => setGmail({ toLine: e.target.value })} /></label>
-      <div className="toggle-row"><span>Unread (bold)</span><label className="switch"><input type="checkbox" checked={g.unread} onChange={(e) => setGmail({ unread: e.target.checked })} /><span className="slider" /></label></div>
-      <div className="toggle-row"><span>Starred</span><label className="switch"><input type="checkbox" checked={g.starred} onChange={(e) => setGmail({ starred: e.target.checked })} /><span className="slider" /></label></div>
-      <div className="toggle-row"><span>Important marker</span><label className="switch"><input type="checkbox" checked={g.important} onChange={(e) => setGmail({ important: e.target.checked })} /><span className="slider" /></label></div>
-      <label className="field" style={{ marginTop: 12 }}><span>Inbox category tab</span>
-        <select value={g.category} onChange={(e) => setGmail({ category: e.target.value })} style={{ width: '100%', padding: '9px 11px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--panel-2)', fontFamily: 'inherit', fontSize: 13 }}>
-          <option value="primary">Primary</option><option value="promotions">Promotions</option><option value="social">Social</option><option value="updates">Updates</option>
-        </select>
-      </label>
-      <label className="field"><span>Open-email label chip</span><input type="text" value={g.labelChip} onChange={(e) => setGmail({ labelChip: e.target.value })} /></label>
-    </>
-  )
-}
-
-function BodyPanel() {
+/* Everything you write for the email, in one place: the subject & preview, the body,
+   then how it appears in the inbox row. (Previously split as "Message" + "Body".) */
+function ContentPanel() {
   const g = useStudio((s) => s.gmail)
   const setGmail = useStudio((s) => s.setGmail)
   const setGmailPlain = useStudio((s) => s.setGmailPlain)
   return (
     <>
-      <div className="field"><span>Body</span>
+      <label className="field"><span>Subject</span><input type="text" value={g.subject} onChange={(e) => setGmail({ subject: e.target.value })} /></label>
+      <label className="field"><span>Preview / snippet text</span><input type="text" value={g.snippet} onChange={(e) => setGmail({ snippet: e.target.value })} /></label>
+      <div className="field"><span>Email body</span>
         <div className="seg-in"><button className={g.bodyMode === 'template' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'template' })}>Template</button><button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Plain</button></div>
       </div>
       {g.bodyMode === 'template'
@@ -88,6 +70,18 @@ function BodyPanel() {
             <label className="field"><span>Accent color</span><input type="text" value={g.plain.accent} onChange={(e) => setGmailPlain({ accent: e.target.value })} /></label>
           </>
         )}
+      <p className="panel-hint" style={{ marginTop: 8 }}>How it appears in the inbox row:</p>
+      <label className="field"><span>Timestamp</span><input type="text" value={g.timestamp} onChange={(e) => setGmail({ timestamp: e.target.value })} /></label>
+      <label className="field"><span>"to" line</span><input type="text" value={g.toLine} onChange={(e) => setGmail({ toLine: e.target.value })} /></label>
+      <div className="toggle-row"><span>Unread (bold)</span><label className="switch"><input type="checkbox" checked={g.unread} onChange={(e) => setGmail({ unread: e.target.checked })} /><span className="slider" /></label></div>
+      <div className="toggle-row"><span>Starred</span><label className="switch"><input type="checkbox" checked={g.starred} onChange={(e) => setGmail({ starred: e.target.checked })} /><span className="slider" /></label></div>
+      <div className="toggle-row"><span>Important marker</span><label className="switch"><input type="checkbox" checked={g.important} onChange={(e) => setGmail({ important: e.target.checked })} /><span className="slider" /></label></div>
+      <label className="field" style={{ marginTop: 12 }}><span>Inbox category tab</span>
+        <select value={g.category} onChange={(e) => setGmail({ category: e.target.value })} style={{ width: '100%', padding: '9px 11px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--panel-2)', fontFamily: 'inherit', fontSize: 13 }}>
+          <option value="primary">Primary</option><option value="promotions">Promotions</option><option value="social">Social</option><option value="updates">Updates</option>
+        </select>
+      </label>
+      <label className="field"><span>Open-email label chip</span><input type="text" value={g.labelChip} onChange={(e) => setGmail({ labelChip: e.target.value })} /></label>
     </>
   )
 }
@@ -122,7 +116,6 @@ export const gmailSections: SectionDef[] = [
   { id: 'view', label: 'View', icon: Icon.phone, Panel: ViewPanel },
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
-  { id: 'message', label: 'Message', icon: Icon.convo, Panel: MessagePanel },
-  { id: 'body', label: 'Body', icon: Icon.context, Panel: BodyPanel },
+  { id: 'content', label: 'Content', icon: Icon.convo, Panel: ContentPanel },
   { id: 'extras', label: 'Extras', icon: Icon.templates, Panel: ExtrasPanel },
 ]

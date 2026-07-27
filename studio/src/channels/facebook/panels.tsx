@@ -85,6 +85,6 @@ export const fbSections: SectionDef[] = [
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'format', label: 'Format', icon: Icon.phone, Panel: FormatPanel },
   { id: 'advertiser', label: 'Page', icon: Icon.sender, Panel: AdvertiserPanel },
-  { id: 'creative', label: 'Creative', icon: Icon.convo, Panel: CreativePanel },
+  { id: 'creative', label: 'Content', icon: Icon.convo, Panel: CreativePanel },
   { id: 'engagement', label: 'Engage', icon: Icon.context, Panel: EngagementPanel },
 ]

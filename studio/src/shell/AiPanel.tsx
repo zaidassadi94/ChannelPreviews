@@ -4,7 +4,7 @@ import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, applyChosenImage, heroOrient, BACKDROP_SECTION } from '@/lib/applyAi'
+import { applyAiMessage, applyChosenImage, heroOrient, COPY_SECTION } from '@/lib/applyAi'
 import { regenerateImage } from '@/lib/aiCampaign'
 import { resolveBrandLogo, type AiMessage } from '@/lib/media'
 import { PhotoPicker } from '@/shell/PhotoPicker'
@@ -117,10 +117,10 @@ export function AiPanel() {
       // Start a campaign: switching to another channel now auto-generates it for the
       // same brand + brief in the background (until you change industry).
       s.startAiCampaign(text, logo, channelId)
-      // Open a relevant section on the left. For channels with a page/app backdrop,
-      // open the Backdrop section so it's obvious you can drop in a real screenshot.
+      // Open the section that holds the generated copy, so you land where you can edit
+      // the words — not on Presets or a Format toggle. (Falls back to the 2nd rail item.)
       const cdef = channelById(channelId)
-      const sectionId = BACKDROP_SECTION[channelId] || cdef?.sections?.[1]?.id || cdef?.sections?.[0]?.id
+      const sectionId = COPY_SECTION[channelId] || cdef?.sections?.[1]?.id || cdef?.sections?.[0]?.id
       if (sectionId) s.setSection(sectionId)
       s.setPanelOpen(true)
       useToast.getState().show('✨ AI message generated')
