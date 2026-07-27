@@ -247,6 +247,7 @@ interface StudioState {
   setIndustry: (id: string) => void
   setSub: (s: string) => void
   setBrand: (patch: Partial<Brand>) => void
+  setBrandIdentity: (name: string, logo: string | null) => void  // shared name+logo → every channel
   setBrandColor: (c: string) => void          // manual pick — pins it (auto off)
   autoSetBrandColor: (c: string) => void      // from the logo extractor — only applies while auto
   resetBrandColorAuto: () => void             // re-enable auto (match the logo)
@@ -363,8 +364,23 @@ export const useStudio = create<StudioState>((set, get) => ({
   setIndustry: (id) => {
     const ind = industryById(id)
     const sub = ind && ind.subs.length ? ind.subs[0][0] : null
-    set({ industry: id, sub, brand: { ...get().brand, name: ind ? ind.biz : get().brand.name, sub: ind ? ind.status : get().brand.sub } })
+    set({ industry: id, sub })
+    // Switching industry = a new brand context: propagate its name to every
+    // channel and clear any leftover logo so nothing stale carries over.
+    if (ind) { get().setBrandIdentity(ind.biz, null); set({ brand: { ...get().brand, sub: ind.status } }) }
   },
+  // One brand across the whole studio: name + logo applied to every channel's
+  // identity so generating (or switching brand) themes them all consistently.
+  setBrandIdentity: (name, logo) => set((st) => ({
+    brand: { ...st.brand, name, logo },
+    notify: { ...st.notify, appName: name, appLogo: logo },
+    gmail: { ...st.gmail, senderName: name, logo },
+    osm: { ...st.osm, site: name, logo },
+    webpush: { ...st.webpush, site: name, logo },
+    ig: { ...st.ig, brand: name, logo },
+    fb: { ...st.fb, page: name, logo },
+    cards: { ...st.cards, appName: name, logo },
+  })),
   setSub: (s) => set({ sub: s }),
   setBrand: (patch) => set({ brand: { ...get().brand, ...patch } }),
   setBrandColor: (c) => set({ brandColor: c, brandColorAuto: false }),

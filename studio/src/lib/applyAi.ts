@@ -219,6 +219,9 @@ export const BACKDROP_SECTION: Record<string, string> = { osm: 'background', ina
 export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
   aiSeed = Math.floor(Math.random() * 1e6)   // vary imagery on every generation
   applyIdentity(m)
+  // One brand across the studio: push the generated name + resolved logo to every
+  // channel so cycling channels stays consistent (no stale per-channel logos).
+  if (m.brand) useStudio.getState().setBrandIdentity(m.brand, opts.logo)
   const logo = opts.logo
   switch (channel) {
     case 'whatsapp': return applyWa(m, logo)
