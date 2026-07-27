@@ -95,12 +95,8 @@ function ActionsPanel() {
 function SitePanel() {
   const w = useStudio((s) => s.webpush)
   const setWebpush = useStudio((s) => s.setWebpush)
-  const os: [string, string][] = [['mac', 'macOS'], ['windows', 'Windows']]
   return (
     <>
-      <div className="field"><span>Operating system (notification style)</span>
-        <div className="seg-in">{os.map(([v, l]) => <button key={v} className={w.os === v ? 'on' : ''} onClick={() => setWebpush({ os: v })}>{l}</button>)}</div>
-      </div>
       <label className="field"><span>Site / brand name</span><input type="text" value={w.site} onChange={(e) => setWebpush({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL (shown in the notification)</span><input type="text" value={w.url} onChange={(e) => setWebpush({ url: e.target.value })} /></label>
       <div className="field"><span>Site icon</span><ImageField value={w.logo || ''} onChange={(v) => setWebpush({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>

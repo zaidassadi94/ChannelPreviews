@@ -31,9 +31,6 @@ function FormatPanel() {
   const setOsm = useStudio((s) => s.setOsm)
   return (
     <>
-      <div className="field"><span>Device</span>
-        <div className="seg-in"><button className={o.device === 'desktop' ? 'on' : ''} onClick={() => setOsm({ device: 'desktop' })}>Desktop</button><button className={o.device === 'mobile' ? 'on' : ''} onClick={() => setOsm({ device: 'mobile' })}>Mobile</button></div>
-      </div>
       <label className="field"><span>Format</span>
         <select value={o.format} onChange={(e) => setOsm({ format: e.target.value })} style={{ width: '100%', padding: '9px 11px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--panel-2)', fontFamily: 'inherit', fontSize: 13 }}>
           {FORMATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}

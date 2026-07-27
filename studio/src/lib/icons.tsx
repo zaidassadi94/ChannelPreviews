@@ -22,6 +22,7 @@ export const Icon: Record<string, ReactNode> = {
   download: <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   phone: <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="currentColor" strokeWidth="2" /></svg>,
   android: <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M10 5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>,
+  desktop: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M9 20h6M12 16v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   chat: <svg viewBox="0 0 24 24" fill="none"><path d="M7 5.5h10a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.8l-3.4 2.6c-.6.45-1.3.02-1.3-.72V15.5H7a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3z" fill="#fff" /></svg>,
   // section-rail icons
   templates: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="14" y="3" width="7" height="5" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="14" y="12" width="7" height="9" rx="1.6" stroke="currentColor" strokeWidth="1.8" /><rect x="3" y="16" width="7" height="5" rx="1.6" stroke="currentColor" strokeWidth="1.8" /></svg>,

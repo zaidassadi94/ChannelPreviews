@@ -9,10 +9,7 @@ function ViewPanel() {
   const setGmail = useStudio((s) => s.setGmail)
   return (
     <>
-      <p className="panel-hint">Gmail renders on a desktop browser or a phone. Switch skin and between the inbox list and an opened email.</p>
-      <div className="field"><span>Skin</span>
-        <div className="seg-in"><button className={g.skin === 'mobile' ? 'on' : ''} onClick={() => setGmail({ skin: 'mobile' })}>Mobile</button><button className={g.skin === 'desktop' ? 'on' : ''} onClick={() => setGmail({ skin: 'desktop' })}>Desktop</button></div>
-      </div>
+      <p className="panel-hint">Switch <b>Mobile / Desktop</b> from the top bar. Here, choose the inbox list or an opened email.</p>
       <div className="field"><span>View</span>
         <div className="seg-in"><button className={g.view === 'inbox' ? 'on' : ''} onClick={() => setGmail({ view: 'inbox' })}>Inbox list</button><button className={g.view === 'open' ? 'on' : ''} onClick={() => setGmail({ view: 'open' })}>Open email</button></div>
       </div>
