@@ -47,15 +47,6 @@ const KEYWORDS = ['clothing','tshirt','trousers','hoodie','electronics','earbuds
 // free-tier quota is the real backstop.
 const LIMITS = { brief: 500, perMin: 20, maxTokens: 800 };
 
-// A brand name derived from a pinned website ("nobero.com" -> "Nobero"), used when
-// the model doesn't recognise a smaller brand's domain so the name/handle stay stable
-// instead of the model inventing a fresh one each time.
-function brandFromDomain(site) {
-  const label = String(site || '').split('.')[0].replace(/[-_]+/g, ' ').trim();
-  return label ? label.replace(/\b\w/g, (c) => c.toUpperCase()) : '';
-}
-const normName = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
 // ---- best-effort in-memory rate limit (per warm instance) ----
 const hits = new Map();
 function rateLimited(ip) {
@@ -266,7 +257,7 @@ module.exports = async function handler(req, res) {
   // model identifies the (possibly small/unknown) brand from it and returns it as the domain.
   const site = String(body.domain || '').toLowerCase().trim()
     .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').replace(/[^a-z0-9.\-]/g, '').slice(0, 80);
-  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief, site, siteBrand: brandFromDomain(site) };
+  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief, site };
   if (!CHANNELS[channel]) return send(res, 400, { ok: false, error: 'unknown channel' });
   if (!brief) return send(res, 400, { ok: false, error: 'brief is required' });
 
@@ -335,17 +326,10 @@ module.exports = async function handler(req, res) {
       if (!message || typeof message !== 'object' || Array.isArray(message))
         return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
       if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
-      // Lock identity to a pinned website: the domain is always the pinned one (so the
-      // real logo shows), and if the model's brand name doesn't correspond to that
-      // domain it invented one — replace it with the name derived from the domain so
-      // the business name & handle stay stable instead of changing every generation.
-      if (ctx.site) {
-        message.domain = ctx.site;
-        const label = normName(ctx.site.split('.')[0]);
-        const bn = normName(message.brand);
-        const matches = bn && label && (label.includes(bn) || bn.includes(label));
-        if (!matches && ctx.siteBrand) message.brand = ctx.siteBrand;
-      }
+      // A pinned website locks the domain (so the real logo & links use it); the brand
+      // NAME is left to the model, which identifies it from the domain far better than
+      // any string-splitting could.
+      if (ctx.site) message.domain = ctx.site;
       return send(res, 200, { ok: true, provider, channel, model, message });
     }
     last = out;
