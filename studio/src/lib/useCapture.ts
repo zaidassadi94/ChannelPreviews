@@ -11,7 +11,34 @@ import { useToast } from '@/store/useToast'
  *      clean export, then restored.
  *  Everything is restored in `finally` so the on-screen view is untouched.
  */
-async function grab(background: string, toast: (m: string) => void): Promise<HTMLCanvasElement | null> {
+/** Clip a rendered canvas to the frame's own rounded-rectangle so the export is
+    exactly the device/desktop shape (transparent outside the corners), instead
+    of a rectangle with the corners filled in. Radius is read from the captured
+    node and scaled to canvas pixels. */
+function roundToFrame(src: HTMLCanvasElement, node: HTMLElement): HTMLCanvasElement {
+  const cs = getComputedStyle(node)
+  const cssRadius = parseFloat(cs.borderTopLeftRadius) || 0
+  if (cssRadius <= 0) return src
+  const scale = src.width / (node.offsetWidth || src.width)
+  const r = Math.min(cssRadius * scale, src.width / 2, src.height / 2)
+  const out = document.createElement('canvas')
+  out.width = src.width; out.height = src.height
+  const ctx = out.getContext('2d')
+  if (!ctx) return src
+  const w = out.width, h = out.height
+  ctx.beginPath()
+  ctx.moveTo(r, 0)
+  ctx.arcTo(w, 0, w, h, r)
+  ctx.arcTo(w, h, 0, h, r)
+  ctx.arcTo(0, h, 0, 0, r)
+  ctx.arcTo(0, 0, w, 0, r)
+  ctx.closePath()
+  ctx.clip()
+  ctx.drawImage(src, 0, 0)
+  return out
+}
+
+async function grab(toast: (m: string) => void): Promise<HTMLCanvasElement | null> {
   const node = document.getElementById('capture') as HTMLElement | null
   if (!node) { toast('Nothing to capture yet'); return null }
 
@@ -27,13 +54,16 @@ async function grab(background: string, toast: (m: string) => void): Promise<HTM
   if (badge) badge.style.display = 'none'
 
   try {
-    return await html2canvas(node, {
-      backgroundColor: background,
+    // Transparent background → the frame's rounded corners aren't filled in;
+    // roundToFrame then clips to the exact device shape.
+    const raw = await html2canvas(node, {
+      backgroundColor: null,
       scale: 2,
       useCORS: true,
       allowTaint: false,
       logging: false,
     })
+    return roundToFrame(raw, node)
   } catch (err) {
     console.error('[capture]', err)
     toast('Could not render the image — try again')
@@ -57,7 +87,7 @@ export function useCapture() {
   const filename = () => `${channel}-${ctx}-${device}.png`
 
   const onExport = async () => {
-    const canvas = await grab('#eef0f6', show)
+    const canvas = await grab(show)
     if (!canvas) return
     const a = document.createElement('a')
     a.href = canvas.toDataURL('image/png')
@@ -73,7 +103,7 @@ export function useCapture() {
       show('Clipboard image copy unavailable — use Export')
       return
     }
-    const canvas = await grab('#eef0f6', show)
+    const canvas = await grab(show)
     if (!canvas) return
     canvas.toBlob(async (blob) => {
       if (!blob) { show('Copy failed — use Export'); return }
