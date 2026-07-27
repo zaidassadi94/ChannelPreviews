@@ -41,6 +41,14 @@ export const SMS_TEMPLATES: SmsTemplate[] = [
     name: 'Win-back', kind: 'Promotional', icon: '💛', desc: 'Re-engagement + code',
     build: (p) => [makeM('text', { text: `We miss you at ${p.brand}! Here's a welcome-back treat — use ${p.code || 'HELLO10'} on your next order. ${p.url}` })],
   },
+  {
+    name: 'Abandoned cart', kind: 'Promotional', icon: '🛒', desc: 'Cart reminder + link',
+    build: (p) => [makeM('text', { text: `${p.brand}: your cart is waiting 🛒 ${p.reminder}. Check out before it's gone: ${p.url}/cart\nReply STOP to opt out.` })],
+  },
+  {
+    name: 'Win-back', kind: 'Promotional', icon: '💌', desc: 'We miss you offer',
+    build: (p) => [makeM('text', { text: `We miss you at ${p.brand}! Here's ${p.offer}${p.code ? ` — use code ${p.code}` : ''}. Come back: ${p.url}\nReply STOP to opt out.` })],
+  },
 ]
 
 export function applySmsTemplate(t: SmsTemplate, announce = true) {

@@ -47,6 +47,14 @@ export const PUSH_TEMPLATES: PushTemplate[] = [
     name: 'Feedback', kind: 'Flow', icon: '⭐', desc: 'Rating buttons', flow: true,
     build: (p) => ({ appName: p.brand, title: 'How did we do?', body: p.feedbackQ || `Tell us how ${p.brand} did — it takes 10 seconds.`, image: '', actions: '😍 Great\n🙂 Okay\n😞 Poor', expanded: true }),
   },
+  {
+    name: 'Abandoned cart', kind: 'Promotional', icon: '🛒', desc: 'Cart nudge + image',
+    build: (p) => ({ appName: p.brand, title: 'You left something behind 🛒', body: oneLine(`${cap(p.reminder)} — tap to finish checking out.`), image: hero(p, '4'), actions: 'Complete checkout\nView cart', expanded: true }),
+  },
+  {
+    name: 'Price drop', kind: 'Promotional', icon: '📉', desc: 'Wishlist price alert',
+    build: (p) => ({ appName: p.brand, title: `📉 Price drop at ${p.brand}`, body: 'Something on your wishlist just got cheaper. See it before the price bounces back.', image: hero(p, '6'), actions: 'See the deal\nRemind me', expanded: true }),
+  },
 ]
 
 /** Permission opt-in prompts — the system "Allow notifications?" alert + a two-step (soft) ask. */

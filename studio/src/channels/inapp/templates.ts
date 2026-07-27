@@ -42,6 +42,14 @@ export const INAPP_TEMPLATES: InappTemplate[] = [
     name: 'Promo image-only', kind: 'Promotional', icon: '✨', desc: 'Full creative, tap to act',
     build: (p) => ({ type: 'image', image: portrait(p, '5'), headline: '', body: '', ctas: '', close: true }),
   },
+  {
+    name: 'NPS survey', kind: 'Flow', icon: '📊', desc: 'Rating prompt', flow: true,
+    build: (p) => ({ type: 'modal', image: '', headline: 'Got a sec? 📊', body: `How likely are you to recommend ${p.brand} to a friend?`, ctas: '0–6 | secondary\n7–8 | secondary\n9–10 | primary', close: true }),
+  },
+  {
+    name: 'Feature announcement', kind: 'Promotional', icon: '✨', desc: 'New feature sheet',
+    build: (p) => ({ type: 'sheet', image: hero(p, '5'), headline: 'New: faster checkout ✨', body: `We just made ${p.brand} quicker to use. Take the new experience for a spin.`, ctas: 'Try it now | primary\nMaybe later | text', close: true }),
+  },
 ]
 
 export function applyInappTemplate(t: InappTemplate, announce = true) {

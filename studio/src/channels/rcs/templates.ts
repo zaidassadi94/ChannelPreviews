@@ -46,6 +46,14 @@ export const RCS_TEMPLATES: RcsTemplate[] = [
     name: 'Feedback request', kind: 'Flow', icon: '⭐', desc: 'Rating chips branch', flow: true,
     build: (p) => [makeM('text', { text: `Thanks for choosing ${p.brand} 🙌 How did we do?`, chips: `😍 Great >> Thank you! Mind leaving a review? ${p.url}/review\n🙂 Okay >> Thanks — we'll keep improving.\n😞 Poor >> Sorry! Reply and we'll make it right.` })],
   },
+  {
+    name: 'Abandoned cart', kind: 'Promotional', icon: '🛒', desc: 'Card + quick chips',
+    build: (p) => [makeM('card', { img: hero(p, null, '2'), title: 'Still in your cart 🛒', desc: `${cap(p.reminder)} — checkout before it's gone.`, buttons: `Complete checkout | url | https://${p.url}/cart`, chips: 'View cart\nNot now' })],
+  },
+  {
+    name: 'Back in stock', kind: 'Promotional', icon: '🔔', desc: 'Restock alert card',
+    build: (p) => [makeM('card', { img: hero(p, null, '4'), title: 'Back in stock 🔔', desc: `${cap(p.carousel[0] ? p.carousel[0][0] : 'Your item')} is available again at ${p.brand}.`, buttons: `Shop now | url | https://${p.url}`, chips: 'See similar\nNotify me' })],
+  },
 ]
 
 export function applyRcsTemplate(t: RcsTemplate, announce = true) {

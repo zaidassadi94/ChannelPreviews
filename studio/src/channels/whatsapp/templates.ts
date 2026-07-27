@@ -56,6 +56,18 @@ export const WA_TEMPLATES: WATemplate[] = [
       buttons: `Copy code | copy\nExplore | url | https://${p.url}`,
     })],
   },
+  {
+    name: 'Abandoned cart', kind: 'Promotional', icon: '🛒', desc: 'Nudge to complete checkout',
+    build: (p) => [makeMsg('template', { img: hero(p), body: `Still thinking it over? 🛒\nYour picks at ${p.brand} are waiting — ${p.reminder}. Grab them before they sell out.`, footer: 'Reply STOP to unsubscribe', buttons: `Complete checkout | url | https://${p.url}/cart\nView cart | url | https://${p.url}/cart` })],
+  },
+  {
+    name: 'Back in stock', kind: 'Promotional', icon: '🔔', desc: 'Wishlist item available',
+    build: (p) => [makeMsg('template', { img: hero(p), body: `Good news! 🔔\n*${cap(p.carousel[0] ? p.carousel[0][0] : 'Your item')}* is back in stock at ${p.brand}. It sold out fast last time — don't miss it again.`, footer: 'Reply STOP to unsubscribe', buttons: `Shop now | url | https://${p.url}` })],
+  },
+  {
+    name: 'Shipping update', kind: 'Transactional', icon: '📦', desc: 'Order on its way',
+    build: (p) => [makeMsg('template', { body: `📦 Your ${p.orderNoun} *#${p.orderId}* is on its way!\nOut for delivery — arriving today by 6 PM.`, footer: `Thanks for shopping with ${p.brand}`, buttons: `Track order | url | https://${p.url}/track` })],
+  },
 ]
 
 /** Imperative apply — usable from a panel click or a mount effect. */
