@@ -58,18 +58,33 @@ function ContentPanel() {
       <label className="field"><span>Subject</span><input type="text" value={g.subject} onChange={(e) => setGmail({ subject: e.target.value })} /></label>
       <label className="field"><span>Preview / snippet text</span><input type="text" value={g.snippet} onChange={(e) => setGmail({ snippet: e.target.value })} /></label>
       <div className="field"><span>Email body</span>
-        <div className="seg-in"><button className={g.bodyMode === 'template' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'template' })}>Template</button><button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Plain</button></div>
+        <div className="seg-in">
+          <button className={g.bodyMode === 'template' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'template' })}>Template</button>
+          <button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Plain</button>
+          <button className={g.bodyMode === 'html' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'html' })}>HTML</button>
+        </div>
       </div>
-      {g.bodyMode === 'template'
-        ? <p className="panel-hint">The email body is the applied preset. Pick another from <b>Presets</b>, or switch to <b>Plain</b> to compose your own.</p>
-        : (
-          <>
-            <label className="field"><span>Heading</span><input type="text" value={g.plain.heading} onChange={(e) => setGmailPlain({ heading: e.target.value })} /></label>
-            <label className="field"><span>Body text</span><textarea value={g.plain.body} onChange={(e) => setGmailPlain({ body: e.target.value })} /></label>
-            <label className="field"><span>Button label</span><input type="text" value={g.plain.btn} onChange={(e) => setGmailPlain({ btn: e.target.value })} /></label>
-            <label className="field"><span>Accent color</span><input type="text" value={g.plain.accent} onChange={(e) => setGmailPlain({ accent: e.target.value })} /></label>
-          </>
-        )}
+      {g.bodyMode === 'template' && (
+        <p className="panel-hint">The email body is the applied preset. Switch to <b>Plain</b> to compose your own, or <b>HTML</b> to paste your own markup.</p>
+      )}
+      {g.bodyMode === 'plain' && (
+        <>
+          <label className="field"><span>Heading</span><input type="text" value={g.plain.heading} onChange={(e) => setGmailPlain({ heading: e.target.value })} /></label>
+          <label className="field"><span>Body text</span><textarea value={g.plain.body} onChange={(e) => setGmailPlain({ body: e.target.value })} /></label>
+          <label className="field"><span>Button label</span><input type="text" value={g.plain.btn} onChange={(e) => setGmailPlain({ btn: e.target.value })} /></label>
+          <label className="field"><span>Accent color</span><input type="text" value={g.plain.accent} onChange={(e) => setGmailPlain({ accent: e.target.value })} /></label>
+        </>
+      )}
+      {g.bodyMode === 'html' && (
+        <>
+          <label className="field"><span>Email HTML</span>
+            <textarea value={g.html} onChange={(e) => setGmail({ html: e.target.value })}
+              spellCheck={false} placeholder="Paste your full email HTML here — it renders in the preview exactly as written."
+              style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, minHeight: 200, whiteSpace: 'pre' }} />
+          </label>
+          <p className="panel-hint">Paste a complete email's HTML and it renders as-is. Inline <code>style="…"</code> works most reliably (many inboxes strip <code>&lt;style&gt;</code> blocks). Switching to <b>Template</b> and applying a preset will overwrite it.</p>
+        </>
+      )}
       <p className="panel-hint" style={{ marginTop: 8 }}>How it appears in the inbox row:</p>
       <label className="field"><span>Timestamp</span><input type="text" value={g.timestamp} onChange={(e) => setGmail({ timestamp: e.target.value })} /></label>
       <label className="field"><span>"to" line</span><input type="text" value={g.toLine} onChange={(e) => setGmail({ toLine: e.target.value })} /></label>
