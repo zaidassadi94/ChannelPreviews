@@ -59,7 +59,8 @@ export function AppBackdrop() {
   const appName = useStudio((s) => s.notify.appName)
   const ctxId = useStudio((s) => s.ctxId())
   const p = packFor(ctxId)
-  const bc = avColor(appName)
+  const brandColor = useStudio((s) => s.brandColor)
+  const bc = brandColor || avColor(appName)
   const tiles = (p?.carousel || []).slice(0, 3)
   return (
     <div className="appbd">

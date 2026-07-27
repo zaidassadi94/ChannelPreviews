@@ -113,7 +113,9 @@ export function GamePreview() {
   const [revealed, setRevealed] = useState(false)
   useEffect(() => { setRevealed(false) }, [sim, g.type, g.segments])
 
-  const acc = GM_ACCENTS[g.type] || GM_ACCENTS.scratch
+  const brandColor = useStudio((s) => s.brandColor)
+  const themeAcc = GM_ACCENTS[g.type] || GM_ACCENTS.scratch
+  const acc: [string, string] = brandColor ? [brandColor, brandColor] : themeAcc
   const winLabel = gmWinLabel(g)
   const onTap = () => { if (!sim || revealed) return; setRevealed(true); show('🎉 ' + winLabel + ' — ' + appName) }
   const hint = g.type === 'wheel' ? 'Tap SPIN to play' : g.type === 'box' ? 'Tap the box to open' : g.type === 'slots' ? 'Tap to spin' : 'Scratch the card'

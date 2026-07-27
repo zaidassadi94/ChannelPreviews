@@ -158,8 +158,9 @@ function Overlay() {
 
 function StageInner({ mobile }: { mobile: boolean }) {
   const o = useStudio((s) => s.osm)
+  const brandColor = useStudio((s) => s.brandColor)
   const intrusive = !!INTRUSIVE[o.format]
-  const brand = o.accent || avColor(o.site)
+  const brand = o.accent || brandColor || avColor(o.site)
   return (
     <div className="osm-brand" style={{ position: 'absolute', inset: 0, ['--brand']: brand } as CSSProperties}>
       {o.format !== 'full' && <><div className={'osm-canvas' + (intrusive ? ' dim' + (o.blur ? ' blurred' : '') : '')}><Backdrop mobile={mobile} /></div>{intrusive && <div className="osm-scrim" />}</>}

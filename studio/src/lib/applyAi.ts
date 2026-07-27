@@ -131,7 +131,7 @@ function applyGame(m: AiMessage) {
 async function applyGmail(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
   const ep = emailPackFor(s.ctxId())
-  const accent = ep.accent || avColor(m.brand || '')
+  const accent = s.brandColor || ep.accent || avColor(m.brand || '')
   const image = hasImg(m) ? await pic(m, 600, 300, m.brand || '') : ''
   const domain = cleanDomain(m.domain) || guessDomain(m.brand) || cleanDomain((ep.from.split('@')[1]) || '') || 'brand.com'
   const html = buildAiEmail({ brand: m.brand || ep.brand, accent, image, heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '' })

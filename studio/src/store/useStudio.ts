@@ -203,6 +203,9 @@ interface StudioState {
   industry: string
   sub: string | null
   brand: Brand
+  /** Global brand accent for own-brand surfaces (In-App, Push, Web Push, Onsite,
+      Gmail, Gamification). '' = auto (derived from the brand name per channel). */
+  brandColor: string
   sim: boolean
   dateChip: string
   /** When an AI generation is populating a ctx's slice itself, this holds that ctxId so
@@ -242,6 +245,7 @@ interface StudioState {
   setIndustry: (id: string) => void
   setSub: (s: string) => void
   setBrand: (patch: Partial<Brand>) => void
+  setBrandColor: (c: string) => void
   setSim: (on: boolean) => void
   setDateChip: (v: string) => void
   setAiSuppress: (ctx: string) => void
@@ -311,6 +315,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   industry: 'ecom',
   sub: 'fashion',
   brand: { name: 'Nova', sub: 'online', logo: null, verified: true, phone: '+1 (800) 555-0199', desc: 'Official account · Customer care', agentCard: true },
+  brandColor: '',
   sim: false,
   dateChip: 'Today',
   aiSuppressCtx: null,
@@ -355,6 +360,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
   setSub: (s) => set({ sub: s }),
   setBrand: (patch) => set({ brand: { ...get().brand, ...patch } }),
+  setBrandColor: (c) => set({ brandColor: c }),
   setSim: (on) => set({ sim: on, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setDateChip: (v) => set({ dateChip: v }),
   setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),

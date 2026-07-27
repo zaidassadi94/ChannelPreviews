@@ -106,7 +106,8 @@ export function InAppPreview() {
 
   const a = useStudio((s) => s.notify.inapp)
   const appName = useStudio((s) => s.notify.appName)
-  const brand = avColor(appName)
+  const brandColor = useStudio((s) => s.brandColor)
+  const brand = brandColor || avColor(appName)
 
   let body
   if (a.type === 'full') body = <IaFull />

@@ -37,7 +37,8 @@ function BrandedSite() {
   const w = useStudio((s) => s.webpush)
   const ctxId = useStudio((s) => s.ctxId())
   const p = packFor(ctxId)
-  const bc = avColor(w.site)
+  const brandColor = useStudio((s) => s.brandColor)
+  const bc = brandColor || avColor(w.site)
   const cards = (p?.carousel || []).slice(0, 4)
   return (
     <div className="wp-site">
@@ -104,6 +105,7 @@ function NotifCard() {
 /** The "Allow notifications?" opt-in — native browser prompt or a branded two-step ask. */
 function OptinOverlay() {
   const w = useStudio((s) => s.webpush)
+  const brandColor = useStudio((s) => s.brandColor)
   const { sim, onTap } = useWpSim()
   const icon = w.logo || brandMark(w.site, 96)
   const origin = (w.url || 'example.com').replace(/^https?:\/\//, '').replace(/\/.*$/, '')
@@ -123,7 +125,7 @@ function OptinOverlay() {
   }
   return (
     <div className="wp-optin-scrim">
-      <div className="wp-optin" style={{ ['--brand']: avColor(w.site) } as CSSProperties}>
+      <div className="wp-optin" style={{ ['--brand']: brandColor || avColor(w.site) } as CSSProperties}>
         <div className="bell">{WI.bell}</div>
         {w.optinTitle && <div className="ti">{w.optinTitle}</div>}
         {w.optinBody && <div className="bd">{fmtLite(w.optinBody)}</div>}
