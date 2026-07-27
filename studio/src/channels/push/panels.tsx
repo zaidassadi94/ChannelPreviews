@@ -72,7 +72,7 @@ function NotificationPanel() {
     <>
       <label className="field"><span>Title (bold line)</span><input type="text" value={push.title} onChange={(e) => setPush({ title: e.target.value })} /></label>
       <label className="field"><span>Body</span><textarea value={push.body} onChange={(e) => setPush({ body: e.target.value })} /></label>
-      <div className="field"><span>Big image (shows when expanded)</span><ImageField value={push.image} onChange={(v) => setPush({ image: v })} /></div>
+      <div className="field"><span>Big image (shows when expanded)</span><ImageField pick value={push.image} onChange={(v) => setPush({ image: v })} /></div>
       <label className="field"><span>Timestamp</span><input type="text" value={push.time} onChange={(e) => setPush({ time: e.target.value })} /></label>
       <div className="toggle-row"><span>Expanded (rich / big picture)</span>
         <label className="switch"><input type="checkbox" checked={expanded} onChange={(e) => setNotify({ expanded: e.target.checked })} /><span className="slider" /></label>

@@ -7,8 +7,8 @@
 import { useEffect } from 'react'
 import { useStudio } from '@/store/useStudio'
 import { industryById } from '@/content/model'
-import { applyAiMessage, heroOrient } from '@/lib/applyAi'
-import { photoCandidates, type AiMessage } from '@/lib/media'
+import { applyAiMessage } from '@/lib/applyAi'
+import type { AiMessage } from '@/lib/media'
 
 /** POST the brief to the generator for one channel. Returns the schema message or throws. */
 export async function fetchGeneratedMessage(channel: string, brief: string): Promise<AiMessage> {
@@ -41,14 +41,6 @@ export async function regenerateImage(): Promise<boolean> {
   if (!last || !last.hasImage) return false
   await applyAiMessage(last.channel, last.m, { logo: last.logo, skipIdentity: true })
   return true
-}
-
-/** A few real photo options for the last generation's subject, to show in the "Select
-    image" grid. No LLM request — just seeded Pexels lookups in the hero's orientation. */
-export async function imageOptionsForLast(n = 8): Promise<string[]> {
-  const last = useStudio.getState().lastAi
-  if (!last || !last.hasImage) return []
-  return photoCandidates(last.m.imageKeyword, last.m.imageQuery, heroOrient(last.channel, last.m), n, last.m.imageAlt)
 }
 
 /** One background generation at a time (module-level so effect re-runs from our own

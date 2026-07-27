@@ -53,7 +53,7 @@ function CreativePanel() {
   const setIg = useStudio((s) => s.setIg)
   return (
     <>
-      <div className="field"><span>Ad media</span><ImageField value={g.media} onChange={(v) => setIg({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
+      <div className="field"><span>Ad media</span><ImageField pick value={g.media} onChange={(v) => setIg({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
       <label className="field"><span>Call-to-action button</span>
         <select value={g.cta} onChange={(e) => setIg({ cta: e.target.value })} style={selStyle}>{IG_CTAS.map((c) => <option key={c} value={c}>{c}</option>)}</select>
       </label>

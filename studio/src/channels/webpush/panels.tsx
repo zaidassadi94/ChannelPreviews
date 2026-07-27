@@ -68,7 +68,7 @@ function NotificationPanel() {
     <>
       <label className="field"><span>Title (bold line)</span><input type="text" value={w.title} onChange={(e) => setWebpush({ title: e.target.value })} /></label>
       <label className="field"><span>Body</span><textarea value={w.body} onChange={(e) => setWebpush({ body: e.target.value })} /></label>
-      <div className="field"><span>Large image (optional)</span><ImageField value={w.image} onChange={(v) => setWebpush({ image: v })} /></div>
+      <div className="field"><span>Large image (optional)</span><ImageField pick value={w.image} onChange={(v) => setWebpush({ image: v })} /></div>
     </>
   )
 }

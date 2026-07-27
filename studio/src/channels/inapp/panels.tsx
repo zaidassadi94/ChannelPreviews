@@ -46,7 +46,7 @@ function ContentPanel() {
         <div className="seg-in">{IATYPES.map(([v, l]) => <button key={v} className={a.type === v ? 'on' : ''} onClick={() => pickType(v)}>{l}</button>)}</div>
         <span className="field-hint">The message template — modal, banner, full-screen, bottom sheet or image-only.</span>
       </div>
-      {a.type !== 'banner' && <div className="field"><span>Image</span><ImageField value={a.image} onChange={(v) => setInapp({ image: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>}
+      {a.type !== 'banner' && <div className="field"><span>Image</span><ImageField pick value={a.image} onChange={(v) => setInapp({ image: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>}
       {a.type !== 'image' && <label className="field"><span>Headline</span><input type="text" value={a.headline} onChange={(e) => setInapp({ headline: e.target.value })} /></label>}
       {a.type !== 'image' && <label className="field"><span>Body</span><textarea value={a.body} onChange={(e) => setInapp({ body: e.target.value })} /></label>}
       <div className="toggle-row"><span>Close (✕) button</span>

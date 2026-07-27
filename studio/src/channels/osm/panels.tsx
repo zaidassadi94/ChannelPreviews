@@ -88,7 +88,7 @@ function MessagePanel() {
     <>
       <label className="field"><span>Headline</span><input type="text" value={o.headline} onChange={(e) => setOsm({ headline: e.target.value })} /></label>
       {!isBanner && <label className="field"><span>Body</span><textarea value={o.body} onChange={(e) => setOsm({ body: e.target.value })} /></label>}
-      {showImg && <div className="field"><span>Image</span><ImageField value={o.image} onChange={(v) => setOsm({ image: v })} placeholder="or paste an image URL (optional)" /></div>}
+      {showImg && <div className="field"><span>Image</span><ImageField pick value={o.image} onChange={(v) => setOsm({ image: v })} placeholder="or paste an image URL (optional)" /></div>}
       <label className="field"><span>{isBanner ? 'Primary button' : 'Button'}</span><input type="text" value={o.cta} onChange={(e) => setOsm({ cta: e.target.value })} /></label>
       {!isSurvey && <label className="field"><span>Secondary link (optional)</span><input type="text" value={o.cta2} onChange={(e) => setOsm({ cta2: e.target.value })} /></label>}
       {isSurvey && <label className="field"><span>Survey scale — low label</span><input type="text" value={o.scaleLo} onChange={(e) => setOsm({ scaleLo: e.target.value })} /></label>}

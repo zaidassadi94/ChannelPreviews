@@ -48,7 +48,7 @@ function CardsPanel() {
             <label className="field"><span>Tag / label</span><input type="text" value={c.tag} onChange={(e) => upd(i, { tag: e.target.value })} placeholder="e.g. Offer" /></label>
             <label className="field"><span>Time</span><input type="text" value={c.time} onChange={(e) => upd(i, { time: e.target.value })} placeholder="e.g. 2h" /></label>
           </div>
-          <div className="field"><span>Banner image</span><ImageField value={c.image} onChange={(v) => upd(i, { image: v })} placeholder="or paste an image URL (optional)" /></div>
+          <div className="field"><span>Banner image</span><ImageField pick value={c.image} onChange={(v) => upd(i, { image: v })} placeholder="or paste an image URL (optional)" /></div>
           <div className="toggle-row"><span>Unread</span>
             <label className="switch"><input type="checkbox" checked={c.unread} onChange={(e) => upd(i, { unread: e.target.checked })} /><span className="slider" /></label>
           </div>

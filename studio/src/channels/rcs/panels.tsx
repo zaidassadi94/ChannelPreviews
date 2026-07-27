@@ -3,6 +3,7 @@ import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { ImageField } from '@/shell/ImageField'
 import { ButtonsEditor } from '@/shell/ButtonsEditor'
+import { CarouselEditor } from '@/shell/CarouselEditor'
 import { RCS_TEMPLATES, applyRcsTemplate } from './templates'
 
 const CH = 'rcs'
@@ -128,13 +129,13 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
       )}
       {msg.type === 'image' && (
         <>
-          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
+          <div className="field"><span>Image</span><ImageField pick value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Caption</span><textarea value={msg.caption || ''} onChange={(e) => onField({ caption: e.target.value })} /></label>
         </>
       )}
       {msg.type === 'card' && (
         <>
-          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
+          <div className="field"><span>Image</span><ImageField pick value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Title</span><input type="text" value={msg.title || ''} onChange={(e) => onField({ title: e.target.value })} /></label>
           <label className="field"><span>Description</span><textarea value={msg.desc || ''} onChange={(e) => onField({ desc: e.target.value })} /></label>
           <ButtonsField value={msg.buttons || ''} onChange={(v) => onField({ buttons: v })} />
@@ -143,10 +144,9 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
       )}
       {msg.type === 'carousel' && (
         <>
-          <label className="field"><span>Products</span>
-            <textarea value={msg.cards || ''} onChange={(e) => onField({ cards: e.target.value })} placeholder="image URL | title | price | button | link" />
-            <div className="panel-hint" style={{ marginTop: 6 }}>One product per line: <code>image | title | price | button | link</code>. Leave image blank for a placeholder.</div>
-          </label>
+          <div className="field"><span>Products</span>
+            <CarouselEditor value={msg.cards || ''} onChange={(v) => onField({ cards: v })} />
+          </div>
           <ChipsField value={msg.chips || ''} onChange={(v) => onField({ chips: v })} />
         </>
       )}

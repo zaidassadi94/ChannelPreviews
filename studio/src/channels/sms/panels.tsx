@@ -126,7 +126,7 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
       )}
       {msg.type === 'image' && (
         <>
-          <div className="field"><span>Image</span><ImageField value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
+          <div className="field"><span>Image</span><ImageField pick value={msg.img || ''} onChange={(v) => onField({ img: v })} placeholder="or paste an image URL (blank = placeholder)" /></div>
           <label className="field"><span>Caption</span><textarea value={msg.caption || ''} onChange={(e) => onField({ caption: e.target.value })} /></label>
         </>
       )}

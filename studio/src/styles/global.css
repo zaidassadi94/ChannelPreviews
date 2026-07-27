@@ -114,12 +114,21 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .wa-cardedit-top .lbl{ font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
 .wa-cardedit-top .grow{ flex:1; }
 .wa-cardrow{ display:flex; gap:8px; } .wa-cardrow .field{ flex:1; min-width:0; }
-.wa-pickbtn{ align-self:flex-start; font-size:12px; font-weight:600; color:var(--accent-ink); background:none; border:0; cursor:pointer; padding:2px 0; }
-.wa-pickbtn:hover{ text-decoration:underline; } .wa-pickbtn:disabled{ opacity:.6; cursor:default; }
-.wa-pickgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-.wa-pickthumb{ padding:0; border:1px solid var(--line); border-radius:7px; overflow:hidden; cursor:pointer; aspect-ratio:1/1; background:var(--panel); }
-.wa-pickthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-.wa-pickthumb:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
+/* ---- inline photo picker (search Pexels + refresh + grid), used in every content
+   image field and in the AI panel ---- */
+.pick{ display:flex; flex-direction:column; gap:6px; }
+.pick-bar{ display:flex; gap:6px; align-items:center; }
+.pick-search{ flex:1; min-width:0; padding:8px 10px; font-family:inherit; font-size:12.5px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--ink); }
+.pick-search:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); outline:0; }
+.pick-btn{ flex:none; border:1px solid var(--line); border-radius:8px; padding:8px 11px; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; background:var(--panel-2); color:var(--ink); }
+.pick-btn:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-weak); }
+.pick-btn:disabled{ opacity:.5; cursor:default; }
+.pick-btn.icon{ padding:8px; display:flex; align-items:center; } .pick-btn.icon svg{ width:15px; height:15px; }
+.pick-status{ font-size:11.5px; color:var(--muted); padding:2px 1px; }
+.pick-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.pick-thumb{ padding:0; border:1px solid var(--line); border-radius:7px; overflow:hidden; cursor:pointer; aspect-ratio:1/1; background:var(--panel); }
+.pick-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pick-thumb:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
 
 /* ---- structured button editor (WhatsApp/RCS interactive buttons) ---- */
 .btns-ed{ display:flex; flex-direction:column; gap:8px; }

@@ -140,15 +140,16 @@ export async function photoFor(kw?: string, w?: number, h?: number, query?: stri
     Each seed maps to a different pick from the endpoint's ranked pool, so seeds 0..n-1
     return up to `n` different (de-duplicated) options in one parallel batch — cached per
     seed, so re-opening the picker is free. Empty when there's no subject or no key. */
-export async function photoCandidates(kw?: string, query?: string, orientation?: string, n = 8, alt?: string): Promise<string[]> {
+export async function photoCandidates(kw?: string, query?: string, orientation?: string, n = 8, alt?: string, seedBase = 0): Promise<string[]> {
   const orient = orientation || 'landscape'
   const seen = new Set<string>(); const out: string[] = []
   // Fill from the brand query first, then top up from the brand-free description so the
   // grid still offers ~n options even when a brand search returns only a few photos.
+  // `seedBase` shifts the seed window so "refresh" pulls a different batch each press.
   const fillFrom = async (phrase?: string) => {
     const q = (phrase || '').trim()
     if (!q || out.length >= n) return
-    const urls = await Promise.all(Array.from({ length: n }, (_, seed) => livePhoto(q, orient, seed)))
+    const urls = await Promise.all(Array.from({ length: n }, (_, seed) => livePhoto(q, orient, seedBase + seed)))
     for (const u of urls) if (u && !seen.has(u) && out.length < n) { seen.add(u); out.push(u) }
   }
   await fillFrom((query && query.trim()) || (kw ? (normKw(kw) || kw) : ''))

@@ -4,9 +4,10 @@ import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, applyChosenImage, BACKDROP_SECTION } from '@/lib/applyAi'
-import { regenerateImage, imageOptionsForLast } from '@/lib/aiCampaign'
+import { applyAiMessage, applyChosenImage, heroOrient, BACKDROP_SECTION } from '@/lib/applyAi'
+import { regenerateImage } from '@/lib/aiCampaign'
 import { resolveBrandLogo, type AiMessage } from '@/lib/media'
+import { PhotoPicker } from '@/shell/PhotoPicker'
 import { detectChannel, CH_LABEL } from '@/lib/detectChannel'
 
 // Briefs that show off what the studio can do — name a brand (a website right in the
@@ -28,7 +29,7 @@ const TIPS = [
   'Include a brand\'s website in your brief (e.g. "for nobero.com") so smaller brands are identified correctly.',
   'Mention a real brand and its logo & colors are pulled in automatically.',
   'After generating, switch channels — each one fills itself in for the same brand.',
-  'Hit "New image" for a fresh photo, or "Select image" to pick from a few — no regeneration, no rate limits.',
+  'Hit "New image" for a fresh photo, or search & pick one from the grid below — no regeneration, no rate limits.',
   'Set a Brand color from the left rail to theme buttons across every channel.',
   'Use Export or Copy (top-right) for a clean, rounded screenshot.',
   'Upload a screenshot as the app/site backdrop for in-app, web push & on-site.',
@@ -56,15 +57,12 @@ export function AiPanel() {
   // teaches the shape of a good brief without ever interrupting typing.
   const [ph, setPh] = useState(0)
   const [focused, setFocused] = useState(false)
-  // "Select image" grid: a few Pexels options for the message on screen.
-  const [picker, setPicker] = useState<string[]>([])
-  const [loadingOpts, setLoadingOpts] = useState(false)
 
-  // "New image" / "Select image" act on the channel on screen, so they're only offered
-  // when this channel's last generation actually placed a photo.
+  // "New image" (re-roll) / the photo picker act on the channel on screen, so they're
+  // only offered when this channel's last generation actually placed a photo.
   const canReimage = !!lastAi && lastAi.hasImage && lastAi.channel === channel
-  // A carousel has several photos, one per card — "Select image" (single hero) doesn't
-  // apply, so hide it and let the per-card picker in the Chat editor handle those.
+  // A carousel has several photos, one per card — the single-hero picker doesn't apply,
+  // so hide it and let the per-card picker in the Chat editor handle those.
   const lastIsCarousel = !!lastAi && lastAi.channel === channel && lastAi.m.type === 'carousel'
 
   useEffect(() => {
@@ -72,9 +70,6 @@ export function AiPanel() {
     const id = setInterval(() => setPh((p) => (p + 1) % EXAMPLES.length), 3400)
     return () => clearInterval(id)
   }, [brief, focused])
-
-  // A different channel (or a fresh generation) means different options — drop any open grid.
-  useEffect(() => { setPicker([]) }, [channel, lastAi])
 
   async function reimage() {
     setReimaging(true)
@@ -84,19 +79,9 @@ export function AiPanel() {
     } finally { setReimaging(false) }
   }
 
-  async function openPicker() {
-    if (picker.length) { setPicker([]); return }  // toggle the grid closed
-    setLoadingOpts(true)
-    try {
-      const opts = await imageOptionsForLast(8)
-      setPicker(opts)
-      if (!opts.length) useToast.getState().show('No other photos found')
-    } finally { setLoadingOpts(false) }
-  }
-
   async function choose(url: string) {
     const ok = await applyChosenImage(url)
-    if (ok) { useToast.getState().show('🖼️ Image updated'); setPicker([]) }
+    if (ok) useToast.getState().show('🖼️ Image updated')
   }
 
   async function generate(briefArg?: string) {
@@ -104,7 +89,6 @@ export function AiPanel() {
     const text = (briefArg ?? brief).trim()
     if (!text) { setStatus({ kind: 'err', text: 'Write a short brief first.' }); return }
     setBrief(text)
-    setPicker([])
 
     // brief-driven routing: switch to a named channel in-app (no cross-tool handoff here)
     const target = detectChannel(text)
@@ -185,22 +169,10 @@ export function AiPanel() {
                 title={lastIsCarousel ? 'Re-roll fresh photos for every product card — no AI request.' : 'Fetch a different photo for this message — no AI request, so it won\'t hit rate limits.'}>
                 {reimaging ? <><span className="cs-ai-spin dark" /> New image…</> : '🖼️ New image'}
               </button>
-              {!lastIsCarousel && (
-                <button className="cs-ai-reimg" type="button" disabled={loadingOpts} onClick={openPicker}
-                  aria-expanded={picker.length > 0}
-                  title="Pick from a few photos for this message — no AI request.">
-                  {loadingOpts ? <><span className="cs-ai-spin dark" /> Loading…</> : '🖼️ Select image'}
-                </button>
-              )}
             </div>
-            {picker.length > 0 && (
-              <div className="cs-ai-picker">
-                {picker.map((u) => (
-                  <button key={u} type="button" className="cs-ai-thumb" onClick={() => choose(u)} title="Use this photo">
-                    <img src={u} alt="" loading="lazy" />
-                  </button>
-                ))}
-              </div>
+            {!lastIsCarousel && lastAi && (
+              <PhotoPicker autoLoad orientation={heroOrient(lastAi.channel, lastAi.m)}
+                query={lastAi.m.imageQuery || lastAi.m.imageAlt || ''} onPick={choose} />
             )}
           </>
         )}

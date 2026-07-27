@@ -54,7 +54,7 @@ function CreativePanel() {
   const isMkt = f.format === 'marketplace'
   return (
     <>
-      <div className="field"><span>Ad media</span><ImageField value={f.media} onChange={(v) => setFb({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
+      <div className="field"><span>Ad media</span><ImageField pick value={f.media} onChange={(v) => setFb({ media: v })} placeholder="or paste a media URL (blank = placeholder)" /></div>
       {isFeed && <label className="field"><span>Primary text</span><textarea value={f.primary} onChange={(e) => setFb({ primary: e.target.value })} /></label>}
       {(isFeed || isMkt) && <label className="field"><span>{isMkt ? 'Listing title' : 'Headline (link)'}</span><input type="text" value={f.headline} onChange={(e) => setFb({ headline: e.target.value })} /></label>}
       {isMkt && <label className="field"><span>Price</span><input type="text" value={f.price} onChange={(e) => setFb({ price: e.target.value })} /></label>}
