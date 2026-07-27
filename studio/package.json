@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "prefetch:photos": "node scripts/prefetch-photos.mjs"
+    "prefetch:photos": "node scripts/prefetch-photos.mjs",
+    "test:smoke": "node tests/smoke.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
@@ -20,6 +21,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "playwright": "^1.49.0",
     "typescript": "^5.7.0",
     "vite": "^7.0.0"
   }
