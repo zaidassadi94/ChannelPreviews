@@ -32,8 +32,8 @@ function useWpSim() {
   return { sim, onTap: (label: string) => { if (!sim) return; show('▸ ' + (label ? `"${label}" → opens ${site}` : `Opens ${site}`)) } }
 }
 
-/** A calm, generic website behind the notification so the card is the focus. */
-function SiteBackdrop() {
+/** The branded website mockup behind the notification. */
+function BrandedSite() {
   const w = useStudio((s) => s.webpush)
   const ctxId = useStudio((s) => s.ctxId())
   const p = packFor(ctxId)
@@ -54,6 +54,20 @@ function SiteBackdrop() {
       <div className="wp-grid">{cards.map((pr, i) => <div className="wp-c" key={i}><img className="ph" src={phImg(pr[0], null, hueOf(pr[0]), 320, 240)} alt={pr[0]} /><div className="mt"><div className="nm">{pr[0]}</div><div className="pr">{pr[1] || ''}</div></div></div>)}</div>
     </div>
   )
+}
+
+/** The page behind the notification. Like Onsite/In-App, the real customer site
+    can't be shown, so offer the same choices: a branded mockup, an uploaded
+    screenshot, or a neutral page — with an optional dim & blur so the card pops. */
+function SiteBackdrop() {
+  const w = useStudio((s) => s.webpush)
+  const inner =
+    w.bg === 'upload' && w.bgImage
+      ? <div className="wp-shot" style={{ backgroundImage: `url('${w.bgImage.replace(/'/g, '%27')}')` }} />
+      : w.bg === 'neutral'
+        ? <div className="wp-neutral" />
+        : <BrandedSite />
+  return <div className={'wp-bg' + (w.blur ? ' blurred' : '')}>{inner}</div>
 }
 
 function NotifCard() {

@@ -1,7 +1,14 @@
 /* Web Push — a browser notification over a website, in the DesktopFrame. */
 .wp-view{ position:relative; height:640px; overflow:hidden; background:#f4f5f8; font-family:var(--font); }
 
-/* ---- website backdrop (calm, so the notification is the focus) ---- */
+/* ---- page backdrop: branded mockup / uploaded screenshot / neutral ---- */
+.wp-bg{ position:absolute; inset:0; }
+.wp-bg.blurred > *{ filter:blur(4px); transform:scale(1.02); }
+.wp-bg.blurred::after{ content:""; position:absolute; inset:0; background:rgba(15,17,26,.28); }
+.wp-shot{ position:absolute; inset:0; background-size:cover; background-position:top center; background-repeat:no-repeat; background-color:#eceef3; }
+.wp-neutral{ position:absolute; inset:0; background:linear-gradient(180deg,#f6f7fa,#eceef3); }
+.wp-neutral::before{ content:""; position:absolute; top:0; left:0; right:0; height:52px; background:#fff; border-bottom:1px solid #e9ebf1; }
+
 .wp-site{ position:absolute; inset:0; display:flex; flex-direction:column; }
 .wp-nav{ height:56px; flex:none; background:#fff; border-bottom:1px solid #eef0f4; display:flex; align-items:center; gap:16px; padding:0 26px; }
 .wp-nav .lg{ display:flex; align-items:center; gap:9px; }

@@ -106,10 +106,27 @@ function SitePanel() {
   )
 }
 
+function BackdropPanel() {
+  const w = useStudio((s) => s.webpush)
+  const setWebpush = useStudio((s) => s.setWebpush)
+  const modes: [string, string][] = [['branded', 'Branded'], ['upload', 'Upload'], ['neutral', 'Neutral']]
+  return (
+    <>
+      <p className="panel-hint">The page behind the notification won't be your customer's real site — pick how to handle it, just like Onsite &amp; In-App.</p>
+      <div className="field"><span>Background</span>
+        <div className="seg-in">{modes.map(([v, l]) => <button key={v} className={w.bg === v ? 'on' : ''} onClick={() => setWebpush({ bg: v })}>{l}</button>)}</div>
+      </div>
+      {w.bg === 'upload' && <label className="field"><span>Screenshot URL of your site</span><input type="text" value={w.bgImage} onChange={(e) => setWebpush({ bgImage: e.target.value })} /></label>}
+      <div className="toggle-row"><span>Dim &amp; blur the page</span><label className="switch"><input type="checkbox" checked={w.blur} onChange={(e) => setWebpush({ blur: e.target.checked })} /><span className="slider" /></label></div>
+    </>
+  )
+}
+
 export const webpushSections: SectionDef[] = [
   { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'notification', label: 'Notification', icon: Icon.convo, Panel: NotificationPanel },
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'optin', label: 'Opt-in', icon: Icon.context, Panel: OptinPanel },
+  { id: 'backdrop', label: 'Backdrop', icon: Icon.context, Panel: BackdropPanel },
   { id: 'site', label: 'Site', icon: Icon.sender, Panel: SitePanel },
 ]
