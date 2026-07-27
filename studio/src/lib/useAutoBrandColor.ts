@@ -3,7 +3,7 @@ import { useStudio } from '@/store/useStudio'
 import { dominantColor } from '@/lib/dominantColor'
 
 /** The logo image that represents the brand on the active channel. */
-function currentLogo(s: ReturnType<typeof useStudio.getState>): string | null {
+export function currentLogo(s: ReturnType<typeof useStudio.getState>): string | null {
   switch (s.channel) {
     case 'inapp':
     case 'push':

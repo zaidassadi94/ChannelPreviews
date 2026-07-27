@@ -135,6 +135,23 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .rb-auto{ border:0; background:none; color:var(--accent-ink); font-size:10px; font-weight:680; cursor:pointer; padding:0 0 4px; letter-spacing:-.05px; }
 .rb-auto:hover{ text-decoration:underline; }
 
+/* brand color popover (hex-first + logo eyedropper) */
+.bcpop{ position:fixed; z-index:80; width:236px; background:#fff; border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow-lg); padding:12px; display:flex; flex-direction:column; gap:11px; }
+.bcpop-row{ display:flex; align-items:center; gap:8px; }
+.bcpop-sw{ width:30px; height:30px; border-radius:8px; border:1px solid rgba(0,0,0,.14); flex:none; }
+.bcpop-hex{ flex:1; min-width:0; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; text-transform:lowercase; }
+.bcpop-native{ position:relative; width:32px; height:32px; border:1px solid var(--line); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; flex:none; }
+.bcpop-native:hover{ border-color:#d6d8e3; background:var(--panel-2); }
+.bcpop-native input[type=color]{ position:absolute; inset:0; opacity:0; width:100%; height:100%; border:0; padding:0; cursor:pointer; }
+.bcpop-cap{ font-size:11px; color:var(--muted); font-weight:560; }
+.bcpop-logo{ display:flex; flex-direction:column; gap:7px; }
+.bcpop-canvas{ width:100%; height:92px; border:1px solid var(--line); border-radius:9px; background:var(--panel-2); cursor:crosshair; display:block; }
+.bcpop-swatches{ display:flex; gap:6px; flex-wrap:wrap; }
+.bcpop-chip{ width:24px; height:24px; border-radius:6px; border:1px solid rgba(0,0,0,.14); cursor:pointer; padding:0; transition:.12s; }
+.bcpop-chip:hover{ transform:scale(1.1); }
+.bcpop-auto{ border:0; background:var(--panel-2); color:var(--ink-2); font-size:11.5px; font-weight:640; cursor:pointer; padding:8px; border-radius:8px; }
+.bcpop-auto:hover{ background:var(--accent-weak); color:var(--accent-ink); }
+
 /* ---- section rail (thin, icon+label; opens its panel) ---- */
 .rail{ background:#fbfbfe; border-right:1px solid var(--line); display:flex; flex-direction:column; align-items:stretch; padding:12px 10px; gap:5px; overflow-y:auto; }
 .rail::-webkit-scrollbar{ width:0; }

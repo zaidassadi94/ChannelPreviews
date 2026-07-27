@@ -1,3 +1,5 @@
+import { useState, useRef } from 'react'
+import { BrandColorPopover } from './BrandColorPopover'
 import { useStudio } from '@/store/useStudio'
 import { channelById } from '@/channels/registry'
 
@@ -7,17 +9,18 @@ import { channelById } from '@/channels/registry'
     & accents across the own-brand channels; auto-seeded, click to edit. */
 function BrandSwatch() {
   const brandColor = useStudio((s) => s.brandColor)
-  const auto = useStudio((s) => s.brandColorAuto)
-  const setBrandColor = useStudio((s) => s.setBrandColor)
-  const resetBrandColorAuto = useStudio((s) => s.resetBrandColorAuto)
+  const [open, setOpen] = useState(false)
+  const [rect, setRect] = useState<DOMRect | null>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const toggle = () => { const r = btnRef.current?.getBoundingClientRect(); if (r) setRect(r); setOpen((o) => !o) }
   return (
     <div className="rail-brand">
-      <label className="rb-pick" title="Brand color — themes buttons & accents on your own-brand channels (In-App, Push, Web Push, Onsite, Gmail, Gamification). Auto-matches the logo; pick to override.">
+      <button ref={btnRef} type="button" className="rb-pick" onClick={toggle}
+        title="Brand color — themes buttons & accents on your own-brand channels. Auto-matches the logo; click to pick (hex or from the logo).">
         <span className="sw" style={{ background: brandColor }} />
         <span>Brand</span>
-        <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} aria-label="Brand color" />
-      </label>
-      {!auto && <button type="button" className="rb-auto" title="Match the logo automatically" onClick={resetBrandColorAuto}>Auto</button>}
+      </button>
+      {open && rect && <BrandColorPopover anchor={rect} onClose={() => setOpen(false)} />}
     </div>
   )
 }
