@@ -3,7 +3,7 @@ import { type ReactNode } from 'react'
 import { useAutoTemplate } from '@/lib/useAutoTemplate'
 import { useStudio, type WAMsg } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
-import { parseButtons, brandMark, phImg, type Btn } from '@/lib/util'
+import { parseButtons, parseCards, brandMark, phImg, hueOf, type Btn } from '@/lib/util'
 import { formatText } from '@/lib/format'
 import { Icon, btnIcon } from '@/lib/icons'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -33,6 +33,24 @@ function useSimHandlers() {
 
 function WAMessage({ msg }: { msg: WAMsg }) {
   const { sim, onBtn } = useSimHandlers()
+
+  // A product carousel renders as a full-width, horizontally-scrolling row of cards
+  // (no chat bubble), the way WhatsApp shows a multi-product template.
+  if (msg.type === 'carousel') {
+    const cards = parseCards(msg.cards || '')
+    return (
+      <div className="wa-carousel">
+        {cards.map((c, i) => (
+          <div className="wa-pcard" key={i}>
+            <img src={c.img || phImg(c.title || 'Product', c.sub || null, hueOf(c.title || 'product'), 300, 200)} alt="" />
+            <div className="pb"><div className="pt">{c.title}</div>{c.sub && <div className="pp">{c.sub}</div>}</div>
+            {c.btn && <div className="pbtn">{c.btn}</div>}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   const out = msg.from !== 'business'
   const ck = (on: boolean) => (sim && on ? ' clickable' : '')
   const tailColor = out ? '#d9fdd3' : '#fff'

@@ -5,7 +5,7 @@ import type { AiMessage } from '@/lib/media'
 let _uid = 1
 export const nid = () => 'm' + _uid++
 
-export type WAType = 'text' | 'image' | 'template'
+export type WAType = 'text' | 'image' | 'template' | 'carousel'
 export interface WAMsg {
   id: string
   type: WAType
@@ -16,12 +16,14 @@ export interface WAMsg {
   body?: string
   footer?: string
   buttons?: string
+  cards?: string
 }
 
 export const WA_DEFAULTS: Record<WAType, Omit<WAMsg, 'id'>> = {
   text: { type: 'text', from: 'business', text: 'Hello! 👋', buttons: '' },
   image: { type: 'image', from: 'business', img: '', caption: '', buttons: '' },
   template: { type: 'template', from: 'business', img: '', body: 'Your message *here*.', footer: '', buttons: 'Track | url | https://ex.com\nSupport | call | +100' },
+  carousel: { type: 'carousel', from: 'business', cards: ' | Product one | $19 | Shop | https://example.com\n | Product two | $24 | Shop | https://example.com' },
 }
 
 export function makeMsg(type: WAType, over: Partial<WAMsg> = {}): WAMsg {

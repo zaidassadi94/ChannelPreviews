@@ -16,11 +16,17 @@ export interface WATemplate {
 const optStr = (opts: [string, string][]) => opts.map((o) => `${o[0]} | reply >> ${o[1]}`).join('\n')
 const hero = (p: Pack) => heroPhoto(p, '', 600, 340)
 const cap = (x: string) => (x ? x.charAt(0).toUpperCase() + x.slice(1) : x)
+// One product per line: `image | title | price | button | link` (image left blank → placeholder).
+const carouselStr = (p: Pack) => p.carousel.map((c) => ` | ${c[0]} | ${c[1]} | Shop | https://${p.url}`).join('\n')
 
 export const WA_TEMPLATES: WATemplate[] = [
   {
     name: 'Seasonal offer', kind: 'Promotional', icon: '🏷️', desc: 'Image + offer + CTA',
     build: (p) => [makeMsg('template', { img: hero(p), body: `${p.emoji} *${p.offer}* just went live at ${p.brand}.\nYou're on the early list — first pick, best of the lot.`, footer: 'Reply STOP to unsubscribe', buttons: `Shop the drop | url | https://${p.url}` })],
+  },
+  {
+    name: 'Product carousel', kind: 'Promotional', icon: '🖼️', desc: 'Swipeable product cards',
+    build: (p) => [makeMsg('text', { text: `${p.emoji} Picked with you in mind:` }), makeMsg('carousel', { cards: carouselStr(p) })],
   },
   {
     name: 'Confirmation', kind: 'Transactional', icon: '✅', desc: 'Order / booking confirmed',

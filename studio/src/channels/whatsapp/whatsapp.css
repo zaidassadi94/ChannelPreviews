@@ -21,6 +21,15 @@
 .wa-img{ border-radius:6px; overflow:hidden; margin:-2px -3px 4px; } .wa-img img{ width:100%; display:block; max-height:280px; object-fit:cover; }
 .wa-ft{ font-size:12.5px; color:#8696a0; margin-top:5px; }
 .wa-btns{ margin-top:5px; }
+/* Product carousel — a full-width, horizontally-scrolling row of product cards. */
+.wa-carousel{ display:flex; gap:8px; overflow-x:auto; padding:2px 8px 8px; scrollbar-width:none; }
+.wa-carousel::-webkit-scrollbar{ display:none; }
+.wa-pcard{ flex:none; width:172px; background:#fff; border-radius:9px; overflow:hidden; box-shadow:0 1px 1px rgba(0,0,0,.15); }
+.wa-pcard img{ width:100%; height:118px; object-fit:cover; display:block; }
+.wa-pcard .pb{ padding:8px 9px; }
+.wa-pcard .pt{ font-size:13px; font-weight:600; color:#111b21; }
+.wa-pcard .pp{ font-size:13px; color:#008069; font-weight:700; margin-top:2px; }
+.wa-pcard .pbtn{ border-top:1px solid rgba(0,0,0,.08); padding:9px; text-align:center; color:#0096de; font-size:13px; font-weight:500; }
 .wa-cta{ border-top:1px solid rgba(0,0,0,.09); margin:0 -9px; padding:10px 0; text-align:center; color:#0096de; font-size:14px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; } .wa-cta svg{ width:17px; }
 .wa-qr{ display:flex; flex-direction:column; gap:6px; margin:6px 6px 8px; max-width:80%; }
 .wa-qr .q{ background:#fff; color:#0096de; border-radius:8px; padding:10px 14px; font-size:14px; font-weight:500; box-shadow:0 1px .5px rgba(0,0,0,.13); text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; } .wa-qr .q svg{ width:16px; height:16px; }

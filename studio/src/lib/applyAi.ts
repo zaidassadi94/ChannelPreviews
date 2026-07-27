@@ -78,11 +78,12 @@ function applyIdentity(m: AiMessage) {
 async function applyWa(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
   s.setBrand({ name: m.brand || s.brand.name, sub: 'online', logo })
-  const type = oneOf<WAType>(m.type, ['text', 'image', 'template'], 'template')
+  const type = oneOf<WAType>(m.type, ['text', 'image', 'template', 'carousel'], 'template')
   const buttons = serButtons(m.buttons)
   let msg: WAMsg
   if (type === 'text') msg = makeMsg('text', { text: m.text || m.body || '', buttons })
   else if (type === 'image') msg = makeMsg('image', { img: await pic(m, 600, 340, m.brand || 'Image'), caption: m.caption || m.body || '', buttons })
+  else if (type === 'carousel' && m.cards && m.cards.length) msg = makeMsg('carousel', { cards: await serCards(m.cards, urlOf(m, s.osm.url)) })
   else msg = makeMsg('template', { img: await pic(m, 600, 340, m.brand || ''), body: m.body || m.text || '', footer: m.footer || m.brand || '', buttons })
   s.waSetMessages([msg])
 }

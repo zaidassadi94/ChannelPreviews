@@ -9,6 +9,7 @@ const TYPES: [WAType, string][] = [
   ['text', 'Text'],
   ['image', 'Image'],
   ['template', 'Template + buttons'],
+  ['carousel', 'Product carousel'],
 ]
 
 /* ---------------- Templates ---------------- */
@@ -144,6 +145,12 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
           <label className="field"><span>Footer (small print)</span><input type="text" value={msg.footer || ''} onChange={(e) => onField({ footer: e.target.value })} /></label>
           <ButtonsField value={msg.buttons || ''} onChange={(v) => onField({ buttons: v })} />
         </>
+      )}
+      {msg.type === 'carousel' && (
+        <label className="field"><span>Products</span>
+          <textarea value={msg.cards || ''} onChange={(e) => onField({ cards: e.target.value })} placeholder="image URL | title | price | button | link" />
+          <div className="panel-hint" style={{ marginTop: 6 }}>One product per line: <code>image | title | price | button | link</code>. Leave image blank for a placeholder.</div>
+        </label>
       )}
     </div>
   )
