@@ -215,10 +215,13 @@ async function applyCards(m: AiMessage, logo: string | null) {
     after generating, so it's obvious you can drop in a real screenshot. */
 export const BACKDROP_SECTION: Record<string, string> = { osm: 'background', inapp: 'background', webpush: 'backdrop' }
 
-/** Dispatch a generated message to the active channel's adapter (identity applied first). */
-export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
+/** Dispatch a generated message to the active channel's adapter (identity applied first).
+    `skipIdentity` is set for background per-channel campaign runs — the industry/brand are
+    already set from the first generation, so we don't re-switch them (avoids a flicker and
+    keeps the shared logo from being re-resolved/cleared per channel). */
+export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null; skipIdentity?: boolean }): Promise<void> {
   aiSeed = Math.floor(Math.random() * 1e6)   // vary imagery on every generation
-  applyIdentity(m)
+  if (!opts.skipIdentity) applyIdentity(m)
   // One brand across the studio: push the generated name + resolved logo to every
   // channel so cycling channels stays consistent (no stale per-channel logos).
   if (m.brand) useStudio.getState().setBrandIdentity(m.brand, opts.logo)

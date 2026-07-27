@@ -214,6 +214,16 @@ interface StudioState {
       the preview's auto-apply-first-template effect skips it (deterministic, order-free). */
   aiSuppressCtx: string | null
 
+  /** The current AI "campaign": the last brief + resolved logo, so switching to a
+      channel that hasn't been generated for this brand yet can auto-generate it on
+      the fly. `aiDone` tracks which channels already have this campaign's content.
+      Cleared when the industry changes (a new brand context). */
+  aiBrief: string
+  aiLogo: string | null
+  aiDone: string[]
+  /** The channel a background campaign generation is currently running for (spinner). */
+  aiBusyChannel: string | null
+
   // whatsapp slice
   wa: { messages: WAMsg[]; played: WAMsg[]; encNotice: boolean; typing: boolean }
 
@@ -255,6 +265,10 @@ interface StudioState {
   setDateChip: (v: string) => void
   setAiSuppress: (ctx: string) => void
   clearAiSuppress: () => void
+  startAiCampaign: (brief: string, logo: string | null, channel: string) => void
+  markAiDone: (channel: string) => void
+  clearAiCampaign: () => void
+  setAiBusyChannel: (c: string | null) => void
 
   // whatsapp actions
   waSetMessages: (msgs: WAMsg[]) => void
@@ -327,6 +341,10 @@ export const useStudio = create<StudioState>((set, get) => ({
   sim: false,
   dateChip: 'Today',
   aiSuppressCtx: null,
+  aiBrief: '',
+  aiLogo: null,
+  aiDone: [],
+  aiBusyChannel: null,
   wa: { messages: [makeMsg('text')], played: [], encNotice: true, typing: false },
   msg: { rcs: emptyMsg(), sms: emptyMsg() },
   notify: {
@@ -368,6 +386,9 @@ export const useStudio = create<StudioState>((set, get) => ({
     // Switching industry = a new brand context: propagate its name to every
     // channel and clear any leftover logo so nothing stale carries over.
     if (ind) { get().setBrandIdentity(ind.biz, null); set({ brand: { ...get().brand, sub: ind.status } }) }
+    // A new industry ends the current AI campaign — its brand no longer applies,
+    // so channels stop auto-generating the old brand's message.
+    get().clearAiCampaign()
   },
   // One brand across the whole studio: name + logo applied to every channel's
   // identity so generating (or switching brand) themes them all consistently.
@@ -390,6 +411,10 @@ export const useStudio = create<StudioState>((set, get) => ({
   setDateChip: (v) => set({ dateChip: v }),
   setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),
   clearAiSuppress: () => set({ aiSuppressCtx: null }),
+  startAiCampaign: (brief, logo, channel) => set({ aiBrief: brief, aiLogo: logo, aiDone: [channel] }),
+  markAiDone: (channel) => set((st) => (st.aiDone.includes(channel) ? {} : { aiDone: [...st.aiDone, channel] })),
+  clearAiCampaign: () => set({ aiBrief: '', aiLogo: null, aiDone: [], aiBusyChannel: null }),
+  setAiBusyChannel: (c) => set({ aiBusyChannel: c }),
 
   waSetMessages: (msgs) => set({ wa: { ...get().wa, messages: msgs, played: [] } }),
   waAdd: (type) => set({ wa: { ...get().wa, messages: [...get().wa.messages, makeMsg(type)] } }),

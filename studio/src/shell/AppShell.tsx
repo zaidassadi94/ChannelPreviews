@@ -6,16 +6,19 @@ import { StageFit } from './StageFit'
 import { SectionRail, SectionPanel } from './SectionNav'
 import { StubPreview } from './Stub'
 import { useAutoBrandColor } from '@/lib/useAutoBrandColor'
+import { useAiChannelSync } from '@/lib/aiCampaign'
 
 export function AppShell() {
   const channel = useStudio((s) => s.channel)
   const sim = useStudio((s) => s.sim)
   const panelOpen = useStudio((s) => s.panelOpen)
+  const aiBusy = useStudio((s) => s.aiBusyChannel === s.channel)
   const def = channelById(channel)
   const Preview = def?.Preview
   // On phones the editor and preview can't share the width — toggle between them.
   const [mView, setMView] = useState<'edit' | 'preview'>('preview')
   useAutoBrandColor()
+  useAiChannelSync()
 
   return (
     <div className="app">
@@ -29,6 +32,11 @@ export function AppShell() {
         <SectionPanel />
         <div className={'stage' + (sim ? ' sim-on' : '')}>
           {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
+          {aiBusy && (
+            <div className="stage-ai-busy" role="status" aria-live="polite">
+              <span className="cs-ai-spin" /> Generating for this channel…
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -58,6 +58,9 @@ export function AiPanel() {
       const msg: AiMessage = data.message || {}
       const logo = await resolveBrandLogo({ brief: text, domain: msg.domain, brand: msg.brand })
       await applyAiMessage(channel, msg, { logo })
+      // Start a campaign: switching to another channel now auto-generates it for the
+      // same brand + brief in the background (until you change industry).
+      s.startAiCampaign(text, logo, channel)
       // Open a relevant section on the left. For channels with a page/app
       // backdrop, open the Backdrop section so it's obvious you can drop in a
       // real screenshot; otherwise open the content editor to tweak the copy.
