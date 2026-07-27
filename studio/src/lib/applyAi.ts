@@ -21,8 +21,14 @@ const oneOf = <T extends string>(v: string | undefined, list: readonly T[], dflt
     top of applyAiMessage; the browser has Math.random, unlike workflow scripts). */
 let aiSeed = 0
 
+/** When set (by "Select image"), the channel's hero photo is forced to this exact URL
+    instead of being fetched — so a user-picked photo lands in the slot the copy already
+    has. Only the hero uses `pic()`; card thumbnails/filler use `photoFor` directly. */
+let forcedImage: string | null = null
+
 /** A real photo for the message's subject, or a labelled phImg placeholder (offline). */
 async function pic(m: AiMessage, w: number, h: number, label: string): Promise<string> {
+  if (forcedImage) return forcedImage
   const real = await photoFor(m.imageKeyword, w, h, m.imageQuery, aiSeed)
   return real || phImg(label || 'Preview', null, hueOf((label || 'x') + (m.imageQuery || '')), w, h)
 }
@@ -243,6 +249,27 @@ export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo
   }
   // Remember this generation so "New image" can re-fetch just the photo (no LLM).
   useStudio.getState().setLastAi({ channel, m, logo, hasImage: producedImage(channel, m) })
+}
+
+/** The orientation of a channel's hero photo slot (mirrors each adapter's w/h) — so the
+    "Select image" grid fetches candidates in the shape the slot will actually show. */
+export function heroOrient(channel: string, m: AiMessage): 'portrait' | 'landscape' | 'square' {
+  const t = m.type || ''
+  if (channel === 'instagram' || channel === 'facebook') return 'portrait'
+  if (channel === 'inapp') return (t === 'full' || t === 'image') ? 'portrait' : 'landscape'
+  if (channel === 'osm') return t === 'nudge' ? 'square' : 'landscape'
+  return 'landscape'
+}
+
+/** Re-apply the last generation's message with a specific, user-chosen photo (from the
+    "Select image" grid). No LLM call and no identity change — only the hero image swaps. */
+export async function applyChosenImage(url: string): Promise<boolean> {
+  const last = useStudio.getState().lastAi
+  if (!last || !last.hasImage || !url) return false
+  forcedImage = url
+  try { await applyAiMessage(last.channel, last.m, { logo: last.logo, skipIdentity: true }) }
+  finally { forcedImage = null }
+  return true
 }
 
 /** Did this channel's adapter actually place a photo? (Gates the "New image" button —

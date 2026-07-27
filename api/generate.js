@@ -168,7 +168,6 @@ function systemPrompt(ctx) {
     `You are a senior lifecycle-marketing copywriter. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send. The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`,
     `Return ONLY the structured fields defined by the schema — nothing else. No HTML, no markdown (except WhatsApp *bold*), no links other than plain domains, no instructions.`,
     // --- identity: the brief decides the brand/industry; the app switches its UI to match ---
-    ctx.site ? `The user pinned this brand's website: "${ctx.site}". Treat it as AUTHORITATIVE — write this ENTIRE message for THAT company and no other, and always return "${ctx.site}" in the "domain" field. For the brand NAME: if you recognise the company, use its real, correctly-spelled name; otherwise infer the natural display name from the domain by restoring proper word spacing and capitalisation — e.g. "stadiumgoods.com" -> "Stadium Goods", "thebodyshop.com" -> "The Body Shop", "nobero.com" -> "Nobero". Do NOT run the words together ("Stadiumgoods") and do NOT invent an unrelated name. This overrides any brand from the brief or the app.` : ``,
     `Identity: from the brief, decide the brand and industry. If the brief names or implies a specific business or sector (e.g. "a grocery retailer", "for a bank", "Nike"), write for THAT — invent a short, realistic, brandable name if none is given — and do NOT reuse "${brand}" when the brief implies a different business. If the brief implies no particular business, keep "${brand}" (${ctx.industry || 'consumer'}). Return your choice in the "brand" and "industry" fields. Always write "brand" as the real company's FULL, correct name — never an abbreviation or an invented variant of a real brand (a brief for "birkenstock" is "Birkenstock", never "Birki"). Set "domain" to the brand's real website domain whenever "brand" is a real company you can identify or reasonably guess (e.g. nike.com, nobero.com), not only famous names; leave it empty only for clearly generic or invented brands.`,
     // --- craft ---
     `Craft: open with a hook or a real benefit, not a greeting or a category name. Be specific and human — a little wit, warmth, or urgency. Skimmable and tight: true ${ctx.channel} length, never an essay. Vary the rhythm. Numbers make it real — concrete prices ($19, $149), percentages, counts, times.`,
@@ -252,11 +251,7 @@ module.exports = async function handler(req, res) {
   body = body || {};
   const channel = String(body.channel || '');
   const brief = String(body.brief || '').slice(0, LIMITS.brief).trim();
-  // Optional website the user pinned in the panel — sanitised to a bare host so the
-  // model identifies the (possibly small/unknown) brand from it and returns it as the domain.
-  const site = String(body.domain || '').toLowerCase().trim()
-    .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').replace(/[^a-z0-9.\-]/g, '').slice(0, 80);
-  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief, site };
+  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief };
   if (!CHANNELS[channel]) return send(res, 400, { ok: false, error: 'unknown channel' });
   if (!brief) return send(res, 400, { ok: false, error: 'brief is required' });
 
@@ -325,10 +320,6 @@ module.exports = async function handler(req, res) {
       if (!message || typeof message !== 'object' || Array.isArray(message))
         return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
       if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
-      // A pinned website locks the domain (so the real logo & links use it); the brand
-      // NAME is left to the model, which identifies it from the domain far better than
-      // any string-splitting could.
-      if (ctx.site) message.domain = ctx.site;
       return send(res, 200, { ok: true, provider, channel, model, message });
     }
     last = out;

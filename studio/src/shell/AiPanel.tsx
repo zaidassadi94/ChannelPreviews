@@ -1,21 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStudio } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, BACKDROP_SECTION } from '@/lib/applyAi'
-import { regenerateImage } from '@/lib/aiCampaign'
-import { resolveBrandLogo, cleanDomain, type AiMessage } from '@/lib/media'
+import { applyAiMessage, applyChosenImage, BACKDROP_SECTION } from '@/lib/applyAi'
+import { regenerateImage, imageOptionsForLast } from '@/lib/aiCampaign'
+import { resolveBrandLogo, type AiMessage } from '@/lib/media'
 import { detectChannel, CH_LABEL } from '@/lib/detectChannel'
 
-// Briefs that show off what the studio can do — name a brand, a channel, a
-// feature (buttons, countdown, backdrop) — not just a generic tone.
+// Briefs that show off what the studio can do — name a brand (a website right in the
+// brief pins smaller ones), a channel, the image to show, a feature. Doubles as the
+// cycling placeholder in the textarea, so people see the shape of a good brief.
 const EXAMPLES = [
-  'WhatsApp for Oatly: order shipped, with a Track order button',
-  'Push for a banking app — your salary just landed 💰',
-  'Instagram story for a coffee brand launching cold brew',
-  'Gmail welcome email for a skincare brand, warm and simple',
+  'WhatsApp for birkenstock.com — 50% off new arrivals, suede sandals',
+  'Push for a coffee brand launching cold brew — iced coffee close-up',
+  'Instagram story for nobero.com — new oversized tees, streetwear flatlay',
+  'Gmail welcome for a skincare brand, warm and simple — serum bottle',
   'In-app modal: 30% off the annual plan for a fitness app',
   'On-site popup with email capture and a 24-hour countdown',
 ]
@@ -24,10 +25,10 @@ const EXAMPLES = [
 // surface features people miss.
 const TIPS = [
   'Name a channel in your brief ("on WhatsApp", "as a push") and the studio switches to it.',
+  'Include a brand\'s website in your brief (e.g. "for nobero.com") so smaller brands are identified correctly.',
   'Mention a real brand and its logo & colors are pulled in automatically.',
   'After generating, switch channels — each one fills itself in for the same brand.',
-  'Drop the website above so smaller or lesser-known brands are identified correctly.',
-  'Hit "New image" to swap just the photo — no full regeneration, no rate limits.',
+  'Hit "New image" for a fresh photo, or "Select image" to pick from a few — no regeneration, no rate limits.',
   'Set a Brand color from the left rail to theme buttons across every channel.',
   'Use Export or Copy (top-right) for a clean, rounded screenshot.',
   'Upload a screenshot as the app/site backdrop for in-app, web push & on-site.',
@@ -46,16 +47,31 @@ export function AiPanel() {
   const channel = useStudio((s) => s.channel)
   const lastAi = useStudio((s) => s.lastAi)
   const [brief, setBrief] = useState('')
-  const [site, setSite] = useState('')
   const [busy, setBusy] = useState(false)
   const [reimaging, setReimaging] = useState(false)
   const [status, setStatus] = useState<Status>({ kind: '', text: '' })
   const [tip, setTip] = useState(0)
   const [showEx, setShowEx] = useState(false)
+  // Cycling placeholder: advances only while the field is empty and unfocused, so it
+  // teaches the shape of a good brief without ever interrupting typing.
+  const [ph, setPh] = useState(0)
+  const [focused, setFocused] = useState(false)
+  // "Select image" grid: a few Pexels options for the message on screen.
+  const [picker, setPicker] = useState<string[]>([])
+  const [loadingOpts, setLoadingOpts] = useState(false)
 
-  // "New image" re-rolls just the photo for the channel on screen (a Pexels call,
-  // no LLM), so it's only offered when this channel's last generation had one.
+  // "New image" / "Select image" act on the channel on screen, so they're only offered
+  // when this channel's last generation actually placed a photo.
   const canReimage = !!lastAi && lastAi.hasImage && lastAi.channel === channel
+
+  useEffect(() => {
+    if (brief || focused) return
+    const id = setInterval(() => setPh((p) => (p + 1) % EXAMPLES.length), 3400)
+    return () => clearInterval(id)
+  }, [brief, focused])
+
+  // A different channel (or a fresh generation) means different options — drop any open grid.
+  useEffect(() => { setPicker([]) }, [channel, lastAi])
 
   async function reimage() {
     setReimaging(true)
@@ -65,12 +81,27 @@ export function AiPanel() {
     } finally { setReimaging(false) }
   }
 
+  async function openPicker() {
+    if (picker.length) { setPicker([]); return }  // toggle the grid closed
+    setLoadingOpts(true)
+    try {
+      const opts = await imageOptionsForLast(8)
+      setPicker(opts)
+      if (!opts.length) useToast.getState().show('No other photos found')
+    } finally { setLoadingOpts(false) }
+  }
+
+  async function choose(url: string) {
+    const ok = await applyChosenImage(url)
+    if (ok) { useToast.getState().show('🖼️ Image updated'); setPicker([]) }
+  }
+
   async function generate(briefArg?: string) {
     const s = useStudio.getState()
     const text = (briefArg ?? brief).trim()
     if (!text) { setStatus({ kind: 'err', text: 'Write a short brief first.' }); return }
     setBrief(text)
-    const cleanSite = cleanDomain(site)
+    setPicker([])
 
     // brief-driven routing: switch to a named channel in-app (no cross-tool handoff here)
     const target = detectChannel(text)
@@ -83,7 +114,7 @@ export function AiPanel() {
       const industry = industryById(s.industry)?.name || s.industry
       const r = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: channelId, brand: s.brand.name, industry, brief: text, domain: cleanSite }),
+        body: JSON.stringify({ channel: channelId, brand: s.brand.name, industry, brief: text }),
       })
       const data = await r.json().catch(() => ({ ok: false, error: 'Bad response from server' }))
       if (!r.ok || !data.ok) {
@@ -94,11 +125,11 @@ export function AiPanel() {
         return
       }
       const msg: AiMessage = data.message || {}
-      const logo = await resolveBrandLogo({ brief: text, domain: cleanSite || msg.domain, brand: msg.brand })
+      const logo = await resolveBrandLogo({ brief: text, domain: msg.domain, brand: msg.brand })
       await applyAiMessage(channelId, msg, { logo })
       // Start a campaign: switching to another channel now auto-generates it for the
-      // same brand + brief (+ pinned site) in the background, until the industry changes.
-      s.startAiCampaign(text, cleanSite, logo, channelId)
+      // same brand + brief in the background (until you change industry).
+      s.startAiCampaign(text, logo, channelId)
       // Open a relevant section on the left. For channels with a page/app backdrop,
       // open the Backdrop section so it's obvious you can drop in a real screenshot.
       const cdef = channelById(channelId)
@@ -126,14 +157,9 @@ export function AiPanel() {
       <div className="cs-ai-body">
         <label>Describe the message</label>
         <textarea
-          className="cs-ai-ta" maxLength={500} placeholder={`e.g. ${EXAMPLES[0]}`}
+          className="cs-ai-ta" maxLength={500} placeholder={`e.g. ${EXAMPLES[ph]}`}
           value={brief} onChange={(e) => setBrief(e.target.value)}
-          onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate() }}
-        />
-        <label className="cs-ai-sub">Brand website <span>optional — pins smaller brands &amp; their logo</span></label>
-        <input
-          className="cs-ai-url" type="text" inputMode="url" spellCheck={false} placeholder="e.g. nobero.com"
-          value={site} onChange={(e) => setSite(e.target.value)}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate() }}
         />
         <button type="button" className="cs-ai-extoggle" aria-expanded={showEx} onClick={() => setShowEx((v) => !v)}>
@@ -150,10 +176,28 @@ export function AiPanel() {
           {busy ? <><span className="cs-ai-spin" /> Generating…</> : 'Generate message'}
         </button>
         {canReimage && (
-          <button className="cs-ai-reimg" type="button" disabled={reimaging} onClick={reimage}
-            title="Fetch a different photo for this message — no AI request, so it won't hit rate limits.">
-            {reimaging ? <><span className="cs-ai-spin dark" /> New image…</> : '🖼️ New image'}
-          </button>
+          <>
+            <div className="cs-ai-imgrow">
+              <button className="cs-ai-reimg" type="button" disabled={reimaging} onClick={reimage}
+                title="Fetch a different photo for this message — no AI request, so it won't hit rate limits.">
+                {reimaging ? <><span className="cs-ai-spin dark" /> New image…</> : '🖼️ New image'}
+              </button>
+              <button className="cs-ai-reimg" type="button" disabled={loadingOpts} onClick={openPicker}
+                aria-expanded={picker.length > 0}
+                title="Pick from a few photos for this message — no AI request.">
+                {loadingOpts ? <><span className="cs-ai-spin dark" /> Loading…</> : '🖼️ Select image'}
+              </button>
+            </div>
+            {picker.length > 0 && (
+              <div className="cs-ai-picker">
+                {picker.map((u) => (
+                  <button key={u} type="button" className="cs-ai-thumb" onClick={() => choose(u)} title="Use this photo">
+                    <img src={u} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
         <div className="cs-ai-cap">
           Name a channel or industry in your brief and the studio switches to it. The AI writes the copy,

@@ -300,16 +300,19 @@ textarea{ resize:vertical; min-height:66px; line-height:1.55; }
 .cs-ai-spin.dark{ border-color:rgba(0,0,0,.25); border-top-color:var(--accent); }
 @keyframes cs-ai-sp{ to{ transform:rotate(360deg); } }
 /* Brand-website field (optional) — a quieter sub-label than the uppercase section labels. */
-.cs-ai-sub{ font-size:12px; font-weight:600; color:var(--ink); display:flex; align-items:baseline; gap:6px; margin-top:-3px; }
-.cs-ai-sub span{ font-size:11px; font-weight:400; color:var(--muted); letter-spacing:0; text-transform:none; }
-.cs-ai-url{ width:100%; padding:9px 12px; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:9px;
-  background:var(--panel-2); color:var(--ink); margin-top:-4px; }
-.cs-ai-url:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); background:#fff; outline:0; }
-/* Secondary "New image" action — a Pexels re-roll, no AI request. */
-.cs-ai-reimg{ width:100%; border:1px solid var(--line); border-radius:10px; padding:10px; font-size:13px; font-weight:600; cursor:pointer;
+/* Secondary image actions — "New image" (re-roll) + "Select image" (pick), side by
+   side. Both are Pexels calls, no AI request. */
+.cs-ai-imgrow{ display:flex; gap:8px; }
+.cs-ai-reimg{ flex:1; min-width:0; border:1px solid var(--line); border-radius:10px; padding:10px; font-size:13px; font-weight:600; cursor:pointer;
   font-family:inherit; background:var(--panel-2); color:var(--ink); display:flex; align-items:center; justify-content:center; gap:8px; }
 .cs-ai-reimg:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-weak); }
 .cs-ai-reimg:disabled{ opacity:.6; cursor:default; }
+/* "Select image" grid — a few Pexels options to pick from. */
+.cs-ai-picker{ display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:-2px; }
+.cs-ai-thumb{ padding:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; cursor:pointer;
+  background:var(--panel-2); aspect-ratio:1/1; }
+.cs-ai-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.cs-ai-thumb:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
 /* Cycling feature tip, pinned under the panel. */
 .cs-ai-tip{ display:flex; gap:8px; align-items:flex-start; font-size:11.5px; line-height:1.5; color:var(--muted);
   background:var(--accent-weak); border:1px solid var(--line); border-radius:9px; padding:9px 11px; margin-top:2px; }

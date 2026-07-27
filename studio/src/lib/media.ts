@@ -131,3 +131,17 @@ export async function photoFor(kw?: string, w?: number, h?: number, query?: stri
   }
   return null
 }
+
+/** A handful of distinct real photos for one subject, for the "Select image" grid.
+    Each seed maps to a different pick from the endpoint's ranked pool, so seeds 0..n-1
+    return up to `n` different (de-duplicated) options in one parallel batch — cached per
+    seed, so re-opening the picker is free. Empty when there's no subject or no key. */
+export async function photoCandidates(kw?: string, query?: string, orientation?: string, n = 8): Promise<string[]> {
+  const q = (query && query.trim()) || (kw ? (normKw(kw) || kw) : '')
+  if (!q) return []
+  const orient = orientation || 'landscape'
+  const urls = await Promise.all(Array.from({ length: n }, (_, seed) => livePhoto(q, orient, seed)))
+  const seen = new Set<string>(); const out: string[] = []
+  for (const u of urls) if (u && !seen.has(u)) { seen.add(u); out.push(u) }
+  return out
+}

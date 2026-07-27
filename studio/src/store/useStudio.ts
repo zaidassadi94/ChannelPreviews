@@ -220,9 +220,6 @@ interface StudioState {
       the fly. `aiDone` tracks which channels already have this campaign's content.
       Cleared when the industry changes (a new brand context). */
   aiBrief: string
-  /** Optional brand website the user pinned in the AI panel, so every channel's
-      generation resolves the same (correct) brand + logo — key for smaller brands. */
-  aiSite: string
   aiLogo: string | null
   aiDone: string[]
   /** The channel a background campaign generation is currently running for (spinner). */
@@ -273,7 +270,7 @@ interface StudioState {
   setDateChip: (v: string) => void
   setAiSuppress: (ctx: string) => void
   clearAiSuppress: () => void
-  startAiCampaign: (brief: string, site: string, logo: string | null, channel: string) => void
+  startAiCampaign: (brief: string, logo: string | null, channel: string) => void
   markAiDone: (channel: string) => void
   clearAiCampaign: () => void
   setAiBusyChannel: (c: string | null) => void
@@ -351,7 +348,6 @@ export const useStudio = create<StudioState>((set, get) => ({
   dateChip: 'Today',
   aiSuppressCtx: null,
   aiBrief: '',
-  aiSite: '',
   aiLogo: null,
   aiDone: [],
   aiBusyChannel: null,
@@ -422,9 +418,9 @@ export const useStudio = create<StudioState>((set, get) => ({
   setDateChip: (v) => set({ dateChip: v }),
   setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),
   clearAiSuppress: () => set({ aiSuppressCtx: null }),
-  startAiCampaign: (brief, site, logo, channel) => set({ aiBrief: brief, aiSite: site, aiLogo: logo, aiDone: [channel] }),
+  startAiCampaign: (brief, logo, channel) => set({ aiBrief: brief, aiLogo: logo, aiDone: [channel] }),
   markAiDone: (channel) => set((st) => (st.aiDone.includes(channel) ? {} : { aiDone: [...st.aiDone, channel] })),
-  clearAiCampaign: () => set({ aiBrief: '', aiSite: '', aiLogo: null, aiDone: [], aiBusyChannel: null }),
+  clearAiCampaign: () => set({ aiBrief: '', aiLogo: null, aiDone: [], aiBusyChannel: null }),
   setAiBusyChannel: (c) => set({ aiBusyChannel: c }),
   setLastAi: (v) => set({ lastAi: v }),
 
