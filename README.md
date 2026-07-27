@@ -1,189 +1,33 @@
-# Channel Studio
+# Channel Previews
 
-> **Heads up — the live app is now the unified `studio/` React app.** A `vercel.json` at the
-> repo root promotes `studio/` (a single-page app with a shared shell where switching channels
-> swaps only the sidebar + preview) as the live deploy. The standalone tools described in this
-> README are the **legacy** single-file versions — still useful as design reference and fully
-> functional if opened directly, but no longer what the live site serves. For the current app
-> see [`studio/README.md`](studio/README.md) and [`studio/HANDOFF.md`](studio/HANDOFF.md). The
-> shared `api/` serverless functions at the repo root are used by both.
+**Channel Studio** — a React + Vite + TypeScript single-page app that renders
+pixel-accurate marketing-channel mockups (WhatsApp, RCS, SMS, Gmail, Push,
+In-App, Gamification, Cards, Onsite, Web Push, Instagram & Facebook Ads). One
+shared shell (top bar + section rail + device frame) swaps only the sidebar +
+preview when you switch channels — no reload.
 
-Realistic, self-contained **channel mockup tools** for building marketing/campaign
-previews to drop into decks and screenshots — no build step; everything runs in the
-browser. Built for producing polished lifecycle-marketing creative mocks across email, messaging, social
-& web ad, and onsite/in-app channels. An **optional** AI generator (a tiny serverless function, off unless you add
-a key) can draft a message for you — see "Generate with AI" below.
+Shared features: Export PNG / Copy, screen Record (WebM/GIF + trim), an AI panel
+(`/api/generate`), and real photos/logos (`/api/photo`, `/api/logo`).
 
-Open **`index.html`** (it opens the studio), or open any tool folder directly —
-each is a standalone single HTML file you can host anywhere static (Vercel,
-Netlify, GitHub Pages, S3, an internal share). Switch channels — including
-Gmail — from the **Channel** dropdown inside the app.
+## Layout
 
-## Channels
+| Path | What it is |
+|------|------------|
+| [`studio/`](studio/) | The app. **Start here** — see [`studio/README.md`](studio/README.md) and [`studio/HANDOFF.md`](studio/HANDOFF.md). |
+| `api/` | Vercel serverless functions (`generate`, `photo`, `logo`) used by the app. |
+| `vercel.json` | Promotes `studio/dist` as the live deploy; `api/` stays at the repo root. |
+| `.github/workflows/ci.yml` | Build (tsc strict + vite) + Playwright smoke test on every push/PR. |
 
-| Channel | Folder | Highlights |
-|---|---|---|
-| **Gmail** | [`gmail-preview-tool/`](gmail-preview-tool/) | Same Channel Studio shell · Industry/Sub dropdowns · 6 email templates per vertical (promo + transactional) · mobile + desktop skins · inbox & open-email · Promotions annotations |
-| **SMS** | [`messaging-preview-tool/?channel=sms`](messaging-preview-tool/index.html) | iOS Messages & Android (Google Messages) · text + MMS image · GSM/Unicode segment counter |
-| **RCS** | [`messaging-preview-tool/?channel=rcs`](messaging-preview-tool/index.html) | Verified business · rich cards · swipeable carousels · suggested reply/action chips · typing indicator |
-| **WhatsApp** | [`messaging-preview-tool/?channel=whatsapp`](messaging-preview-tool/index.html) | Business chat · template messages (header image/body/footer/buttons) · quick-reply & CTA buttons · product carousels · list menus · documents |
-| **Push** | [`notify-preview-tool/?channel=push`](notify-preview-tool/index.html) | Mobile push notifications · iOS lock-screen + banner, Android heads-up + shade · collapsed & expanded (big picture) · app icon/name · up to 3 action buttons · wallpaper picker · 6 templates per vertical |
-| **In-App** | [`notify-preview-tool/?channel=inapp`](notify-preview-tool/index.html?channel=inapp) | In-app messages over the app screen · Modal · Banner (top/bottom) · Full-screen · Bottom sheet · Image-only · headline/body/image · 1–2 CTAs (primary/secondary/text) · close button · **Background control** (branded app skeleton / upload your real app screenshot / neutral, with blur-&-dim) · 6 templates per vertical |
-| **In-App Gamification** | [`notify-preview-tool/?channel=game`](notify-preview-tool/index.html?channel=game) | Premium dark "reward moment" takeovers (CRED / Cult-UI style) · **Scratch card** · **Spin the wheel** · **Mystery box** · **Slot machine** · headline/sub/prize/CTA · **Simulate** to reveal the win (scratch fades, wheel spins, box opens, reels land) with confetti · editable wheel segments · 4 templates per vertical |
-| **Onsite Messaging** | [`osm-preview-tool/`](osm-preview-tool/) | Web onsite messages on a **desktop browser or mobile-web** frame · **Popup · Banner (top/bottom sticky) · Nudge (slide-in) · Full-screen · Survey/Feedback (NPS emoji)** · live **countdown timer** · email-capture & coupon-reveal · **Background control** (branded site skeleton / upload your real screenshot / neutral, with blur-&-dim) · 12 templates (welcome, exit-intent, cart, free-shipping, flash-sale, cookie-consent…) |
-| **Instagram Ads** | [`social-preview-tool/`](social-preview-tool/) | Sponsored **Feed** (in-feed post · CTA action bar · like/comment/share/save · likes count · caption · "View all comments") and **Story** (full-screen 9:16 · progress bar · swipe-up CTA · reply bar) ads · advertiser handle + verified badge + profile photo · authentic Instagram mark · 10 real Instagram CTAs · 6 templates per vertical |
-| **Facebook Ads** | [`facebook-preview-tool/`](facebook-preview-tool/) | Sponsored **Feed** (News Feed post · primary text · link module with URL/headline/description + CTA button · reactions/comments/shares bar · Like/Comment/Share), **Story** (full-screen 9:16 · CTA button · reply bar) and **Marketplace** (listing-style ad card — image, price, title, "Sponsored" + CTA — shown in the Marketplace browse grid) ads · Page name + verified badge + photo · 10 real Facebook CTAs · 6 templates per vertical |
+## Develop
 
+```bash
+cd studio
+npm install
+npm run build        # tsc --noEmit strict + vite build (the release gate)
+npm run preview      # serve the built app
+npm run test:smoke   # headless smoke test across every channel
+```
 
-## Real product photos (one-time setup)
-
-By default the tools render clean product **illustrations** (always relevant,
-self-contained). To use **real photos** instead:
-
-**Easiest (no terminal):** open `setup.html` on your deployed site (e.g.
-`https://your-site.vercel.app/setup.html`), paste your Pexels key, click the
-button, and copy the result — then commit it as `images.js` (or paste it to Claude).
-
-**Or via terminal:** resolve them once from Pexels:
-
-1. Get a free Pexels API key: https://www.pexels.com/api/  (free tier: 200/hr, 20k/mo).
-2. From the repo root, run once:
-   ```
-   PEXELS_KEY=your_key_here node resolve-images.js
-   ```
-   This looks up one product photo per keyword (~50 lookups) and writes `images.js`.
-3. Commit `images.js` and redeploy.
-
-After that the tools just load the resolved image URLs from Pexels' CDN — **that is
-not an API call**, so it never counts against your rate limit no matter how many
-people open the tool. The key is only used during the one-time lookup and never ships
-in the app. Edit the query list at the top of `resolve-images.js` and re-run to swap
-any specific image. Anything not resolved falls back to the illustration.
-
-## Generate with AI (optional, free)
-
-Each tool has an **✨ AI** button in the top bar. It opens a prompt box on the right —
-type a short brief ("Diwali sale, 40% off, urgent tone") and it writes **one** on-brand
-message and drops it straight into the editor, where you can tweak every field. The copy
-is written by a senior-copywriter prompt (clever hooks, tasteful emoji, real channel
-length, banned filler) with per-channel voice notes — and it works on **In-App
-Gamification** too (headline / prize / CTA for the game). For the image it emits both a
-short fallback keyword **and** a precise, literal search phrase (`imageQuery`) that drives
-a sharper Pexels lookup — see "AI photos" below.
-
-**The brief drives the studio.** You don't have to set the sidebar first — the AI reads
-the brief and switches everything to match. Name a **channel** ("give me an *in-app* for…",
-"an *email*…", "a *scratch card*…") and it jumps to that channel (hopping to the right tool
-if needed); imply an **industry** ("for a *grocery* retailer") and the Industry/Sub-industry
-selectors follow; the **brand** and **logo** are set from the brief too (a real brand gets
-its real logo — see "Brand logos"). So *"an in-app abandoned-cart for a grocery store"*
-typed while you're on WhatsApp/Travel lands as an In-App message for a grocery brand, no
-manual switching. If an industry isn't one of the built-in verticals, it still switches the
-channel + brand + copy so you can fine-tune the rest by hand.
-
-**Setup (one-time, no terminal):**
-
-1. Get a **free** key — either **Groq** (recommended: generous free tier, no card) at
-   https://console.groq.com/keys, or **Google Gemini** at https://aistudio.google.com/apikey.
-2. In Vercel → your project → **Settings → Environment Variables**, add
-   `GROQ_API_KEY` (or `GEMINI_API_KEY`) = your key, then redeploy.
-3. That's it — the **✨ AI** button now works on the live site.
-
-If both keys are set, Groq is used (it has the roomier free tier); set `AI_PROVIDER=gemini`
-to force Gemini. The key lives only on the server (in `api/generate.js`, a Vercel function)
-and is never exposed in the browser. The generator is deliberately locked down: it returns
-exactly one message that matches a fixed schema — no browsing, no tools, no conversation —
-with a per-request length cap and best-effort rate limiting, and it tries a couple of free
-models before giving up. If no key is set, the button just shows a friendly "add your key"
-note and nothing else changes. Optional env vars: `GROQ_MODEL` (default
-`llama-3.3-70b-versatile`), `GEMINI_MODEL` (default `gemini-2.0-flash`), `AI_PROVIDER`,
-`CS_ALLOW_ORIGINS`.
-
-**AI photos (optional, sharper):** the AI returns a precise `imageQuery` (e.g. *"festive
-silk saree flatlay"*, *"iced caramel coffee cup"*) describing exactly what should be in
-frame. `api/photo.js` (a Vercel function, key server-side) searches Pexels for that
-phrase, pulls a **pool of candidates**, and picks the best by matching the photo's own
-alt-text to the query and preferring high resolution — instead of blindly taking the
-first hit. It also honours **orientation** (portrait for full-screen / image-only,
-landscape elsewhere). A rich query beats the generic pre-resolved keyword, so AI images
-are much more on-point. To enable it, add `PEXELS_KEY` (your free Pexels key) in Vercel
-and redeploy. Results are cached in the visitor's browser, so each phrase is fetched at
-most once — Pexels is barely touched. Without `PEXELS_KEY` set, subjects fall back to the
-pre-resolved keyword photo, then a clean illustration; nothing breaks.
-
-**Brand logos:** every business gets an auto-generated monogram logo (no setup). For a **real**
-brand the studio finds its logo from the domain you name in the brief, the domain the AI
-returns, or a domain guessed from the brand name — and `api/logo.js` fetches the real logo (so
-lesser-known brands get one too, not just household names). Clearbit's old keyless API is gone,
-so this uses **[Logo.dev](https://logo.dev)** (free
-tier 500k/month) — add its **publishable** token as `LOGODEV_KEY` in Vercel for crisp logos.
-With no key it still falls back to **keyless favicons** (so real brands get an icon), and
-otherwise the generated monogram is used.
-
-## How it works
-
-- **Pick a channel** (hub tabs, or open a folder).
-- **Start from a template** — every channel ships with ready-made, realistic
-  messages (OTP, promo, order confirmation, appointment, product carousel, list
-  menu, …). Pick one, then tweak.
-- **Edit** the sender/business identity, the conversation (add/remove/reorder
-  message bubbles, set each bubble's type and who it's from), logo, verified
-  badge, timestamps, theme.
-- **Export** — one-click **PNG** (2×) or **copy to clipboard**, ready for a slide.
-- **Record** — capture a **screen recording of just the device** (mobile or desktop
-  view — no sidebar or browser chrome) as a `.webm`. Click **Record**, approve the
-  one-time "share this tab" prompt, demo your flow (scroll, tap Simulate buttons…),
-  then click **Stop** to download. Uses the browser's Region Capture API — works in
-  **Chrome or Edge**; other browsers record the whole tab instead.
-
-### Message types supported
-
-- **SMS** — text, MMS image
-- **RCS** — text, image, rich card, carousel (+ suggestion chips on any message)
-- **WhatsApp** — text, image + caption, template (header/body/footer + buttons),
-  product carousel, list menu, document
-- **Push** — iOS lock-screen & banner, Android heads-up & notification shade;
-  collapsed or expanded (big-picture) with a large image; up to 3 action buttons
-- **In-App** — modal, slim banner (top/bottom), full-screen takeover, bottom sheet,
-  image-only; headline/body/image, 1–2 CTAs (primary/secondary/text), close button;
-  **Background** control (branded app skeleton / upload your real app screenshot / neutral,
-  with dim-&-blur) so the backdrop matches your customer's app
-- **In-App Gamification** — scratch card, spin the wheel, mystery box, slot machine;
-  premium dark reward takeover with headline/sub/prize/CTA; **Simulate** to play (tap to
-  reveal the prize) with confetti; wheel segments editable (one per line, `*` marks the
-  winning wedge)
-- **Onsite Messaging (web)** — popup, sticky banner (top/bottom), nudge (corner slide-in),
-  full-screen, and survey/feedback (NPS emoji), on a desktop-browser or mobile-web frame;
-  live **countdown timer**, email-capture input, coupon reveal; the same **Background**
-  control (branded site / upload real screenshot / neutral + blur); 12 templates
-  (welcome, exit-intent, cart, free-shipping, flash-sale, cookie-consent, …)
-- **Instagram Ads** — sponsored **Feed** (in-feed post with CTA action bar, like/
-  comment/share/save, likes count, caption, comments) and **Story** (full-screen 9:16 with
-  progress bar, header, swipe-up CTA pill, reply bar) formats; advertiser handle, verified
-  badge, profile photo, ad media, and one of 10 real Instagram CTAs; **Simulate** to tap
-  the CTA
-- **Facebook Ads** — sponsored **Feed** (News Feed post with primary text, the link module
-  — display URL, headline, description + CTA button — and the reactions/comments/shares +
-  Like/Comment/Share bar), **Story** (full-screen 9:16 with CTA button and reply bar), and
-  **Marketplace** (a listing-style ad card — image, price, title, "Sponsored" + CTA button —
-  shown in the Marketplace browse grid alongside other listings) formats; Page name, verified
-  badge, page photo, ad media, and one of 10 real Facebook CTAs; **Simulate** to tap the CTA
-
-Buttons use a simple one-per-line format: `Label | reply|url|call | value`.
-Carousel cards: `imageURL | title | subtitle | buttonLabel | buttonValue` per line.
-Templates pre-fill these so you can see the format.
-
-## Notes
-
-- Each tool is a static HTML file; a few shared files at the repo root (`images.js`,
-  `recorder.js`, `gif-encoder.js`) are loaded via `<script>`. The root `index.html`
-  redirects into the messaging tool; switch tools/channels from the **Channel** dropdown.
-- **Record** captures the device view to `.webm`, then a review panel lets you **trim**
-  and export **WebM** or **GIF** (GIF encoded in-browser via the bundled `gif-encoder.js`).
-  Recording needs Chrome/Edge (Region Capture); other browsers record the whole tab.
-- PNG export uses [html2canvas](https://html2canvas.hertzen.com/) from a CDN. For a
-  **fully offline** build, drop `html2canvas.min.js` next to the tool and repoint the
-  `<script src="…">` tag. If a remote image ever blocks cross-origin capture, the
-  on-screen preview is always correct — use a native OS screenshot as a fallback.
-- All previews are mockups for internal creative review — not affiliated with or
-  endorsed by Google, Apple, Meta/WhatsApp.
+> The legacy standalone single-file tools that used to live at the repo root
+> have been retired now that the studio covers every channel. They remain in
+> git history if ever needed for reference.
