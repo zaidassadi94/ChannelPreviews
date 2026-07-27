@@ -37,6 +37,26 @@ export function SectionRail() {
   )
 }
 
+/** The collapse chevron — lives on the panel's right seam so it moves with the
+    panel and disappears with it when collapsed (re-open by clicking a rail
+    section). Attaching it to the panel avoids the old floating pill that had to
+    be hand-synced to the grid at every breakpoint. */
+function CollapseTab() {
+  const setPanelOpen = useStudio((s) => s.setPanelOpen)
+  return (
+    <button
+      className="panel-toggle"
+      title="Collapse panel"
+      aria-label="Collapse panel"
+      onClick={() => setPanelOpen(false)}
+    >
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  )
+}
+
 /** The section panel = the active section's controls only, with a collapse chevron. */
 export function SectionPanel() {
   const channel = useStudio((s) => s.channel)
@@ -47,12 +67,15 @@ export function SectionPanel() {
   if (!sections.length) {
     return (
       <aside className="panel">
-        <div className="panel-body">
-          <p className="panel-hint" style={{ margin: 0 }}>
-            The <b>{def?.label ?? channel}</b> editor is being ported into this app. The channel
-            dropdown and the shared shell already work — this channel's controls land next.
-          </p>
+        <div className="panel-scroll">
+          <div className="panel-body">
+            <p className="panel-hint" style={{ margin: 0 }}>
+              The <b>{def?.label ?? channel}</b> editor is being ported into this app. The channel
+              dropdown and the shared shell already work — this channel's controls land next.
+            </p>
+          </div>
         </div>
+        <CollapseTab />
       </aside>
     )
   }
@@ -61,8 +84,11 @@ export function SectionPanel() {
   const Panel = active.Panel
   return (
     <aside className="panel">
-      <div className="panel-head"><h2>{active.label}</h2></div>
-      <div className="panel-body"><Panel /></div>
+      <div className="panel-scroll">
+        <div className="panel-head"><h2>{active.label}</h2></div>
+        <div className="panel-body"><Panel /></div>
+      </div>
+      <CollapseTab />
     </aside>
   )
 }
