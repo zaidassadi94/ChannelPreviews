@@ -139,6 +139,8 @@ const KWSYN: Record<string, string> = {
   console: 'gamepad',
   controller: 'gamepad',
   gaming: 'gamepad',
+  telco: 'smartphone',
+  telecom: 'smartphone',
   coin: 'savings',
   coins: 'savings',
   deposit: 'savings',

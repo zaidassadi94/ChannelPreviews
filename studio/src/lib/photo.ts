@@ -21,9 +21,17 @@ export function tphoto(subject: string, w = 600, h = 340): string {
 }
 
 /** A representative product photo for a pack's promo/hero slot. Uses the seed to rotate
-    through the pack's own products so different templates don't all show the same shot. */
+    through the pack's own products so different templates don't all show the same shot.
+    Some catalogs are intangible (gaming items, telecom plans) and their product names
+    match no stored photo — for those we fall back to the pack's `hero` subject (e.g.
+    a game controller, a smartphone) so every channel shows a themed photo, not a bare
+    gradient. The gradient stays as the last resort. */
 export function heroPhoto(p: Pack, seed = '', w = 600, h = 340): string {
   const c = p.carousel
   const name = c && c.length ? c[hueOf(p.brand + seed) % c.length][0] : p.brand
-  return tphoto(name, w, h)
+  const key = kwForSubject(name)
+  if (key && PHOTO[key]) return PHOTO[key]
+  const heroKey = kwForSubject(p.hero)
+  if (heroKey && PHOTO[heroKey]) return PHOTO[heroKey]
+  return phImg(name, null, hueOf(name), w, h)
 }
