@@ -56,7 +56,7 @@ export function ImageField({ value, onChange, placeholder = 'or paste an image U
       )}
       <input type="text" className="imgf-url" placeholder={placeholder}
         value={isData ? '' : value} onChange={(e) => onChange(e.target.value)} />
-      {pick && <PhotoPicker query={query} onPick={onChange} />}
+      {pick && <PhotoPicker query={query} onPick={onChange} autoLoad />}
       {err && <p className="bgf-err">{err}</p>}
     </div>
   )
