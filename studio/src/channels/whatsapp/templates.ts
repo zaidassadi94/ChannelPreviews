@@ -47,6 +47,15 @@ export const WA_TEMPLATES: WATemplate[] = [
       buttons: `😍 Loved it | reply >> Amazing — thank you! 💛 Mind leaving a quick review? ${p.url}/review\n🙂 It was OK | reply >> Thanks for the honest feedback — we're always improving.\n😞 Not great | reply >> So sorry. Reply here and we'll make it right.`,
     })],
   },
+  {
+    name: 'BOGO + coupon', kind: 'Promotional', icon: '🎟️', desc: 'Image + offer + copy-code',
+    build: (p) => [makeMsg('template', {
+      img: hero(p),
+      body: `*Buy One Get One* 🛍️\nOffer ends 31 Jul, 12:00 pm · Code *${p.code || 'BOGO'}*\n\nBuy 1, get 1 FREE on our entire collection! 🎉 Limited-time offer — don't miss out.\nPaste the code below at checkout.`,
+      footer: 'Reply STOP to unsubscribe',
+      buttons: `Copy code | copy\nExplore | url | https://${p.url}`,
+    })],
+  },
 ]
 
 /** Imperative apply — usable from a panel click or a mount effect. */
