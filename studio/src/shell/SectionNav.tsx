@@ -7,13 +7,18 @@ import { channelById } from '@/channels/registry'
     & accents across the own-brand channels; auto-seeded, click to edit. */
 function BrandSwatch() {
   const brandColor = useStudio((s) => s.brandColor)
+  const auto = useStudio((s) => s.brandColorAuto)
   const setBrandColor = useStudio((s) => s.setBrandColor)
+  const resetBrandColorAuto = useStudio((s) => s.resetBrandColorAuto)
   return (
-    <label className="rail-brand" title="Brand color — themes buttons & accents on your own-brand channels (In-App, Push, Web Push, Onsite, Gmail, Gamification)">
-      <span className="sw" style={{ background: brandColor }} />
-      <span>Brand</span>
-      <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} aria-label="Brand color" />
-    </label>
+    <div className="rail-brand">
+      <label className="rb-pick" title="Brand color — themes buttons & accents on your own-brand channels (In-App, Push, Web Push, Onsite, Gmail, Gamification). Auto-matches the logo; pick to override.">
+        <span className="sw" style={{ background: brandColor }} />
+        <span>Brand</span>
+        <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} aria-label="Brand color" />
+      </label>
+      {!auto && <button type="button" className="rb-auto" title="Match the logo automatically" onClick={resetBrandColorAuto}>Auto</button>}
+    </div>
   )
 }
 

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { INDUSTRIES, industryById } from '@/content/model'
-import { avColor } from '@/lib/util'
 
 let _uid = 1
 export const nid = () => 'm' + _uid++
@@ -205,8 +204,10 @@ interface StudioState {
   sub: string | null
   brand: Brand
   /** Global brand accent for own-brand surfaces (In-App, Push, Web Push, Onsite,
-      Gmail, Gamification). Auto-seeded from the brand, editable in the rail. */
+      Gmail, Gamification). While `brandColorAuto` it tracks the logo's dominant
+      color; a manual pick from the rail swatch pins it (auto off). */
   brandColor: string
+  brandColorAuto: boolean
   sim: boolean
   dateChip: string
   /** When an AI generation is populating a ctx's slice itself, this holds that ctxId so
@@ -246,7 +247,9 @@ interface StudioState {
   setIndustry: (id: string) => void
   setSub: (s: string) => void
   setBrand: (patch: Partial<Brand>) => void
-  setBrandColor: (c: string) => void
+  setBrandColor: (c: string) => void          // manual pick — pins it (auto off)
+  autoSetBrandColor: (c: string) => void      // from the logo extractor — only applies while auto
+  resetBrandColorAuto: () => void             // re-enable auto (match the logo)
   setSim: (on: boolean) => void
   setDateChip: (v: string) => void
   setAiSuppress: (ctx: string) => void
@@ -316,9 +319,10 @@ export const useStudio = create<StudioState>((set, get) => ({
   industry: 'ecom',
   sub: 'fashion',
   brand: { name: 'Nova', sub: 'online', logo: null, verified: true, phone: '+1 (800) 555-0199', desc: 'Official account · Customer care', agentCard: true },
-  // Auto-seeded from the brand so own-brand surfaces share one color out of the
-  // box; fully editable via the Brand swatch in the section rail.
-  brandColor: avColor('Nova'),
+  // Auto-matches the logo's dominant color (see useAutoBrandColor); a neutral
+  // indigo until a logo is present. Manual pick from the rail swatch pins it.
+  brandColor: '#635bff',
+  brandColorAuto: true,
   sim: false,
   dateChip: 'Today',
   aiSuppressCtx: null,
@@ -363,7 +367,9 @@ export const useStudio = create<StudioState>((set, get) => ({
   },
   setSub: (s) => set({ sub: s }),
   setBrand: (patch) => set({ brand: { ...get().brand, ...patch } }),
-  setBrandColor: (c) => set({ brandColor: c }),
+  setBrandColor: (c) => set({ brandColor: c, brandColorAuto: false }),
+  autoSetBrandColor: (c) => { if (get().brandColorAuto) set({ brandColor: c }) },
+  resetBrandColorAuto: () => set({ brandColorAuto: true }),
   setSim: (on) => set({ sim: on, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setDateChip: (v) => set({ dateChip: v }),
   setAiSuppress: (ctx) => set({ aiSuppressCtx: ctx }),

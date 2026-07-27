@@ -5,6 +5,7 @@ import { TopBar } from './TopBar'
 import { StageFit } from './StageFit'
 import { SectionRail, SectionPanel } from './SectionNav'
 import { StubPreview } from './Stub'
+import { useAutoBrandColor } from '@/lib/useAutoBrandColor'
 
 export function AppShell() {
   const channel = useStudio((s) => s.channel)
@@ -14,6 +15,7 @@ export function AppShell() {
   const Preview = def?.Preview
   // On phones the editor and preview can't share the width — toggle between them.
   const [mView, setMView] = useState<'edit' | 'preview'>('preview')
+  useAutoBrandColor()
 
   return (
     <div className="app">
