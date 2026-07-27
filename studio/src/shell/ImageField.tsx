@@ -37,12 +37,17 @@ export function ImageField({ value, onChange, placeholder = 'or paste an image U
         aria-label="Upload an image"
       >
         {value
-          ? <img className="imgf-thumb" src={value} alt="" />
+          ? <><img className="imgf-thumb" src={value} alt="" /><span className="imgf-replace">Click or drop to replace</span></>
           : <span className="imgf-hint">Upload or drop an image</span>}
         <input ref={fileRef} type="file" accept="image/*" hidden
           onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = '' }} />
       </div>
-      {value && <button type="button" className="imgf-clear" onClick={() => onChange('')}>Remove image</button>}
+      {value && (
+        <div className="imgf-actions">
+          <button type="button" className="imgf-act" onClick={() => fileRef.current?.click()}>Upload new</button>
+          <button type="button" className="imgf-act muted" onClick={() => onChange('')}>Remove</button>
+        </div>
+      )}
       <input type="text" className="imgf-url" placeholder={placeholder}
         value={isData ? '' : value} onChange={(e) => onChange(e.target.value)} />
       {err && <p className="bgf-err">{err}</p>}

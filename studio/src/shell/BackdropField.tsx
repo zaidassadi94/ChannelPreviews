@@ -32,12 +32,17 @@ export function BackdropField({ value, onChange }: {
         aria-label="Upload a screenshot image"
       >
         {value
-          ? <img className="bgf-thumb" src={value} alt="Chosen backdrop" />
+          ? <><img className="bgf-thumb" src={value} alt="Chosen backdrop" /><span className="imgf-replace">Click or drop to replace</span></>
           : <span className="bgf-hint">Drop a screenshot here, or <u>browse</u></span>}
         <input ref={fileRef} type="file" accept="image/*" hidden
           onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = '' }} />
       </div>
-      {value && <button className="bgf-clear" type="button" onClick={() => onChange('')}>Remove image</button>}
+      {value && (
+        <div className="imgf-actions">
+          <button type="button" className="imgf-act" onClick={() => fileRef.current?.click()}>Upload new</button>
+          <button type="button" className="imgf-act muted" onClick={() => onChange('')}>Remove</button>
+        </div>
+      )}
       {err && <p className="bgf-err">{err}</p>}
       <p className="panel-hint" style={{ marginTop: 8 }}>
         Grab a screenshot of your site (or any page) and drop it in — it becomes the backdrop behind the message.
