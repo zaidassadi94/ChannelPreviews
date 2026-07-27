@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { BackdropField } from '@/shell/BackdropField'
 import { OSM_TEMPLATES, applyOsmTemplate } from './templates'
 
 const FORMATS: [string, string][] = [['popup', 'Popup'], ['bannerTop', 'Banner — top'], ['bannerBottom', 'Banner — bottom'], ['nudge', 'Nudge (slide-in)'], ['full', 'Full screen'], ['survey', 'Survey / Feedback']]
@@ -61,7 +62,7 @@ function BackgroundPanel() {
       <div className="field"><span>Background</span>
         <div className="seg-in">{[['branded', 'Branded'], ['upload', 'Upload'], ['neutral', 'Neutral']].map(([v, l]) => <button key={v} className={o.bg === v ? 'on' : ''} onClick={() => setOsm({ bg: v })}>{l}</button>)}</div>
       </div>
-      {o.bg === 'upload' && <label className="field"><span>Screenshot URL of your site</span><input type="text" value={o.bgImage} onChange={(e) => setOsm({ bgImage: e.target.value })} /></label>}
+      {o.bg === 'upload' && <div className="field"><span>Your site backdrop</span><BackdropField value={o.bgImage} onChange={(v) => setOsm({ bgImage: v })} siteUrl={o.url} noun="site" /></div>}
       <div className="toggle-row"><span>Dim &amp; blur (intrusive formats)</span><label className="switch"><input type="checkbox" checked={o.blur} onChange={(e) => setOsm({ blur: e.target.checked })} /><span className="slider" /></label></div>
     </>
   )

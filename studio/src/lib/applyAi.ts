@@ -205,6 +205,19 @@ async function applyCards(m: AiMessage, logo: string | null) {
   s.setCards({ appName: brand, logo, screenTitle: s.cards.screenTitle || 'Updates', items: [aiCard, ...filler] })
 }
 
+/** Channels whose preview has a page/app backdrop that a site screenshot fits. */
+export const BACKDROP_CHANNELS = ['osm', 'inapp', 'webpush']
+
+/** Drop a captured site screenshot (data: URL) into a channel's backdrop and
+    switch that backdrop to "upload". Called progressively from the AI panel
+    after the message is applied, so a real brand's page fills in when ready. */
+export function applyBackdropShot(channel: string, dataUrl: string): void {
+  const s = useStudio.getState()
+  if (channel === 'osm') s.setOsm({ bg: 'upload', bgImage: dataUrl })
+  else if (channel === 'webpush') s.setWebpush({ bg: 'upload', bgImage: dataUrl })
+  else if (channel === 'inapp') s.setAppBg({ mode: 'upload', image: dataUrl })
+}
+
 /** Dispatch a generated message to the active channel's adapter (identity applied first). */
 export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
   applyIdentity(m)

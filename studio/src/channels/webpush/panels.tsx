@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { BackdropField } from '@/shell/BackdropField'
 import { WEBPUSH_TEMPLATES, WEBPUSH_OPTIN_TEMPLATES, applyWebpushTemplate } from './templates'
 
 function TemplatesPanel() {
@@ -116,7 +117,7 @@ function BackdropPanel() {
       <div className="field"><span>Background</span>
         <div className="seg-in">{modes.map(([v, l]) => <button key={v} className={w.bg === v ? 'on' : ''} onClick={() => setWebpush({ bg: v })}>{l}</button>)}</div>
       </div>
-      {w.bg === 'upload' && <label className="field"><span>Screenshot URL of your site</span><input type="text" value={w.bgImage} onChange={(e) => setWebpush({ bgImage: e.target.value })} /></label>}
+      {w.bg === 'upload' && <div className="field"><span>Your site backdrop</span><BackdropField value={w.bgImage} onChange={(v) => setWebpush({ bgImage: v })} siteUrl={w.url} noun="site" /></div>}
       <div className="toggle-row"><span>Dim &amp; blur the page</span><label className="switch"><input type="checkbox" checked={w.blur} onChange={(e) => setWebpush({ blur: e.target.checked })} /><span className="slider" /></label></div>
     </>
   )
