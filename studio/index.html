@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- The studio is a light-only design (it renders pixel-accurate channel
+         mockups). Declare the scheme so browser "auto dark mode" and dark-mode
+         extensions don't force-darken it — otherwise the transparent picker
+         overlay reads as a grey scrim on devices that have that turned on. -->
+    <meta name="color-scheme" content="light" />
     <title>Channel Studio</title>
     <meta name="description" content="Build realistic previews of WhatsApp, RCS, SMS, Email, Push, In-App, Web and Ad messages — one studio, every channel." />
     <meta name="theme-color" content="#635bff" />
