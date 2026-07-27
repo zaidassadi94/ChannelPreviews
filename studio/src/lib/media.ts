@@ -95,15 +95,16 @@ function orientFor(w?: number, h?: number): 'portrait' | 'landscape' | 'square' 
   return 'square'
 }
 
-async function livePhoto(query: string, orientation: string): Promise<string | null> {
+async function livePhoto(query: string, orientation: string, seed?: number): Promise<string | null> {
   query = (query || '').toLowerCase().trim()
   if (!query) return null
-  const key = 'cs-photo:' + orientation + ':' + query
+  const sk = seed != null ? ':' + seed : ''
+  const key = 'cs-photo:' + orientation + sk + ':' + query
   if (key in photoMem) return photoMem[key]
   const cached = lsGet(key)
   if (cached) return (photoMem[key] = cached)
   try {
-    const r = await fetch(API.PHOTO + '?q=' + encodeURIComponent(query) + '&orientation=' + encodeURIComponent(orientation))
+    const r = await fetch(API.PHOTO + '?q=' + encodeURIComponent(query) + '&orientation=' + encodeURIComponent(orientation) + (seed != null ? '&seed=' + seed : ''))
     const d = await r.json().catch(() => ({}))
     const url = d && d.ok && d.url ? (d.url as string) : null
     photoMem[key] = url
@@ -116,14 +117,17 @@ async function livePhoto(query: string, orientation: string): Promise<string | n
     Pexels search — sharpest) → a pre-resolved keyword from `images.js` (real photo, no key
     needed) → a live keyword lookup. Orientation from the slot's w/h so portrait slots don't
     get a letterboxed landscape. Null → caller falls back to the self-contained `phImg`. */
-export async function photoFor(kw?: string, w?: number, h?: number, query?: string): Promise<string | null> {
+export async function photoFor(kw?: string, w?: number, h?: number, query?: string, seed?: number): Promise<string | null> {
   const orientation = orientFor(w, h)
-  if (query) { const u = await livePhoto(query, orientation); if (u) return u }
+  // AI path passes a per-generation seed → always fetch fresh, varied images and
+  // skip the small built-in library (so regenerating gives new options).
+  const fresh = seed != null
+  if (query) { const u = await livePhoto(query, orientation, seed); if (u) return u }
   if (kw) {
-    const pre = pxFor(kw)
-    if (pre) return pre
-    const u = await livePhoto(normKw(kw) || kw, orientation)
+    if (!fresh) { const pre = pxFor(kw); if (pre) return pre }
+    const u = await livePhoto(normKw(kw) || kw, orientation, seed)
     if (u) return u
+    if (fresh) { const pre = pxFor(kw); if (pre) return pre }  // offline fallback if the live fetch failed
   }
   return null
 }

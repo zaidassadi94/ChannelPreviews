@@ -46,9 +46,27 @@ module.exports = async function handler(req, res) {
   const q = String((req.query && req.query.q) || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
   if (!q) return send(res, 400, { ok: false, error: 'q required' });
   const orientation = ['portrait', 'landscape', 'square'].includes(String(req.query && req.query.orientation)) ? req.query.orientation : 'landscape';
+  // Per-generation seed → different (but stable-per-seed) image each regenerate.
+  const seed = Math.abs(parseInt(String((req.query && req.query.seed) || '0'), 10) || 0);
 
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'anon';
   if (rateLimited(ip)) return send(res, 429, { ok: false, error: 'rate-limited' });
+
+  // Unsplash first when configured — bigger, higher-quality library and a random
+  // endpoint that gives real variety. Falls through to Pexels on any miss.
+  const UNSPLASH = process.env.UNSPLASH_KEY || process.env.UNSPLASH_ACCESS_KEY || '';
+  if (UNSPLASH) {
+    try {
+      const uOrient = orientation === 'square' ? 'squarish' : orientation;
+      const ur = await fetch('https://api.unsplash.com/photos/random?content_filter=high&orientation=' + uOrient + '&query=' + encodeURIComponent(q), { headers: { Authorization: 'Client-ID ' + UNSPLASH } });
+      if (ur.ok) {
+        const ud = await ur.json();
+        const ph = Array.isArray(ud) ? ud[0] : ud;
+        const uurl = ph && ph.urls && (ph.urls.regular || ph.urls.small || ph.urls.full);
+        if (uurl) return send(res, 200, { ok: true, url: uurl, alt: ph.alt_description || q, src: 'unsplash' });
+      }
+    } catch (e) { /* fall through to Pexels */ }
+  }
 
   // ---- pick the sharpest match from a candidate pool, not just the first hit ----
   // Score by how many query words appear in the photo's own alt text (Pexels'
@@ -67,7 +85,7 @@ module.exports = async function handler(req, res) {
   }
 
   async function search(query, orient) {
-    const url = 'https://api.pexels.com/v1/search?per_page=15&query=' + encodeURIComponent(query) + (orient ? '&orientation=' + orient : '');
+    const url = 'https://api.pexels.com/v1/search?per_page=30&query=' + encodeURIComponent(query) + (orient ? '&orientation=' + orient : '');
     const r = await fetch(url, { headers: { Authorization: process.env.PEXELS_KEY } });
     if (!r.ok) return { err: 'pexels-' + r.status, photos: [] };
     const data = await r.json();
@@ -82,10 +100,15 @@ module.exports = async function handler(req, res) {
     if (err && !photos.length) return send(res, 200, { ok: false, reason: err });
     if (!photos.length) return send(res, 200, { ok: false, reason: 'no-match' }, true);
 
-    let best = photos[0], bestScore = -1;
-    for (const p of photos) { const s = score(p); if (s > bestScore) { bestScore = s; best = p; } }
+    // Rank by relevance, then pick from the top pool by seed so each regenerate
+    // returns a different good match (instead of always the single top hit).
+    const ranked = photos.map((p) => ({ p, s: score(p) })).sort((a, b) => b.s - a.s).map((x) => x.p);
+    const pool = ranked.slice(0, Math.min(12, ranked.length));
+    const best = pool.length ? pool[seed % pool.length] : photos[0];
     const src = pickSize(best.src);
-    return send(res, 200, { ok: !!src, url: src, alt: best.alt || q }, true);
+    // Cacheable: the seed is in the request URL, so each seed maps to a stable
+    // pick (variety across generations, but no repeat Pexels calls per seed).
+    return send(res, 200, { ok: !!src, url: src, alt: best.alt || q, src_provider: 'pexels' }, true);
   } catch (e) {
     return send(res, 200, { ok: false, reason: 'error' });
   }

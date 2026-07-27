@@ -17,9 +17,13 @@ import { buildAiEmail } from '@/channels/gmail/emails'
 const oneOf = <T extends string>(v: string | undefined, list: readonly T[], dflt: T): T =>
   v && (list as readonly string[]).includes(v) ? (v as T) : dflt
 
+/** Per-generation seed → fresh, varied imagery each time you generate (set at the
+    top of applyAiMessage; the browser has Math.random, unlike workflow scripts). */
+let aiSeed = 0
+
 /** A real photo for the message's subject, or a labelled phImg placeholder (offline). */
 async function pic(m: AiMessage, w: number, h: number, label: string): Promise<string> {
-  const real = await photoFor(m.imageKeyword, w, h, m.imageQuery)
+  const real = await photoFor(m.imageKeyword, w, h, m.imageQuery, aiSeed)
   return real || phImg(label || 'Preview', null, hueOf((label || 'x') + (m.imageQuery || '')), w, h)
 }
 const hasImg = (m: AiMessage) => !!(m.imageKeyword || m.imageQuery)
@@ -42,7 +46,7 @@ const serCtas = (cs?: AiMessage['ctas']): string =>
 async function serCards(cards: AiMessage['cards'], url: string): Promise<string> {
   if (!cards || !cards.length) return ''
   const rows = await Promise.all(cards.filter((c) => c.name).map(async (c) => {
-    const real = await photoFor(c.imageKeyword, 300, 300, c.imageQuery)
+    const real = await photoFor(c.imageKeyword, 300, 300, c.imageQuery, aiSeed)
     const im = real || phImg(c.name, null, hueOf(c.name), 300, 300)
     return `${im} | ${c.name} | ${c.price || ''} | View | https://${url}`
   }))
@@ -198,9 +202,11 @@ async function applyCards(m: AiMessage, logo: string | null) {
   const aiCard: CardItem = { image, title: m.title || m.headline || 'New update', body: m.body || '', tag: m.tag || 'For you', time: 'now', unread: true }
   // a couple of filler cards from the current vertical's pack so the inbox reads full
   const p = packFor(s.ctxId())
+  const arrival = p && p.carousel[0] ? p.carousel[0][0] : 'New arrival'
+  const arrivalImg = p ? (await photoFor(undefined, 600, 300, arrival, aiSeed)) || phImg(arrival, null, hueOf(arrival + '9'), 600, 300) : ''
   const filler: CardItem[] = p ? [
     { image: '', title: `Order #${p.orderId} shipped`, body: 'On its way — arriving soon.', tag: 'Order', time: '3h', unread: false },
-    { image: phImg(p.carousel[0] ? p.carousel[0][0] : brand, null, hueOf((p.carousel[0] ? p.carousel[0][0] : '') + '9'), 600, 300), title: p.carousel[0] ? p.carousel[0][0] : 'New arrival', body: 'Just added — take a look.', tag: 'New', time: '1d', unread: false },
+    { image: arrivalImg, title: arrival, body: 'Just added — take a look.', tag: 'New', time: '1d', unread: false },
   ] : []
   s.setCards({ appName: brand, logo, screenTitle: s.cards.screenTitle || 'Updates', items: [aiCard, ...filler] })
 }
@@ -211,6 +217,7 @@ export const BACKDROP_SECTION: Record<string, string> = { osm: 'background', ina
 
 /** Dispatch a generated message to the active channel's adapter (identity applied first). */
 export async function applyAiMessage(channel: string, m: AiMessage, opts: { logo: string | null }): Promise<void> {
+  aiSeed = Math.floor(Math.random() * 1e6)   // vary imagery on every generation
   applyIdentity(m)
   const logo = opts.logo
   switch (channel) {
