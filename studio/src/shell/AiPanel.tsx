@@ -63,6 +63,9 @@ export function AiPanel() {
   // "New image" / "Select image" act on the channel on screen, so they're only offered
   // when this channel's last generation actually placed a photo.
   const canReimage = !!lastAi && lastAi.hasImage && lastAi.channel === channel
+  // A carousel has several photos, one per card — "Select image" (single hero) doesn't
+  // apply, so hide it and let the per-card picker in the Chat editor handle those.
+  const lastIsCarousel = !!lastAi && lastAi.channel === channel && lastAi.m.type === 'carousel'
 
   useEffect(() => {
     if (brief || focused) return
@@ -179,14 +182,16 @@ export function AiPanel() {
           <>
             <div className="cs-ai-imgrow">
               <button className="cs-ai-reimg" type="button" disabled={reimaging} onClick={reimage}
-                title="Fetch a different photo for this message — no AI request, so it won't hit rate limits.">
+                title={lastIsCarousel ? 'Re-roll fresh photos for every product card — no AI request.' : 'Fetch a different photo for this message — no AI request, so it won\'t hit rate limits.'}>
                 {reimaging ? <><span className="cs-ai-spin dark" /> New image…</> : '🖼️ New image'}
               </button>
-              <button className="cs-ai-reimg" type="button" disabled={loadingOpts} onClick={openPicker}
-                aria-expanded={picker.length > 0}
-                title="Pick from a few photos for this message — no AI request.">
-                {loadingOpts ? <><span className="cs-ai-spin dark" /> Loading…</> : '🖼️ Select image'}
-              </button>
+              {!lastIsCarousel && (
+                <button className="cs-ai-reimg" type="button" disabled={loadingOpts} onClick={openPicker}
+                  aria-expanded={picker.length > 0}
+                  title="Pick from a few photos for this message — no AI request.">
+                  {loadingOpts ? <><span className="cs-ai-spin dark" /> Loading…</> : '🖼️ Select image'}
+                </button>
+              )}
             </div>
             {picker.length > 0 && (
               <div className="cs-ai-picker">

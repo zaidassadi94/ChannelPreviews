@@ -107,6 +107,20 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .imgf-act.muted{ color:var(--muted); } .imgf-act.muted:hover{ color:#c02626; }
 .imgf-act:hover{ text-decoration:underline; }
 
+/* ---- per-card carousel editor (image upload + per-card photo picker) ---- */
+.wa-cards{ display:flex; flex-direction:column; gap:10px; }
+.wa-cardedit{ border:1px solid var(--line); border-radius:10px; padding:10px; background:var(--panel-2); display:flex; flex-direction:column; gap:8px; }
+.wa-cardedit-top{ display:flex; align-items:center; }
+.wa-cardedit-top .lbl{ font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
+.wa-cardedit-top .grow{ flex:1; }
+.wa-cardrow{ display:flex; gap:8px; } .wa-cardrow .field{ flex:1; min-width:0; }
+.wa-pickbtn{ align-self:flex-start; font-size:12px; font-weight:600; color:var(--accent-ink); background:none; border:0; cursor:pointer; padding:2px 0; }
+.wa-pickbtn:hover{ text-decoration:underline; } .wa-pickbtn:disabled{ opacity:.6; cursor:default; }
+.wa-pickgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.wa-pickthumb{ padding:0; border:1px solid var(--line); border-radius:7px; overflow:hidden; cursor:pointer; aspect-ratio:1/1; background:var(--panel); }
+.wa-pickthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.wa-pickthumb:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
+
 /* ---- structured button editor (WhatsApp/RCS interactive buttons) ---- */
 .btns-ed{ display:flex; flex-direction:column; gap:8px; }
 .btn-row{ border:1px solid var(--line); border-radius:9px; padding:8px; background:var(--panel-2); display:flex; flex-direction:column; gap:7px; }

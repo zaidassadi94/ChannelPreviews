@@ -1,8 +1,11 @@
+import { useEffect, useRef, useState } from 'react'
 import { useStudio, WA_DEFAULTS, type WAMsg, type WAType } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { ImageField } from '@/shell/ImageField'
 import { ButtonsEditor } from '@/shell/ButtonsEditor'
+import { parseCards, type Card } from '@/lib/util'
+import { photoCandidates } from '@/lib/media'
 import { WA_TEMPLATES, applyWATemplate } from './templates'
 
 const TYPES: [WAType, string][] = [
@@ -147,11 +150,77 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
         </>
       )}
       {msg.type === 'carousel' && (
-        <label className="field"><span>Products</span>
-          <textarea value={msg.cards || ''} onChange={(e) => onField({ cards: e.target.value })} placeholder="image URL | title | price | button | link" />
-          <div className="panel-hint" style={{ marginTop: 6 }}>One product per line: <code>image | title | price | button | link</code>. Leave image blank for a placeholder.</div>
-        </label>
+        <div className="field"><span>Products</span>
+          <CarouselEditor value={msg.cards || ''} onChange={(v) => onField({ cards: v })} />
+        </div>
       )}
+    </div>
+  )
+}
+
+/* Per-card carousel editor: each product gets an image (upload / drop / paste / pick
+   from photos) plus title, price, button and link — no more raw pipe-delimited text. */
+const serializeCards = (cards: Card[]): string =>
+  cards.map((c) => `${c.img} | ${c.title} | ${c.sub} | ${c.btn} | ${c.val}`).join('\n')
+const blankCard = (): Card => ({ img: '', title: '', sub: '', btn: 'Shop', val: '' })
+
+function CarouselEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const seed = () => { const c = parseCards(value); return c.length ? c : [blankCard()] }
+  const [cards, setCards] = useState<Card[]>(seed)
+  const [pick, setPick] = useState<{ idx: number; urls: string[] } | null>(null)
+  const [loading, setLoading] = useState<number | null>(null)
+  // Re-seed only when an EXTERNAL change (preset / AI / New image) rewrites the string,
+  // so typing (which round-trips through the same string) never fights the cursor.
+  const lastStr = useRef(value)
+  useEffect(() => {
+    if (value !== lastStr.current) { const c = parseCards(value); setCards(c.length ? c : [blankCard()]); lastStr.current = value; setPick(null) }
+  }, [value])
+
+  const commit = (next: Card[]) => {
+    setCards(next)
+    const str = serializeCards(next)
+    lastStr.current = str
+    onChange(str)
+  }
+  const update = (i: number, patch: Partial<Card>) => commit(cards.map((c, j) => (j === i ? { ...c, ...patch } : c)))
+  const remove = (i: number) => { commit(cards.filter((_, j) => j !== i)); setPick(null) }
+  const add = () => commit([...cards, blankCard()])
+
+  async function openPick(i: number) {
+    if (pick?.idx === i) { setPick(null); return }
+    setLoading(i)
+    try { setPick({ idx: i, urls: await photoCandidates(undefined, cards[i].title || 'product', 'landscape', 8) }) }
+    finally { setLoading(null) }
+  }
+
+  return (
+    <div className="wa-cards">
+      {cards.map((c, i) => (
+        <div className="wa-cardedit" key={i}>
+          <div className="wa-cardedit-top"><span className="lbl">Product {i + 1}</span><span className="grow" />
+            <button className="icobtn" title="Remove product" onClick={() => remove(i)} disabled={cards.length <= 1}>✕</button>
+          </div>
+          <ImageField value={c.img} onChange={(v) => update(i, { img: v })} placeholder="or paste an image URL (blank = placeholder)" />
+          <button type="button" className="wa-pickbtn" onClick={() => openPick(i)} disabled={loading === i}>
+            {loading === i ? 'Loading…' : pick?.idx === i ? 'Hide photos' : '🖼️ Pick a photo'}
+          </button>
+          {pick?.idx === i && (pick.urls.length
+            ? <div className="wa-pickgrid">{pick.urls.map((u) => (
+                <button key={u} type="button" className="wa-pickthumb" title="Use this photo" onClick={() => { update(i, { img: u }); setPick(null) }}><img src={u} alt="" loading="lazy" /></button>
+              ))}</div>
+            : <div className="panel-hint" style={{ marginTop: 4 }}>No photos found for “{cards[i].title || 'this product'}”. Try a clearer name, or upload above.</div>
+          )}
+          <div className="wa-cardrow">
+            <label className="field"><span>Title</span><input type="text" value={c.title} onChange={(e) => update(i, { title: e.target.value })} /></label>
+            <label className="field"><span>Price</span><input type="text" value={c.sub} onChange={(e) => update(i, { sub: e.target.value })} /></label>
+          </div>
+          <div className="wa-cardrow">
+            <label className="field"><span>Button</span><input type="text" value={c.btn} onChange={(e) => update(i, { btn: e.target.value })} /></label>
+            <label className="field"><span>Link</span><input type="text" value={c.val} onChange={(e) => update(i, { val: e.target.value })} /></label>
+          </div>
+        </div>
+      ))}
+      <button type="button" className="btn ghost block" onClick={add}>{Icon.plus}Add product</button>
     </div>
   )
 }
