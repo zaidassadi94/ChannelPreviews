@@ -29,7 +29,7 @@ let forcedImage: string | null = null
 /** A real photo for the message's subject, or a labelled phImg placeholder (offline). */
 async function pic(m: AiMessage, w: number, h: number, label: string): Promise<string> {
   if (forcedImage) return forcedImage
-  const real = await photoFor(m.imageKeyword, w, h, m.imageQuery, aiSeed)
+  const real = await photoFor(m.imageKeyword, w, h, m.imageQuery, aiSeed, m.imageAlt)
   return real || phImg(label || 'Preview', null, hueOf((label || 'x') + (m.imageQuery || '')), w, h)
 }
 const hasImg = (m: AiMessage) => !!(m.imageKeyword || m.imageQuery)
@@ -52,7 +52,7 @@ const serCtas = (cs?: AiMessage['ctas']): string =>
 async function serCards(cards: AiMessage['cards'], url: string): Promise<string> {
   if (!cards || !cards.length) return ''
   const rows = await Promise.all(cards.filter((c) => c.name).map(async (c) => {
-    const real = await photoFor(c.imageKeyword, 300, 300, c.imageQuery, aiSeed)
+    const real = await photoFor(c.imageKeyword, 300, 300, c.imageQuery, aiSeed, c.imageAlt)
     const im = real || phImg(c.name, null, hueOf(c.name), 300, 300)
     return `${im} | ${c.name} | ${c.price || ''} | View | https://${url}`
   }))

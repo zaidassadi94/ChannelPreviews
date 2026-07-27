@@ -48,7 +48,7 @@ export async function regenerateImage(): Promise<boolean> {
 export async function imageOptionsForLast(n = 8): Promise<string[]> {
   const last = useStudio.getState().lastAi
   if (!last || !last.hasImage) return []
-  return photoCandidates(last.m.imageKeyword, last.m.imageQuery, heroOrient(last.channel, last.m), n)
+  return photoCandidates(last.m.imageKeyword, last.m.imageQuery, heroOrient(last.channel, last.m), n, last.m.imageAlt)
 }
 
 /** One background generation at a time (module-level so effect re-runs from our own

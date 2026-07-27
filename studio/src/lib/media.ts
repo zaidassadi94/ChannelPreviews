@@ -29,8 +29,8 @@ export interface AiMessage {
   buttons?: { label: string; type?: string; value?: string; reply?: string }[]
   chips?: { label: string; reply?: string }[]
   items?: { t: string; d?: string; reply?: string }[]
-  cards?: { name: string; price?: string; imageKeyword?: string; imageQuery?: string }[]
-  imageKeyword?: string; imageQuery?: string
+  cards?: { name: string; price?: string; imageKeyword?: string; imageQuery?: string; imageAlt?: string }[]
+  imageKeyword?: string; imageQuery?: string; imageAlt?: string
 }
 
 const lsGet = (k: string): string | null => { try { return localStorage.getItem(k) } catch { return null } }
@@ -117,12 +117,16 @@ async function livePhoto(query: string, orientation: string, seed?: number): Pro
     Pexels search — sharpest) → a pre-resolved keyword from `images.js` (real photo, no key
     needed) → a live keyword lookup. Orientation from the slot's w/h so portrait slots don't
     get a letterboxed landscape. Null → caller falls back to the self-contained `phImg`. */
-export async function photoFor(kw?: string, w?: number, h?: number, query?: string, seed?: number): Promise<string | null> {
+export async function photoFor(kw?: string, w?: number, h?: number, query?: string, seed?: number, alt?: string): Promise<string | null> {
   const orientation = orientFor(w, h)
   // AI path passes a per-generation seed → always fetch fresh, varied images and
   // skip the small built-in library (so regenerating gives new options).
   const fresh = seed != null
+  // Brand-first query, then a brand-free description if the brand search finds nothing,
+  // then the offline keyword. Lets "Nike Air Force" surface real Nike shots but never
+  // leaves the slot empty when a brand search comes back with no photo.
   if (query) { const u = await livePhoto(query, orientation, seed); if (u) return u }
+  if (alt && alt.trim() && alt.trim() !== (query || '').trim()) { const u = await livePhoto(alt, orientation, seed); if (u) return u }
   if (kw) {
     if (!fresh) { const pre = pxFor(kw); if (pre) return pre }
     const u = await livePhoto(normKw(kw) || kw, orientation, seed)
@@ -136,12 +140,18 @@ export async function photoFor(kw?: string, w?: number, h?: number, query?: stri
     Each seed maps to a different pick from the endpoint's ranked pool, so seeds 0..n-1
     return up to `n` different (de-duplicated) options in one parallel batch — cached per
     seed, so re-opening the picker is free. Empty when there's no subject or no key. */
-export async function photoCandidates(kw?: string, query?: string, orientation?: string, n = 8): Promise<string[]> {
-  const q = (query && query.trim()) || (kw ? (normKw(kw) || kw) : '')
-  if (!q) return []
+export async function photoCandidates(kw?: string, query?: string, orientation?: string, n = 8, alt?: string): Promise<string[]> {
   const orient = orientation || 'landscape'
-  const urls = await Promise.all(Array.from({ length: n }, (_, seed) => livePhoto(q, orient, seed)))
   const seen = new Set<string>(); const out: string[] = []
-  for (const u of urls) if (u && !seen.has(u)) { seen.add(u); out.push(u) }
+  // Fill from the brand query first, then top up from the brand-free description so the
+  // grid still offers ~n options even when a brand search returns only a few photos.
+  const fillFrom = async (phrase?: string) => {
+    const q = (phrase || '').trim()
+    if (!q || out.length >= n) return
+    const urls = await Promise.all(Array.from({ length: n }, (_, seed) => livePhoto(q, orient, seed)))
+    for (const u of urls) if (u && !seen.has(u) && out.length < n) { seen.add(u); out.push(u) }
+  }
+  await fillFrom((query && query.trim()) || (kw ? (normKw(kw) || kw) : ''))
+  await fillFrom(alt)
   return out
 }
