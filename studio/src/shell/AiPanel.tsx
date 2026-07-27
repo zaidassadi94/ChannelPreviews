@@ -51,6 +51,7 @@ export function AiPanel() {
   const [reimaging, setReimaging] = useState(false)
   const [status, setStatus] = useState<Status>({ kind: '', text: '' })
   const [tip, setTip] = useState(0)
+  const [showEx, setShowEx] = useState(false)
 
   // "New image" re-rolls just the photo for the channel on screen (a Pexels call,
   // no LLM), so it's only offered when this channel's last generation had one.
@@ -135,11 +136,16 @@ export function AiPanel() {
           value={site} onChange={(e) => setSite(e.target.value)}
           onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate() }}
         />
-        <div className="cs-ai-ex">
-          {EXAMPLES.map((e) => (
-            <button key={e} type="button" onClick={() => setBrief(e)}>{e}</button>
-          ))}
-        </div>
+        <button type="button" className="cs-ai-extoggle" aria-expanded={showEx} onClick={() => setShowEx((v) => !v)}>
+          {showEx ? 'Hide examples' : '💡 Need an idea? See examples'}
+        </button>
+        {showEx && (
+          <div className="cs-ai-ex">
+            {EXAMPLES.map((e) => (
+              <button key={e} type="button" onClick={() => { setBrief(e); setShowEx(false) }}>{e}</button>
+            ))}
+          </div>
+        )}
         <button className="cs-ai-go" type="button" disabled={busy} onClick={() => generate()}>
           {busy ? <><span className="cs-ai-spin" /> Generating…</> : 'Generate message'}
         </button>

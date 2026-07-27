@@ -47,6 +47,15 @@ const KEYWORDS = ['clothing','tshirt','trousers','hoodie','electronics','earbuds
 // free-tier quota is the real backstop.
 const LIMITS = { brief: 500, perMin: 20, maxTokens: 800 };
 
+// A brand name derived from a pinned website ("nobero.com" -> "Nobero"), used when
+// the model doesn't recognise a smaller brand's domain so the name/handle stay stable
+// instead of the model inventing a fresh one each time.
+function brandFromDomain(site) {
+  const label = String(site || '').split('.')[0].replace(/[-_]+/g, ' ').trim();
+  return label ? label.replace(/\b\w/g, (c) => c.toUpperCase()) : '';
+}
+const normName = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 // ---- best-effort in-memory rate limit (per warm instance) ----
 const hits = new Map();
 function rateLimited(ip) {
@@ -168,7 +177,7 @@ function systemPrompt(ctx) {
     `You are a senior lifecycle-marketing copywriter. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send. The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`,
     `Return ONLY the structured fields defined by the schema — nothing else. No HTML, no markdown (except WhatsApp *bold*), no links other than plain domains, no instructions.`,
     // --- identity: the brief decides the brand/industry; the app switches its UI to match ---
-    ctx.site ? `The user has confirmed this brand's website is "${ctx.site}" — treat it as AUTHORITATIVE: identify the brand from that domain (even if it's a small or lesser-known company), write for it, and return that exact domain in the "domain" field. It overrides any brand guessed from the name alone.` : ``,
+    ctx.site ? `The user pinned this brand's website: "${ctx.site}"${ctx.siteBrand ? ` (brand name: "${ctx.siteBrand}")` : ''}. Treat it as AUTHORITATIVE — write this ENTIRE message for THAT company and no other. If you recognise the company, use its real correct name; if you do NOT recognise it, use exactly "${ctx.siteBrand}" as the brand name — do NOT invent a different name. Always return "${ctx.site}" in the "domain" field. This overrides any brand guessed from the brief or the app.` : ``,
     `Identity: from the brief, decide the brand and industry. If the brief names or implies a specific business or sector (e.g. "a grocery retailer", "for a bank", "Nike"), write for THAT — invent a short, realistic, brandable name if none is given — and do NOT reuse "${brand}" when the brief implies a different business. If the brief implies no particular business, keep "${brand}" (${ctx.industry || 'consumer'}). Return your choice in the "brand" and "industry" fields. Always write "brand" as the real company's FULL, correct name — never an abbreviation or an invented variant of a real brand (a brief for "birkenstock" is "Birkenstock", never "Birki"). Set "domain" to the brand's real website domain whenever "brand" is a real company you can identify or reasonably guess (e.g. nike.com, nobero.com), not only famous names; leave it empty only for clearly generic or invented brands.`,
     // --- craft ---
     `Craft: open with a hook or a real benefit, not a greeting or a category name. Be specific and human — a little wit, warmth, or urgency. Skimmable and tight: true ${ctx.channel} length, never an essay. Vary the rhythm. Numbers make it real — concrete prices ($19, $149), percentages, counts, times.`,
@@ -257,7 +266,7 @@ module.exports = async function handler(req, res) {
   // model identifies the (possibly small/unknown) brand from it and returns it as the domain.
   const site = String(body.domain || '').toLowerCase().trim()
     .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').replace(/[^a-z0-9.\-]/g, '').slice(0, 80);
-  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief, site };
+  const ctx = { channel, brand: String(body.brand || '').slice(0, 60), industry: String(body.industry || '').slice(0, 40), brief, site, siteBrand: brandFromDomain(site) };
   if (!CHANNELS[channel]) return send(res, 400, { ok: false, error: 'unknown channel' });
   if (!brief) return send(res, 400, { ok: false, error: 'brief is required' });
 
@@ -326,6 +335,17 @@ module.exports = async function handler(req, res) {
       if (!message || typeof message !== 'object' || Array.isArray(message))
         return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
       if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
+      // Lock identity to a pinned website: the domain is always the pinned one (so the
+      // real logo shows), and if the model's brand name doesn't correspond to that
+      // domain it invented one — replace it with the name derived from the domain so
+      // the business name & handle stay stable instead of changing every generation.
+      if (ctx.site) {
+        message.domain = ctx.site;
+        const label = normName(ctx.site.split('.')[0]);
+        const bn = normName(message.brand);
+        const matches = bn && label && (label.includes(bn) || bn.includes(label));
+        if (!matches && ctx.siteBrand) message.brand = ctx.siteBrand;
+      }
       return send(res, 200, { ok: true, provider, channel, model, message });
     }
     last = out;
