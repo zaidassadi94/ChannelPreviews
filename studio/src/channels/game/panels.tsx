@@ -57,7 +57,7 @@ function WheelPanel() {
 }
 
 export const gameSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'reward', label: 'Reward', icon: Icon.convo, Panel: RewardPanel },
   { id: 'wheel', label: 'Wheel', icon: Icon.context, Panel: WheelPanel },
 ]

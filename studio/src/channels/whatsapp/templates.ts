@@ -65,7 +65,7 @@ export function applyWATemplate(t: WATemplate, announce = true) {
   if (!p) return
   s.waSetMessages(t.build(p, s.ctxId()))
   s.setBrand({ name: p.brand, sub: 'online' })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to branch' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to branch' : ''))
 }
 
 export { cap }

@@ -77,7 +77,7 @@ function PostPanel() {
 }
 
 export const igSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'format', label: 'Format', icon: Icon.phone, Panel: FormatPanel },
   { id: 'advertiser', label: 'Advertiser', icon: Icon.sender, Panel: AdvertiserPanel },
   { id: 'creative', label: 'Creative', icon: Icon.convo, Panel: CreativePanel },

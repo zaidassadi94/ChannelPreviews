@@ -82,7 +82,7 @@ function BodyPanel() {
         <div className="seg-in"><button className={g.bodyMode === 'template' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'template' })}>Template</button><button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Plain</button></div>
       </div>
       {g.bodyMode === 'template'
-        ? <p className="panel-hint">The email body is the applied template. Pick another from <b>Templates</b>, or switch to <b>Plain</b> to compose your own.</p>
+        ? <p className="panel-hint">The email body is the applied preset. Pick another from <b>Presets</b>, or switch to <b>Plain</b> to compose your own.</p>
         : (
           <>
             <label className="field"><span>Heading</span><input type="text" value={g.plain.heading} onChange={(e) => setGmailPlain({ heading: e.target.value })} /></label>
@@ -123,7 +123,7 @@ function ExtrasPanel() {
 
 export const gmailSections: SectionDef[] = [
   { id: 'view', label: 'View', icon: Icon.phone, Panel: ViewPanel },
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
   { id: 'message', label: 'Message', icon: Icon.convo, Panel: MessagePanel },
   { id: 'body', label: 'Body', icon: Icon.context, Panel: BodyPanel },

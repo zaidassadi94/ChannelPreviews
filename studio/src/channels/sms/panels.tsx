@@ -135,7 +135,7 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
 }
 
 export const smsSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'conversation', label: 'Chat', icon: Icon.convo, Panel: ConversationPanel },
   { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
   { id: 'context', label: 'Context', icon: Icon.context, Panel: ContextPanel },

@@ -54,5 +54,5 @@ export function applyRcsTemplate(t: RcsTemplate, announce = true) {
   if (!p) return
   s.msgSet('rcs', t.build(p, s.ctxId()))
   s.setBrand({ name: p.brand, sub: 'Verified business' })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to branch' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to branch' : ''))
 }

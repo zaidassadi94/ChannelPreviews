@@ -32,5 +32,5 @@ export function applyFbTemplate(t: FbTemplate, announce = true) {
   if (!p) return
   const f = t.build(p)
   s.setFb({ page: f.page, verified: f.verified, media: f.media, primary: f.primary, headline: f.headline, desc: f.desc, url: f.url, price: f.price, cta: f.cta, reactions: f.reactions, comments: f.comments, shares: f.shares, time: f.time })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap the CTA' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to tap the CTA' : ''))
 }

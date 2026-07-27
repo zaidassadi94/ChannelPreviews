@@ -51,5 +51,5 @@ export function applyInappTemplate(t: InappTemplate, announce = true) {
   const f = t.build(p)
   s.setNotify({ appName: p.brand })
   s.setInapp({ type: f.type, image: f.image, headline: f.headline, body: f.body, ctas: f.ctas, close: f.close, ...(f.bannerPos ? { bannerPos: f.bannerPos } : {}) })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap CTAs' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to tap CTAs' : ''))
 }

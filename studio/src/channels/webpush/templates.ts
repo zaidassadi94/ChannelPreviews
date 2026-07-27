@@ -74,5 +74,5 @@ export function applyWebpushTemplate(t: WebpushTemplate, announce = true) {
   if (!t.build) return
   const f = t.build(p, s.ctxId())
   s.setWebpush({ mode: 'notification', site: f.site, url: f.url, logo: null, title: f.title, body: f.body, image: f.image, actions: f.actions })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to click' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to click' : ''))
 }

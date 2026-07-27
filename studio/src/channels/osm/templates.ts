@@ -39,5 +39,5 @@ export function applyOsmTemplate(t: OsmTemplate, announce = true) {
   if (!p) return
   const f = t.build(p)
   s.setOsm({ site: f.site, url: f.url, format: f.format, headline: f.headline, body: f.body, image: f.image, cta: f.cta, cta2: f.cta2, code: f.code, input: f.input, countdown: f.countdown, scaleLo: f.scaleLo || 'Not likely', scaleHi: f.scaleHi || 'Very likely' })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to try it' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to try it' : ''))
 }

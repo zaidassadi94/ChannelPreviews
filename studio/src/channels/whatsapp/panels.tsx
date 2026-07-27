@@ -109,12 +109,14 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
     <div className="msg-card">
       <div className="mc-top">
         <span className="lbl">{idx + 1}</span>
-        <select value={msg.type} onChange={(e) => onType(e.target.value as WAType)}>
-          {TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
+        <span className="mc-name">Message</span>
+        <span className="grow" />
         <button className="icobtn" title="Move up" onClick={() => onMove(-1)} disabled={idx === 0}>↑</button>
         <button className="icobtn" title="Move down" onClick={() => onMove(1)} disabled={idx === count - 1}>↓</button>
         <button className="icobtn" title="Delete" onClick={onDel}>✕</button>
+      </div>
+      <div className="field"><span>Type</span>
+        <div className="seg-in">{TYPES.map(([v, l]) => <button key={v} className={msg.type === v ? 'on' : ''} onClick={() => onType(v as WAType)}>{l}</button>)}</div>
       </div>
       <div className="seg-from">
         <button className={msg.from === 'business' ? 'on' : ''} onClick={() => onFrom('business')}>Business · in</button>
@@ -157,7 +159,7 @@ function ButtonsField({ value, onChange }: { value: string; onChange: (v: string
 }
 
 export const whatsappSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'conversation', label: 'Chat', icon: Icon.convo, Panel: ConversationPanel },
   { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
   { id: 'context', label: 'Context', icon: Icon.context, Panel: ContextPanel },

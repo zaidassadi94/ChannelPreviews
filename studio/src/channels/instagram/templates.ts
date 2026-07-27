@@ -34,5 +34,5 @@ export function applyIgTemplate(t: IgTemplate, announce = true) {
   if (!p) return
   const f = t.build(p)
   s.setIg({ brand: f.brand, handle: f.handle, verified: f.verified, media: f.media, caption: f.caption, cta: f.cta, likes: f.likes, comments: f.comments, time: f.time })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap the CTA' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to tap the CTA' : ''))
 }

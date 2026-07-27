@@ -134,7 +134,7 @@ function AppPanel() {
 }
 
 export const pushSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'notification', label: 'Notification', icon: Icon.convo, Panel: NotificationPanel },
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'surface', label: 'Surface', icon: Icon.context, Panel: SurfacePanel },

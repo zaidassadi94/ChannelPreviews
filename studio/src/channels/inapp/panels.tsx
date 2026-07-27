@@ -118,7 +118,7 @@ function BackgroundPanel() {
 }
 
 export const inappSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'content', label: 'Content', icon: Icon.convo, Panel: ContentPanel },
   { id: 'buttons', label: 'Buttons', icon: Icon.templates, Panel: ButtonsPanel },
   { id: 'layout', label: 'Layout', icon: Icon.context, Panel: LayoutPanel },

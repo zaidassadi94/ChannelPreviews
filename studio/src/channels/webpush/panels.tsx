@@ -125,7 +125,7 @@ function BackdropPanel() {
 }
 
 export const webpushSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'notification', label: 'Notification', icon: Icon.convo, Panel: NotificationPanel },
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'optin', label: 'Opt-in', icon: Icon.context, Panel: OptinPanel },

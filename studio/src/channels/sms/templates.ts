@@ -49,5 +49,5 @@ export function applySmsTemplate(t: SmsTemplate, announce = true) {
   if (!p) return
   s.msgSet('sms', t.build(p, s.ctxId()))
   s.setBrand({ name: p.brand })
-  if (announce) useToast.getState().show('Template applied')
+  if (announce) useToast.getState().show('Preset applied')
 }

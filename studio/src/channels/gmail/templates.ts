@@ -12,5 +12,5 @@ export function applyGmailTemplate(t: GmailTemplate, announce = true) {
   const p = s.brandColor ? { ...base, accent: s.brandColor } : base
   const r = t.build(p, s.ctxId())
   s.setGmail({ senderName: r.sender, senderEmail: r.from, subject: r.subject, snippet: r.snippet, category: r.category, html: r.html, bodyMode: 'template' })
-  if (announce) useToast.getState().show('Template applied')
+  if (announce) useToast.getState().show('Preset applied')
 }

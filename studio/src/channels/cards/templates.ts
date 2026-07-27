@@ -73,5 +73,5 @@ export function applyCardsTemplate(t: CardsTemplate, announce = true) {
   if (!p) return
   const f = t.build(p, s.ctxId())
   s.setCards({ appName: p.brand, logo: null, screenTitle: f.screenTitle, items: f.items })
-  if (announce) useToast.getState().show('Template applied' + (t.flow ? ' · hit Simulate to tap a card' : ''))
+  if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to tap a card' : ''))
 }

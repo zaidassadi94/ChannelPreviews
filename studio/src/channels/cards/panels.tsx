@@ -72,7 +72,7 @@ function AppPanel() {
 }
 
 export const cardsSections: SectionDef[] = [
-  { id: 'templates', label: 'Templates', icon: Icon.templates, Panel: TemplatesPanel },
+  { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'cards', label: 'Cards', icon: Icon.convo, Panel: CardsPanel },
   { id: 'app', label: 'App', icon: Icon.sender, Panel: AppPanel },
 ]
