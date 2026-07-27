@@ -2,6 +2,7 @@ import { useStudio, WA_DEFAULTS, type WAMsg, type WAType } from '@/store/useStud
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { ImageField } from '@/shell/ImageField'
+import { ButtonsEditor } from '@/shell/ButtonsEditor'
 import { WA_TEMPLATES, applyWATemplate } from './templates'
 
 const TYPES: [WAType, string][] = [
@@ -149,13 +150,7 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
 }
 
 function ButtonsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="field">
-      <span>Buttons</span>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder="Label | reply | value >> branch reply" />
-      <div className="panel-hint" style={{ marginTop: 6 }}>One per line: <code>Label | reply·url·call·copy | value</code>. Add <code>&gt;&gt; reply</code> to branch in Simulate.</div>
-    </label>
-  )
+  return <ButtonsEditor value={value} onChange={onChange} max={3} hint="Up to 3 buttons. Quick replies can auto-reply in Simulate." />
 }
 
 export const whatsappSections: SectionDef[] = [

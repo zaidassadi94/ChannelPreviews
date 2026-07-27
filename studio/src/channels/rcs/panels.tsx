@@ -2,6 +2,7 @@ import { useStudio, type MMsg, type MType } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
 import { ImageField } from '@/shell/ImageField'
+import { ButtonsEditor } from '@/shell/ButtonsEditor'
 import { RCS_TEMPLATES, applyRcsTemplate } from './templates'
 
 const CH = 'rcs'
@@ -154,13 +155,7 @@ function MsgCard({ msg, idx, count, onType, onFrom, onField, onDel, onMove }: {
 }
 
 function ButtonsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="field">
-      <span>Buttons</span>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder="Label | url | https://…" />
-      <div className="panel-hint" style={{ marginTop: 6 }}>One per line: <code>Label | reply·url·call | value</code>.</div>
-    </label>
-  )
+  return <ButtonsEditor value={value} onChange={onChange} max={4} />
 }
 
 function ChipsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {

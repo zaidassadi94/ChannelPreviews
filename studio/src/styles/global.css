@@ -99,6 +99,15 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .imgf-clear{ align-self:flex-start; border:0; background:none; color:var(--muted); font-size:11px; font-weight:600; cursor:pointer; padding:0; }
 .imgf-clear:hover{ color:var(--accent-ink); }
 
+/* ---- structured button editor (WhatsApp/RCS interactive buttons) ---- */
+.btns-ed{ display:flex; flex-direction:column; gap:8px; }
+.btn-row{ border:1px solid var(--line); border-radius:9px; padding:8px; background:var(--panel-2); display:flex; flex-direction:column; gap:7px; }
+.btn-row-top{ display:flex; align-items:center; gap:6px; }
+.btn-row-top select{ flex:none; font-size:11.5px; padding:6px 7px; border:1px solid var(--line); border-radius:7px; background:#fff; font-family:inherit; color:var(--ink); cursor:pointer; }
+.btn-row-top .btn-label{ flex:1; min-width:0; }
+.btn-row-top .icobtn{ background:#fff; border:1px solid var(--line); cursor:pointer; color:var(--muted); width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
+.btn-row-top .icobtn:hover:not(:disabled){ color:var(--ink); border-color:#d6d8e3; } .btn-row-top .icobtn:disabled{ opacity:.4; cursor:not-allowed; }
+
 /* ---- color picker row (swatch + hex + auto) ---- */
 .color-row{ display:flex; gap:8px; align-items:center; }
 .color-row input[type=text]{ flex:1; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
