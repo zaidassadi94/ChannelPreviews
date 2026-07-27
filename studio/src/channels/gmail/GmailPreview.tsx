@@ -6,7 +6,7 @@ import { PhoneFrame } from '@/shell/PhoneFrame'
 import { DesktopFrame } from '@/shell/DesktopFrame'
 import { brandMark, avColor } from '@/lib/util'
 import { GI, GmailLogo } from './icons'
-import { plainEmail } from './emails'
+import { buildAiEmail } from './emails'
 import { GMAIL_TEMPLATES, applyGmailTemplate } from './templates'
 
 interface Row { name: string; email: string; subject: string; snippet: string; time: string; unread: boolean; cat: string; hero?: boolean; starred?: boolean; important?: boolean; logo?: string | null }
@@ -38,7 +38,10 @@ function Avatar({ name, logo, cls }: { name: string; logo?: string | null; cls: 
 }
 
 function resolveBody(g: GmailState): string {
-  if (g.bodyMode === 'plain') return plainEmail(g.plain)
+  // "Compose" (plain) builds the same rich layout as a generated email, but live from
+  // the editable fields — so the AI email's copy and image can be edited in place.
+  if (g.bodyMode === 'plain')
+    return buildAiEmail({ brand: g.senderName, logo: g.logo || undefined, accent: g.plain.accent, image: g.plain.image, heading: g.plain.heading, body: g.plain.body, btn: g.plain.btn })
   return g.html || '<div style="padding:40px;text-align:center;color:#888;font-family:Arial">No email body loaded.</div>'
 }
 function EmailBody() {

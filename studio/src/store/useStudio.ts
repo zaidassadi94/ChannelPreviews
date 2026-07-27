@@ -102,9 +102,9 @@ export interface GmailState {
   important: boolean
   category: string
   labelChip: string
-  bodyMode: string  // template | plain
+  bodyMode: string  // template | plain (rich "Compose") | html
   html: string
-  plain: { heading: string; body: string; btn: string; accent: string }
+  plain: { heading: string; body: string; btn: string; accent: string; image: string }
   annot: { on: boolean; deal: string; code: string; expiry: string; img: string }
   filler: { on: boolean; position: number }
 }
@@ -369,7 +369,7 @@ export const useStudio = create<StudioState>((set, get) => ({
     subject: '🎉 Your weekend sale is here — up to 40% off', snippet: 'First pick of the new arrivals — up to 40% off, this weekend only…',
     timestamp: '9:15 AM', toLine: 'to me', unread: true, starred: false, important: false,
     category: 'promotions', labelChip: 'Inbox', bodyMode: 'template', html: '',
-    plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5' },
+    plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5', image: '' },
     annot: { on: false, deal: 'Up to 40% off', code: '', expiry: 'Ends Sunday', img: '' },
     filler: { on: true, position: 0 },
   },

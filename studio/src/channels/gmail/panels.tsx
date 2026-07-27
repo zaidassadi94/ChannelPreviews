@@ -60,15 +60,16 @@ function ContentPanel() {
       <div className="field"><span>Email body</span>
         <div className="seg-in">
           <button className={g.bodyMode === 'template' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'template' })}>Template</button>
-          <button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Plain</button>
+          <button className={g.bodyMode === 'plain' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'plain' })}>Compose</button>
           <button className={g.bodyMode === 'html' ? 'on' : ''} onClick={() => setGmail({ bodyMode: 'html' })}>HTML</button>
         </div>
       </div>
       {g.bodyMode === 'template' && (
-        <p className="panel-hint">The email body is the applied preset. Switch to <b>Plain</b> to compose your own, or <b>HTML</b> to paste your own markup.</p>
+        <p className="panel-hint">The email body is the applied preset. Switch to <b>Compose</b> to edit the heading, copy, image and button, or <b>HTML</b> to paste your own markup.</p>
       )}
       {g.bodyMode === 'plain' && (
         <>
+          <div className="field"><span>Image</span><ImageField pick query={g.plain.heading} value={g.plain.image || ''} onChange={(v) => setGmailPlain({ image: v })} placeholder="or paste an image URL (blank = no image)" /></div>
           <label className="field"><span>Heading</span><input type="text" value={g.plain.heading} onChange={(e) => setGmailPlain({ heading: e.target.value })} /></label>
           <label className="field"><span>Body text</span><textarea value={g.plain.body} onChange={(e) => setGmailPlain({ body: e.target.value })} /></label>
           <label className="field"><span>Button label</span><input type="text" value={g.plain.btn} onChange={(e) => setGmailPlain({ btn: e.target.value })} /></label>

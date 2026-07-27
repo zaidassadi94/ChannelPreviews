@@ -12,7 +12,6 @@ import { resolveIndustry, emailPackFor, packFor } from '@/content/model'
 import { phImg, hueOf, avColor } from '@/lib/util'
 import { photoFor, cleanDomain, guessDomain, type AiMessage } from '@/lib/media'
 import { handleFromBrand } from '@/channels/instagram/templates'
-import { buildAiEmail } from '@/channels/gmail/emails'
 
 const oneOf = <T extends string>(v: string | undefined, list: readonly T[], dflt: T): T =>
   v && (list as readonly string[]).includes(v) ? (v as T) : dflt
@@ -145,12 +144,14 @@ async function applyGmail(m: AiMessage, logo: string | null) {
   const accent = s.brandColor || ep.accent || avColor(m.brand || '')
   const image = hasImg(m) ? await pic(m, 600, 300, m.brand || '') : ''
   const domain = cleanDomain(m.domain) || guessDomain(m.brand) || cleanDomain((ep.from.split('@')[1]) || '') || 'brand.com'
-  const html = buildAiEmail({ brand: m.brand || ep.brand, logo: logo || undefined, accent, image, heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '' })
+  // Land in "Compose" mode: the same rich email, but its copy + image live in editable
+  // fields so you can tweak the body right after generating (not baked into read-only HTML).
   s.setGmail({
     senderName: m.brand || ep.brand, senderEmail: `hello@${domain}`, logo,
     subject: m.subject || '', snippet: m.snippet || '',
     category: oneOf(m.category, ['primary', 'promotions', 'social', 'updates'], 'promotions'),
-    html, bodyMode: 'template',
+    plain: { heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '', accent, image },
+    bodyMode: 'plain',
   })
 }
 
