@@ -68,6 +68,14 @@ button{ font-family:inherit; }
 .btn.on{ background:#e9fbf1; color:#0b8043; border-color:#b6ebcc; }
 .btn.block{ width:100%; }
 
+/* Accessibility — a clear keyboard focus ring for tab users. Only shows for
+   keyboard navigation (:focus-visible), so mouse/touch clicks stay ring-free.
+   Inputs/selects/textarea keep their own softer focus treatment above. */
+button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+
 /* ---- section rail (thin, icon+label; opens its panel) ---- */
 .rail{ background:#fbfbfe; border-right:1px solid var(--line); display:flex; flex-direction:column; align-items:stretch; padding:12px 10px; gap:5px; overflow-y:auto; }
 .rail::-webkit-scrollbar{ width:0; }

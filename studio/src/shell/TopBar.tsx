@@ -58,7 +58,7 @@ export function TopBar() {
         <span style={{ fontSize: 14 }}>✨</span> AI
       </button>
       {/* Record — the recorder owns this button's content + class (childless on purpose). */}
-      <button ref={recRef} className="btn ghost" title="Record the preview (Chrome/Edge)" />
+      <button ref={recRef} className="btn ghost" title="Record the preview (Chrome/Edge)" aria-label="Record the preview" />
       <button className="btn ghost" onClick={onCopy}>Copy</button>
       <button className="btn primary" onClick={onExport}>{Icon.download}Export</button>
     </div>

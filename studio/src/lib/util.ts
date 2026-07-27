@@ -46,12 +46,29 @@ export function phImg(text: string, sub: string | null, hue?: number, w = 600, h
   return 'data:image/svg+xml,' + encodeURIComponent(svg)
 }
 
+/** Up to two initials — "Nova Market" → "NM", "Nova" → "N" — for a more
+    logo-like monogram than a single letter. */
+function monogram(name: string): string {
+  const parts = (name || '?').trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return (parts[0] || '?')[0].toUpperCase()
+}
+
+/** A generated brand monogram used as the guaranteed logo fallback. Keeps the
+    brand's palette color but adds a subtle top-light / bottom-shade sheen so it
+    reads like a real app icon rather than a flat swatch. */
 export function brandMark(name: string, size = 96): string {
   const bg = avColor(name)
+  const mono = monogram(name)
+  const fs = Math.round(size * (mono.length > 1 ? 0.38 : 0.44))
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>` +
+    `<defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'>` +
+    `<stop offset='0' stop-color='#ffffff' stop-opacity='0.16'/>` +
+    `<stop offset='1' stop-color='#000000' stop-opacity='0.18'/></linearGradient></defs>` +
     `<rect width='100%' height='100%' fill='${bg}'/>` +
-    `<text x='50%' y='54%' fill='#fff' font-family='Inter,Arial,sans-serif' font-weight='700' font-size='${Math.round(size * 0.44)}' text-anchor='middle' dominant-baseline='middle'>${escXml(initial(name))}</text>` +
+    `<rect width='100%' height='100%' fill='url(#s)'/>` +
+    `<text x='50%' y='54%' fill='#fff' font-family='Inter,Arial,sans-serif' font-weight='700' font-size='${fs}' text-anchor='middle' dominant-baseline='middle' letter-spacing='0.5'>${escXml(mono)}</text>` +
     `</svg>`
   return 'data:image/svg+xml,' + encodeURIComponent(svg)
 }
