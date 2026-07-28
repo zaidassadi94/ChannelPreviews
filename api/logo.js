@@ -53,6 +53,31 @@ module.exports = async function handler(req, res) {
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'anon';
   if (rateLimited(ip)) return send(res, 429, { ok: false, error: 'rate-limited' });
 
+  // ---- wordmark (horizontal logotype) via Logo.dev's Brand API ----
+  // Needs a SECRET key (sk_…, LOGODEV_SECRET) on a Pro/Enterprise plan — separate from the
+  // publishable image token above. Missing key / free plan / no wordmark → ok:false, and the
+  // client falls back to the brand name as a text wordmark. Response `logo` = the wordmark.
+  if (String((req.query && req.query.wordmark) || '') === '1') {
+    const secret = process.env.LOGODEV_SECRET || process.env.LOGO_DEV_SECRET || '';
+    if (!secret) return send(res, 200, { ok: false, reason: 'no-brand-key' }, true);
+    try {
+      const br = await fetch('https://api.logo.dev/brand/' + domain, { headers: { Authorization: 'Bearer ' + secret } });
+      if (br.ok) {
+        const d = await br.json().catch(() => ({}));
+        const wm = d && (typeof d.logo === 'string' ? d.logo : (d.logo && d.logo.url) || d.wordmark);
+        if (wm && /^https?:\/\//.test(wm)) {
+          const ir = await fetch(wm);
+          const ct = (ir.headers.get('content-type') || '').split(';')[0].trim();
+          if (ir.ok && ct.indexOf('image') === 0) {
+            const buf = Buffer.from(await ir.arrayBuffer());
+            if (buf.length > 120) return send(res, 200, { ok: true, url: 'data:' + ct + ';base64,' + buf.toString('base64') }, true);
+          }
+        }
+      }
+    } catch (e) { /* fall through to no-wordmark */ }
+    return send(res, 200, { ok: false, reason: 'no-wordmark' }, true);
+  }
+
   const key = process.env.LOGODEV_KEY || process.env.LOGO_DEV_KEY || '';
   const sources = [];
   // 1. Logo.dev — real full-colour logo (needs the free publishable token).

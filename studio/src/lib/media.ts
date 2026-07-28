@@ -44,6 +44,26 @@ export function cleanDomain(d?: string): string {
     .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').replace(/[^a-z0-9.\-]/g, '')
 }
 
+/** The brand's WORDMARK (horizontal logotype) as a data:/URL, for the email header —
+    via Logo.dev's Brand API (server-side, behind /api/logo?wordmark=1). Returns null when
+    unavailable (no Brand-API key/plan, or no wordmark), so the caller falls back to text. */
+const wordmarkMem: Record<string, string | null> = {}
+export async function resolveBrandWordmark(domain?: string): Promise<string | null> {
+  const d = cleanDomain(domain || '')
+  if (!d || d.indexOf('.') < 1) return null
+  if (d in wordmarkMem) return wordmarkMem[d]
+  const cached = lsGet('cs-wordmark:' + d)
+  if (cached != null) return (wordmarkMem[d] = cached === '0' ? null : cached)
+  try {
+    const r = await fetch(API.LOGO + '?domain=' + encodeURIComponent(d) + '&wordmark=1')
+    const j = await r.json().catch(() => ({}))
+    const url = j && j.ok && j.url ? (j.url as string) : null
+    wordmarkMem[d] = url
+    lsSet('cs-wordmark:' + d, url || '0')
+    return url
+  } catch { return (wordmarkMem[d] = null) }
+}
+
 /** A best-guess domain from a brand name ("Nova Market" → "novamarket.com"). */
 export function guessDomain(brand?: string): string | null {
   const slug = (brand || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')

@@ -10,7 +10,7 @@
 import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg, type CardItem } from '@/store/useStudio'
 import { resolveIndustry, emailPackFor, packFor } from '@/content/model'
 import { phImg, hueOf, avColor } from '@/lib/util'
-import { photoFor, cleanDomain, guessDomain, type AiMessage } from '@/lib/media'
+import { photoFor, cleanDomain, guessDomain, resolveBrandWordmark, type AiMessage } from '@/lib/media'
 import { handleFromBrand } from '@/channels/instagram/templates'
 
 const oneOf = <T extends string>(v: string | undefined, list: readonly T[], dflt: T): T =>
@@ -144,10 +144,12 @@ async function applyGmail(m: AiMessage, logo: string | null) {
   const accent = s.brandColor || ep.accent || avColor(m.brand || '')
   const image = hasImg(m) ? await pic(m, 600, 300, m.brand || '') : ''
   const domain = cleanDomain(m.domain) || guessDomain(m.brand) || cleanDomain((ep.from.split('@')[1]) || '') || 'brand.com'
+  // Header wordmark: try Logo.dev's Brand API (falls back to the brand name as text).
+  const wordmark = (await resolveBrandWordmark(domain)) || ''
   // Land in "Compose" mode: the same rich email, but its copy + image live in editable
   // fields so you can tweak the body right after generating (not baked into read-only HTML).
   s.setGmail({
-    senderName: m.brand || ep.brand, senderEmail: `hello@${domain}`, logo,
+    senderName: m.brand || ep.brand, senderEmail: `hello@${domain}`, logo, wordmark,
     subject: m.subject || '', snippet: m.snippet || '',
     category: oneOf(m.category, ['primary', 'promotions', 'social', 'updates'], 'promotions'),
     plain: { heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '', accent, image },
