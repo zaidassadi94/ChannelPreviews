@@ -74,6 +74,7 @@ function ContentPanel() {
           <label className="field"><span>Body text</span><textarea value={g.plain.body} onChange={(e) => setGmailPlain({ body: e.target.value })} /></label>
           <label className="field"><span>Button label</span><input type="text" value={g.plain.btn} onChange={(e) => setGmailPlain({ btn: e.target.value })} /></label>
           <label className="field"><span>Accent color</span><input type="text" value={g.plain.accent} onChange={(e) => setGmailPlain({ accent: e.target.value })} /></label>
+          <label className="field"><span>Unsubscribe / footer</span><textarea value={g.footer} onChange={(e) => setGmail({ footer: e.target.value })} /></label>
         </>
       )}
       {g.bodyMode === 'html' && (

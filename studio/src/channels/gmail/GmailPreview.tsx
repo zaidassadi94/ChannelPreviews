@@ -41,7 +41,7 @@ function resolveBody(g: GmailState): string {
   // "Compose" (plain) builds the same rich layout as a generated email, but live from
   // the editable fields — so the AI email's copy and image can be edited in place.
   if (g.bodyMode === 'plain')
-    return buildAiEmail({ brand: g.senderName, logo: g.logo || undefined, accent: g.plain.accent, image: g.plain.image, heading: g.plain.heading, body: g.plain.body, btn: g.plain.btn })
+    return buildAiEmail({ brand: g.senderName, logo: g.logo || undefined, accent: g.plain.accent, image: g.plain.image, heading: g.plain.heading, body: g.plain.body, btn: g.plain.btn, footer: g.footer })
   return g.html || '<div style="padding:40px;text-align:center;color:#888;font-family:Arial">No email body loaded.</div>'
 }
 function EmailBody() {
