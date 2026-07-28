@@ -106,7 +106,7 @@ export interface GmailState {
   html: string
   footer: string   // unsubscribe / footer copy (Compose mode)
   wordmark: string // header wordmark image (upload / Logo.dev); '' = brand name as text
-  plain: { heading: string; body: string; btn: string; accent: string; image: string }
+  plain: { heading: string; body: string; btn: string; accent: string; image: string; imageQuery: string }
   annot: { on: boolean; deal: string; code: string; expiry: string; img: string }
   filler: { on: boolean; position: number }
 }
@@ -373,7 +373,7 @@ export const useStudio = create<StudioState>((set, get) => ({
     category: 'promotions', labelChip: 'Inbox', bodyMode: 'template', html: '',
     footer: "You're receiving this because you subscribed.\nUnsubscribe · Manage preferences",
     wordmark: '',
-    plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5', image: '' },
+    plain: { heading: 'New arrivals, up to 40% off', body: "Our new-season arrivals just dropped — and they're up to 40% off this weekend only. Free shipping on orders over $50. Shop your favorites before they're gone.", btn: 'Shop the sale', accent: '#5b3df5', image: '', imageQuery: '' },
     annot: { on: false, deal: 'Up to 40% off', code: '', expiry: 'Ends Sunday', img: '' },
     filler: { on: true, position: 0 },
   },

@@ -152,7 +152,7 @@ async function applyGmail(m: AiMessage, logo: string | null) {
     senderName: m.brand || ep.brand, senderEmail: `hello@${domain}`, logo, wordmark,
     subject: m.subject || '', snippet: m.snippet || '',
     category: oneOf(m.category, ['primary', 'promotions', 'social', 'updates'], 'promotions'),
-    plain: { heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '', accent, image },
+    plain: { heading: m.heading || m.subject || '', body: m.bodyText || '', btn: m.buttonLabel || '', accent, image, imageQuery: m.imageQuery || m.imageAlt || '' },
     bodyMode: 'plain',
   })
 }

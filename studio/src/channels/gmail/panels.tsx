@@ -73,7 +73,7 @@ function ContentPanel() {
             <ImageField value={g.wordmark || ''} onChange={(v) => setGmail({ wordmark: v })} placeholder="or paste a logo URL (blank = brand name as text)" />
             <div className="panel-hint" style={{ marginTop: 6 }}>Shown at the top of the email. Leave blank to use the brand name as a text wordmark. (The round sender avatar keeps the brand icon.)</div>
           </div>
-          <div className="field"><span>Image</span><ImageField pick query={g.plain.heading} value={g.plain.image || ''} onChange={(v) => setGmailPlain({ image: v })} placeholder="or paste an image URL (blank = no image)" /></div>
+          <div className="field"><span>Image</span><ImageField pick query={g.plain.imageQuery} value={g.plain.image || ''} onChange={(v) => setGmailPlain({ image: v })} placeholder="or paste an image URL (blank = no image)" /></div>
           <label className="field"><span>Heading</span><input type="text" value={g.plain.heading} onChange={(e) => setGmailPlain({ heading: e.target.value })} /></label>
           <label className="field"><span>Body text</span><textarea value={g.plain.body} onChange={(e) => setGmailPlain({ body: e.target.value })} /></label>
           <label className="field"><span>Button label</span><input type="text" value={g.plain.btn} onChange={(e) => setGmailPlain({ btn: e.target.value })} /></label>

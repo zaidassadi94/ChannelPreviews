@@ -27,12 +27,24 @@ export function PhotoPicker({ query = '', onPick, orientation = 'landscape', aut
     finally { setLoading(false) }
   }
 
-  // Show results immediately only when asked (post-generation); elsewhere we wait for a
-  // search so opening a panel full of image fields doesn't fan out dozens of requests.
+  // On mount, show results immediately only when asked (post-generation). When the subject
+  // then CHANGES — a new generation, or an edited product title — re-seed the box and
+  // re-fetch (debounced, so typing doesn't thrash) instead of leaving the old suggestions.
+  const first = useRef(true)
   useEffect(() => {
-    if (autoLoad && query.trim()) { setQ(query); seedBase.current = 0; run(query, 0) }
+    if (first.current) {
+      first.current = false
+      if (autoLoad && query.trim()) run(query, 0)
+      return
+    }
+    const id = setTimeout(() => {
+      setQ(query); seedBase.current = 0
+      if (autoLoad && query.trim()) run(query, 0)
+      else setUrls([])
+    }, 350)
+    return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [query])
 
   const search = () => { seedBase.current = 0; run(q, 0) }
   const refresh = () => { seedBase.current += 8; run(q, seedBase.current) }
