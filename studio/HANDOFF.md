@@ -1,6 +1,10 @@
 # Channel Studio (unified app) — HANDOFF
 
-This is the working note for continuing the **`studio/`** rebuild. Read this first.
+This is the working note for continuing the **`studio/`** rebuild.
+
+> **⚠️ New session: read the repo-root `HANDOVER.md` and `deferred.md` FIRST** — they carry
+> the *current* state (the AI-panel + Gmail + images work) and all parked / to-discuss items.
+> This file is the deeper architecture reference + session logs.
 
 ## TL;DR
 We are consolidating six standalone HTML tools (at the repo root) into ONE
@@ -357,10 +361,15 @@ the owner handles Vercel). Keep `npm run build` GREEN + smoke-test per change.
 > functions stay at the repo root. A full round of UX polish shipped (collapsible Canva-style
 > panel, real colored channel icons, favicon, hover-only Simulate, realistic WhatsApp footers).
 >
-> **Read first (in order).** `studio/HANDOFF.md` — architecture, the per-channel migrate recipe,
-> conventions/gotchas, the **Backlog**, and the session logs. Then `studio/README.md`. The root
-> `README.md` / `HANDOFF.md` describe the **legacy** standalone HTML tools (now superseded by the
-> studio) — reference only.
+> **Read first (in order).** Repo-root **`HANDOVER.md`** (current state — the AI-panel + Gmail +
+> images work, env vars, where the code lives) and **`deferred.md`** (parked / to-discuss). Then
+> this file (`studio/HANDOFF.md`) for architecture, the per-channel recipe, gotchas, and session
+> logs; then `studio/README.md`. The root `README.md` / `HANDOFF.md` describe the **legacy**
+> standalone HTML tools (superseded) — reference only.
+>
+> _(The rest of this kickoff block is from the shared-shell-port era — the app is long since at
+> parity and promoted to Vercel; treat it as historical. `HANDOVER.md` + `deferred.md` are the
+> live handoff.)_
 >
 > **Confirm the starting state before doing ANYTHING — verify, don't assume:**
 > 1. **Git.** `git status` clean; `main`, `origin/main`, and branch
@@ -441,6 +450,35 @@ promoted. These are polish + reach.
    reference). Decide whether to keep them in-repo (documented as legacy) or remove.
 8. **Real-logo polish.** `resolveBrandLogo` falls back to favicons without `LOGODEV_KEY`;
    consider a small curated logo set for the demo brands so mockups look crisp keyless.
+
+## Session log — AI panel + images + Gmail (2026-07-28, trunk on `main`)
+Started by diagnosing an **AI brand-identity drift** (same brief → correct/stale/invented
+brand; copy & image drifted off-topic). Root cause: every generation fed the *previous* run's
+`brand`+`industry` back to `/api/generate`, and the newly-added **brand-website field** was a
+third competing signal. Fixed via **Option A** (roll the website field back) + brand-first
+images, then broadened into an AI-flow + Gmail polish. Each commit build-green (tsc strict) +
+smoke-tested + driven in headless Chromium; all fast-forwarded to `main`. Highlights:
+
+- **Image search is brand-first** — `api/generate.js` leads `imageQuery` with the brand
+  ("Nike Air Force 1 sneakers") and adds a brand-free `imageAlt` fallback; `photoFor` tries
+  query → alt → keyword (`lib/media.ts`). (Earlier this stripped brand names, so real brands
+  got generic/wrong photos.)
+- **Reusable `PhotoPicker`** (search box → Pexels + refresh) built into `ImageField` via an
+  opt-in `pick` prop, so every **content** image field (not logos) has search/upload/pick.
+  Auto-loads where there's a subject; **re-fetches when the subject changes** (debounced).
+- **WhatsApp product carousel restored** (preset + AI + manual) with a **per-card editor**
+  (`shell/CarouselEditor.tsx`, shared with **RCS**) — upload + a per-card photo picker.
+- **Gmail overhaul.** Merged "Message"+"Body" into one **Content** section; body is editable
+  in place (**Compose** mode renders `buildAiEmail` live from fields, incl. image picker) with
+  a **HTML paste mode**; **pasted HTML renders in a sandboxed iframe** so its `@media` rules
+  wrap on mobile (Export handled by html2canvas `onclone`, mirroring the old tool); editable
+  **unsubscribe/footer**; the **header is a wordmark** (upload → Logo.dev Brand API → text),
+  avatar keeps the icon; the Gmail image picker seeds from `imageQuery`, not the heading.
+- **UX clarity:** Generate lands on the **copy** section (per-channel `COPY_SECTION` map, not a
+  positional guess); IG/FB **"Creative" → "Content"** (+ "Advertiser" → "Profile").
+- **New env var** `LOGODEV_SECRET` (Brand API wordmark, secret `sk_`, Pro plan; optional).
+- **Parked** (see root `deferred.md`): Gmail "Designs" rich-template gallery, Brand-API key
+  rotation, wordmark live-verification, WhatsApp format-tiles / shared `FormatPicker`.
 
 ## Session log — shared-shell port (branch `claude/studio-shared-shell-port-jozeu8`)
 Ported the five shared features on top of the 11-channel migration, one commit each, each

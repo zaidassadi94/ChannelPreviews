@@ -1,144 +1,95 @@
-# Handover — AI "Generate" identity & image drift (brand-website feature)
+# Handover — Channel Studio (read this first)
 
-_Last updated: 2026-07-27. Owner asked to pause here, hand over, and have a fresh
-session investigate the "Generate with AI" identity/image problems before we go further._
+_Last updated: 2026-07-28._
 
-## TL;DR
+## What this repo is
+**Channel Studio** — a React 19 + Vite + TypeScript single-page app in `studio/` that renders
+pixel-accurate marketing-channel mockups (WhatsApp, RCS, SMS, Gmail, Push, In-App, Game,
+Cards, Onsite, Web Push, Instagram & Facebook Ads). One shared shell swaps only the
+sidebar + preview per channel. Serverless functions live at the repo root in `api/`
+(`generate`, `photo`, `logo`). Deployed on **Vercel from `main`** (`studio/dist`).
 
-The **brand-website field** (added this session) was meant to pin smaller brands so
-the AI gets them right. Instead the AI section now behaves worse than before it
-existed: for the **same** brief + website, the business name comes out **correct one
-time, stale the next, invented the next**, and the copy/image drift off-topic (into
-gaming/electronics for a shoe brand). The owner's instinct — "we were better off
-before the website field" — is reasonable; rolling this part back is a valid option
-(see **Rollback**). A fresh session should investigate with the prompt at the bottom
-and come back with options before changing more code.
+## Read next, in order
+1. **`deferred.md`** — everything parked / to-discuss + improvement ideas. Read it before
+   picking up work.
+2. **`studio/HANDOFF.md`** — architecture, the per-channel recipe, conventions/gotchas, and
+   the full session logs (this session's log is at the end).
+3. `studio/README.md`, root `README.md` — orientation (root `README`/`HANDOFF` describe the
+   retired legacy tools, reference only).
 
-## What the product is (quick orientation)
+## Working agreement (owner's standing prefs — see `CLAUDE.md`)
+- **Trunk-based.** Finish → `npm run build` green + Chromium smoke test → commit → fast-forward
+  `main` and `git push origin main`. Always push when a task is done.
+- Commits authored `Claude <noreply@anthropic.com>`; never put a model identifier in the repo.
+- **White-label:** fictional demo brands, American names, dollar amounts, OTPs via `genOtp()`.
+- **api/ changes need a Vercel redeploy of `main`** before they show live. The live site was
+  occasionally a build behind during the last session — verify the latest commit is deployed.
 
-- React 19 + Vite + TS SPA at `studio/`. Zustand store: `studio/src/store/useStudio.ts`.
-- 12 marketing channels (WhatsApp, RCS, SMS, Push, In-App, Game, Gmail, OSM, Instagram,
-  Facebook, Web Push, Cards). Each has `panels.tsx` / `*Preview.tsx` / `templates.ts`.
-- "Generate with AI" panel: `studio/src/shell/AiPanel.tsx` → POSTs a brief to the
-  serverless generator `api/generate.js` (Groq if `GROQ_API_KEY` set, else Gemini;
-  schema-locked JSON) → `studio/src/lib/applyAi.ts` maps the one message onto the
-  active channel's store slice, the same way built-in templates do.
-- Campaign continuity: `studio/src/lib/aiCampaign.ts` (added this session) auto-generates
-  other channels for the same brand when you switch to them.
-- Deploy: Vercel, from `main`. **API changes only take effect after redeploy** — several
-  confusing test results this session were the previous deploy still being live.
-- CI: `.github/workflows/ci.yml` runs `studio` build + `studio/tests/smoke.mjs`.
-
-## Reproduced symptom (owner's screenshots, all WhatsApp, brief "50% off on new models")
-
-| Brand website typed | Business name shown | Copy topic | Image |
-|---|---|---|---|
-| `birkenstock` | **Birkenstock** (correct) | suede sandals | sandals |
-| `birkenstock` | **Stadium Goods** (stale, from an earlier test) | "drops in the game" | Dreamcast console |
-| `birkenstock.com` | **SmartStyle** (invented) | "gaming laptops" | gaming laptop |
-
-Same input, three different identities. The image always matches the (wrong) copy, so
-**image search itself is working** — the defect is upstream, in **which brand/industry
-the model writes for**.
-
-## Preliminary diagnosis (hypotheses, most→least likely)
-
-1. **Stale identity is fed back into every generation.** `applyIdentity()`
-   (`studio/src/lib/applyAi.ts:57`) writes the model's `brand` and `industry` into the
-   store on every generation and they persist. Both `AiPanel.generate()` and
-   `aiCampaign.fetchGeneratedMessage()` then send `brand: s.brand.name` **and**
-   `industry: s.industry` back to `api/generate.js` on the next run. So once a prior
-   test set brand=`SmartStyle`, industry=`gaming` (owner tested telecom/gaming earlier),
-   those ride along as strong context. The pinned website is a **third, competing**
-   signal, and the model resolves the conflict inconsistently — hence Birkenstock vs
-   Stadium Goods vs SmartStyle for identical input. **This is the core issue and it
-   predates the website field; the website field just made it obvious by raising the
-   expectation that the site fully drives identity.**
-
-2. **Pinned site is authoritative in words only, not in the payload.** The prompt says
-   the site "overrides any brand from the brief or the app" (`api/generate.js`
-   `systemPrompt`, the `ctx.site ? …` line), but we still send the stale
-   `brand`/`industry` and still tell the model "keep the current brand if the brief
-   implies no business." A capable model would obey; Groq's llama-3.1/3.3 under
-   conflicting context sometimes doesn't.
-
-3. **Bare-word "websites" without a TLD are accepted as domains.** `cleanDomain()`
-   (`studio/src/lib/media.ts:42`) does not require a dot, so `birkenstock` (no `.com`)
-   is passed as `domain`. `api/generate.js` then sets `message.domain = "birkenstock"`
-   (not resolvable → logo lookup fails, a stale logo lingers) and the prompt quotes a
-   non-domain as the "website." Decide whether a no-dot value should be treated as a
-   brand-name hint instead of a domain, or ignored.
-
-4. **"new models" is genuinely ambiguous** ("new models" = product models, or console/
-   laptop models). With a gaming/electronics industry still in state (#1), the model
-   reads it as gaming. Not a bug on its own, but it interacts badly with #1.
-
-5. **Owner's hypothesis — "keyword not being used / image search broken by the site."**
-   Likely **not** the mechanism: images render and match the copy. The image just
-   matches the *wrong* copy. Worth confirming but not the primary lead.
-
-Not yet ruled out: the **"New image"** button re-dispatches the stored `lastAi` message
-(`studio/src/lib/aiCampaign.ts` `regenerateImage`); if `lastAi` is stale it would
-re-apply an old brand/copy with a new photo. Confirm whether the screenshots came from
-Generate or from New image.
-
-## Key files & code paths
-
-- `api/generate.js` — `systemPrompt(ctx)` (identity + image rules), `schemaFor(channel)`,
-  the `ctx.site` handling, and `message.domain = ctx.site` near the `send(200)`.
-- `studio/src/shell/AiPanel.tsx` — `generate()`: builds the POST (`brand`, `industry`,
-  `brief`, `domain`), resolves the logo, calls `applyAiMessage`, `startAiCampaign`.
-- `studio/src/lib/applyAi.ts` — `applyIdentity()` (persists brand/industry),
-  `applyAiMessage()` (dispatch + `setBrandIdentity` + `lastAi`), `producedImage()`.
-- `studio/src/lib/aiCampaign.ts` — `fetchGeneratedMessage()`, `generateChannelForCampaign()`,
-  `useAiChannelSync()`, `regenerateImage()`.
-- `studio/src/store/useStudio.ts` — `setIndustry` (resets brand identity on industry
-  change only), `setBrandIdentity`, campaign state (`aiBrief`/`aiSite`/`aiLogo`/`aiDone`/
-  `lastAi`), `setBrand`.
-- `studio/src/lib/media.ts` — `cleanDomain`, `resolveBrandLogo`, `guessDomain`, `AiMessage`.
-
-## Rollback options (all viable — owner explicitly asked)
-
-The brand-website behavior is entangled with other good changes from the same commits
-(New-image button, cycling tips, collapsed examples, campaign continuity), so prefer a
-**surgical** rollback over reverting whole commits.
-
-- **A. Surgical (recommended if pausing the feature):** remove the website field and its
-  threading only — the `site` input in `AiPanel.tsx`, `aiSite` in the store, the
-  `domain` param in both fetch paths, and the `ctx.site` block + prompt line in
-  `api/generate.js`. Keep New-image, tips, examples, campaign. ~small, mechanical.
-- **B. Fix forward (recommended if keeping the feature):** make the site the single
-  source of truth — when a site (or brand) is pinned, **stop sending the stale
-  `industry`**, send the pinned brand as `brand`, and reset `industry`/`brand` context
-  so it can't leak from a previous run; require a real domain (a dot) before treating a
-  value as a site. Consider a "clear / new brand" affordance in the panel.
-- **C. Full git revert:** revert `a84b18d`, `42d317d`, `ea76753`, `c90eb8a`, `cd093a4`
-  (and `9efd9b4` for the campaign). Loses the bundled improvements — least preferred.
-
-Relevant commits this session (newest first): `cd093a4` revert image restriction ·
-`c90eb8a` trust model for brand id · `ea76753` brand spacing · `42d317d` lock brand to
-site + collapse examples · `a84b18d` AI panel (New-image, website field, examples, tips,
-sensible-images) · `9efd9b4` campaign continuity.
-
-## How to verify any change
-
+## Verify before doing anything
 ```
-cd studio && npm run build && node tests/smoke.mjs     # must print "Smoke test passed"
-node -c api/generate.js                                 # API is CommonJS, syntax-check it
+cd studio && npm install && npm run build   # tsc --noEmit strict + vite build (release gate)
+node tests/smoke.mjs                          # "Smoke test passed — 12 channels, no console errors"
+node -c ../api/generate.js                    # api/ is CommonJS — syntax-check
 ```
-Remember: `api/*` changes need a Vercel redeploy of `main` before they show on the live
-site. Test the live behavior only after the deploy lands.
+Playwright/Chromium is pre-installed (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). If the
+smoke test can't find the browser, the provisioned revision may differ from the pinned
+Playwright — the browser bridge trick is in the git history, or just re-provision.
 
-## Working agreement / conventions (for the next session)
+---
 
-- Branch: `claude/studio-channel-dropdown-fix-evp6aj`. Owner works trunk-based: fast-
-  forward `main` from the branch, `git push origin main`, keep the branch synced.
-- Commits must be authored `Claude <noreply@anthropic.com>` (a stop-hook enforces this;
-  if it complains, `git commit --amend --no-edit --reset-author` then force-with-lease).
-- White-label only: fictional demo brands; don't ship real logos as assets.
-- Don't put the model identifier in commits/PRs/code.
+## What shipped last session (AI panel + images + Gmail)
+The session began by diagnosing an **AI brand-identity drift** (same brief → correct / stale /
+invented brand) and turned into a broad polish of the "Generate with AI" flow and Gmail.
+All on `main`; 13 commits (newest first — `git log` for detail):
 
-## Investigation prompt for the fresh session
+- **Photo picker** now **refreshes on a new subject** (was frozen on the previous generation)
+  and the **Gmail image picker seeds from the AI `imageQuery`**, not the marketing heading.
+- **Gmail header = wordmark** (uploaded image → Logo.dev **Brand API** wordmark → brand-name
+  text); the round avatar keeps the icon. `api/logo.js?wordmark=1` (needs `LOGODEV_SECRET`,
+  falls back to text).
+- **Gmail unsubscribe / footer** copy is editable.
+- **Pasted email HTML renders in a sandboxed iframe** → fixes mobile media-query wrapping +
+  CSS isolation; Export handled via html2canvas `onclone` (restores the old tool's approach).
+- **Gmail body is editable in place** — "Compose" mode renders the rich `buildAiEmail` layout
+  live from fields (image + heading + body + button + accent); plus a **"HTML" paste mode**.
+- **UX clarity:** Generate **lands on the copy** section (was a positional guess); IG/FB
+  **"Creative" → "Content"** (+ "Advertiser" → "Profile"); Gmail **"Message" + "Body" merged
+  into one "Content"** section.
+- **Photo picker (search + refresh)** built into every content image field (`shell/PhotoPicker`
+  in `shell/ImageField`); auto-loads where there's a subject.
+- **WhatsApp product carousel restored** (preset + AI + manual) with a **per-card editor**
+  (upload + per-card picker); the editor is shared and reused by **RCS**.
+- **Brand-first image search** — `imageQuery` leads with the brand, with a brand-free
+  `imageAlt` fallback the client auto-tries.
+- **Rolled back the brand-website field** (the drift's competing signal) and added cycling
+  placeholder prompts in the brief box + split "New image" / picker.
 
-> See the copy-paste block the owner has — it's reproduced in the chat message that
-> accompanied this handover, and below.
+### Environment variables (Vercel)
+| Var | Purpose | Notes |
+|---|---|---|
+| `GROQ_API_KEY` **or** `GEMINI_API_KEY` | AI copy (`/api/generate`) | Groq preferred if set |
+| `PEXELS_KEY` | live photos (`/api/photo`) | favicons/placeholders work without |
+| `UNSPLASH_KEY` | photos (optional, tried before Pexels) | optional |
+| `LOGODEV_KEY` | **icon** logo (image CDN, publishable `pk_`) | avatar icon; keyless favicon fallback |
+| `LOGODEV_SECRET` | **wordmark** (Brand API, secret `sk_`) | **NEW**; needs Pro/Enterprise plan; falls back to text wordmark. Supports comma-separated keys once rotation lands (see `deferred.md`). |
+| `CS_ALLOW_ORIGINS` | CORS allowlist | optional |
+
+### Where the AI / Gmail code lives (for the next session)
+- **AI panel:** `shell/AiPanel.tsx` → `/api/generate` → adapters in `lib/applyAi.ts`.
+- **Image search:** `api/generate.js` (`systemPrompt`: brand-first `imageQuery` + `imageAlt`);
+  `lib/media.ts` (`photoFor` = query→alt→keyword; `photoCandidates`; `resolveBrandLogo`;
+  `resolveBrandWordmark`).
+- **Photo picker:** `shell/PhotoPicker.tsx` (search/refresh, reacts to query changes) inside
+  `shell/ImageField.tsx` (opt-in `pick` + `query` seed). Carousel editor: `shell/CarouselEditor.tsx`.
+- **Gmail:** `channels/gmail/GmailPreview.tsx` (`EmailBody`: div for Compose/Template, **iframe
+  for HTML mode**; `resolveBody`), `emails.ts` (`buildAiEmail`, `eWrap`, `GMAIL_TEMPLATES`),
+  `panels.tsx` (`ContentPanel`: Subject/Preview → body modes **Template | Compose | HTML** →
+  footer → header wordmark → inbox), store `gmail` slice (`bodyMode`, `plain{heading,body,btn,
+  accent,image,imageQuery}`, `footer`, `wordmark`).
+- **Export:** `lib/useCapture.ts` (html2canvas; `onclone` swaps the email iframe → div).
+
+### Open loops
+All parked items and improvement ideas are in **`deferred.md`**. Headlines: the Gmail
+**"Designs" rich-template gallery** (agreed, not built), **Brand-API key rotation**, the
+**wordmark live-verification** once a secret key is set, and the **WhatsApp format-tiles /
+shared FormatPicker**.
