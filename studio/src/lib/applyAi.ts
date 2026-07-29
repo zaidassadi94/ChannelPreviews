@@ -8,7 +8,7 @@
    with the AI-suppress flag so the preview's auto-first-template effect can't clobber it. */
 
 import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg, type CardItem } from '@/store/useStudio'
-import { resolveIndustry, emailPackFor, packFor } from '@/content/model'
+import { resolveIndustry, emailPackFor } from '@/content/model'
 import { phImg, hueOf, avColor } from '@/lib/util'
 import { photoFor, cleanDomain, guessDomain, resolveBrandWordmark, type AiMessage } from '@/lib/media'
 import { handleFromBrand } from '@/channels/instagram/templates'
@@ -32,6 +32,12 @@ async function pic(m: AiMessage, w: number, h: number, label: string): Promise<s
   return real || phImg(label || 'Preview', null, hueOf((label || 'x') + (m.imageQuery || '')), w, h)
 }
 const hasImg = (m: AiMessage) => !!(m.imageKeyword || m.imageQuery)
+/** The per-message list for a STACKABLE channel: the `messages` envelope when the server
+    sent one, else the message itself as a single-entry list (back-compat / single briefs). */
+const msgsOf = (m: AiMessage): AiMessage[] => (m.messages && m.messages.length ? m.messages : [m])
+/** Did this generation produce more than one stacked message? (Gates the AI-panel hero
+    picker, which only makes sense for a single hero photo.) */
+export const isMultiAi = (m: AiMessage): boolean => !!(m.messages && m.messages.length > 1)
 const urlOf = (m: AiMessage, fallback: string) => cleanDomain(m.domain) || guessDomain(m.brand) || fallback || 'example.com'
 
 /* ---- serializers (arrays → the compact strings the store/render parse) ---- */
@@ -208,17 +214,20 @@ async function applyWebpush(m: AiMessage, logo: string | null) {
 async function applyCards(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
   const brand = m.brand || s.cards.appName
-  const image = hasImg(m) ? await pic(m, 600, 300, brand) : ''
-  const aiCard: CardItem = { image, title: m.title || m.headline || 'New update', body: m.body || '', tag: m.tag || 'For you', time: 'now', unread: true }
-  // a couple of filler cards from the current vertical's pack so the inbox reads full
-  const p = packFor(s.ctxId())
-  const arrival = p && p.carousel[0] ? p.carousel[0][0] : 'New arrival'
-  const arrivalImg = p ? (await photoFor(undefined, 600, 300, arrival, aiSeed)) || phImg(arrival, null, hueOf(arrival + '9'), 600, 300) : ''
-  const filler: CardItem[] = p ? [
-    { image: '', title: `Order #${p.orderId} shipped`, body: 'On its way — arriving soon.', tag: 'Order', time: '3h', unread: false },
-    { image: arrivalImg, title: arrival, body: 'Just added — take a look.', tag: 'New', time: '1d', unread: false },
-  ] : []
-  s.setCards({ appName: brand, logo, screenTitle: s.cards.screenTitle || 'Updates', items: [aiCard, ...filler] })
+  // One card per message the brief described (see the server's MULTIPLE MESSAGES rule).
+  // Only the first is marked unread ("1 new"); relative times step back so the feed reads
+  // like a real inbox. No hard-coded filler — the feed shows exactly what was asked for.
+  const parts = msgsOf(m)
+  const times = ['now', '2h', '5h', '1d', '2d']
+  const items: CardItem[] = await Promise.all(parts.map(async (c, i): Promise<CardItem> => ({
+    image: hasImg(c) ? await pic(c, 600, 300, brand) : '',
+    title: c.title || c.headline || 'New update',
+    body: c.body || '',
+    tag: c.tag || 'For you',
+    time: times[i] || `${i + 1}d`,
+    unread: i === 0,
+  })))
+  s.setCards({ appName: brand, logo, screenTitle: m.screenTitle || s.cards.screenTitle || 'Updates', items })
 }
 
 /** After "Generate", open the section that holds the copy the user will want to tweak.

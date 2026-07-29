@@ -31,6 +31,11 @@ export interface AiMessage {
   items?: { t: string; d?: string; reply?: string }[]
   cards?: { name: string; price?: string; imageKeyword?: string; imageQuery?: string; imageAlt?: string }[]
   imageKeyword?: string; imageQuery?: string; imageAlt?: string
+  // Multi-message envelope (STACKABLE channels: cards / whatsapp / rcs / sms / push). When
+  // present, each entry is a full per-message object with the same fields as this one; the
+  // top-level brand/industry/domain (and cards' screenTitle) are shared across them all.
+  messages?: AiMessage[]
+  screenTitle?: string
 }
 
 const lsGet = (k: string): string | null => { try { return localStorage.getItem(k) } catch { return null } }

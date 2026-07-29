@@ -32,7 +32,7 @@ function CardsPanel() {
   const move = (i: number, d: -1 | 1) => { const j = i + d; if (j < 0 || j >= items.length) return; const n = items.slice(); [n[i], n[j]] = [n[j], n[i]]; setCards({ items: n }) }
   return (
     <>
-      <p className="panel-hint">The list of cards in the app inbox. Drag order with the arrows; the dot marks a card as unread.</p>
+      <p className="panel-hint">The list of cards in the app inbox — the AI fills these from your brief. <b>Add as many as you like</b> with <b>+ Add card</b> below; reorder with the arrows, and the dot marks a card as unread.</p>
       {items.map((c, i) => (
         <div className="msg-card" key={i}>
           <div className="mc-top">

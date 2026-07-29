@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "prefetch:photos": "node scripts/prefetch-photos.mjs",
     "test:smoke": "node tests/smoke.mjs",
-    "test:cards-scroll": "node tests/cards-scroll.mjs"
+    "test:cards-scroll": "node tests/cards-scroll.mjs",
+    "test:ai-multi": "node tests/ai-multi.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

@@ -4,7 +4,7 @@ import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, applyChosenImage, heroOrient, COPY_SECTION } from '@/lib/applyAi'
+import { applyAiMessage, applyChosenImage, heroOrient, isMultiAi, COPY_SECTION } from '@/lib/applyAi'
 import { regenerateImage } from '@/lib/aiCampaign'
 import { resolveBrandLogo, type AiMessage } from '@/lib/media'
 import { PhotoPicker } from '@/shell/PhotoPicker'
@@ -60,10 +60,11 @@ export function AiPanel() {
 
   // "New image" (re-roll) / the photo picker act on the channel on screen, so they're
   // only offered when this channel's last generation actually placed a photo.
-  const canReimage = !!lastAi && lastAi.hasImage && lastAi.channel === channel
-  // A carousel has several photos, one per card — the single-hero picker doesn't apply,
-  // so hide it and let the per-card picker in the Chat editor handle those.
-  const lastIsCarousel = !!lastAi && lastAi.channel === channel && lastAi.m.type === 'carousel'
+  // A carousel, or a multi-message stack (several cards / a thread / stacked pushes), has
+  // several photos — the single-hero picker doesn't apply, so hide it and let the per-item
+  // pickers in the channel's own editor handle those.
+  const lastIsCarousel = !!lastAi && lastAi.channel === channel && (lastAi.m.type === 'carousel' || isMultiAi(lastAi.m))
+  const canReimage = !!lastAi && lastAi.hasImage && lastAi.channel === channel && !lastIsCarousel
 
   useEffect(() => {
     if (brief || focused) return

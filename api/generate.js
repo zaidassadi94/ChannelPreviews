@@ -78,6 +78,29 @@ const btnItems = S('OBJECT', { properties: {
   label: STR, type: S('STRING', { enum: ['reply', 'url', 'call', 'copy'] }), value: STR, reply: STR,
 }, required: ['label'] });
 
+// Channels whose surface shows a STACK/THREAD of messages (app-inbox feed, chat thread,
+// lock-screen notification stack) rather than a single artefact. For these the model
+// returns a `messages` array — one entry per distinct message the brief asks for.
+const STACKABLE = { cards: 1, whatsapp: 1, rcs: 1, sms: 1, push: 1 };
+const MAX_MESSAGES = 5;
+
+// Wrap a per-message property set into a multi-message envelope: shared identity at the
+// top level, then a `messages` array of the per-message fields. Used for STACKABLE channels.
+const messagesField = (itemProps, itemRequired) => S('ARRAY', {
+  description: 'one entry per distinct message the brief asks for, in the order given (see the MULTIPLE MESSAGES rule). Usually one entry; 2-' + MAX_MESSAGES + ' only when the brief clearly lists several messages meant to share one screen.',
+  items: S('OBJECT', { properties: itemProps, required: itemRequired }),
+});
+function multiSchema(itemProps, itemRequired, extraTop) {
+  return S('OBJECT', {
+    properties: Object.assign(
+      { brand: brandField, industry: industryField, domain: domainField },
+      extraTop || {},
+      { messages: messagesField(itemProps, itemRequired) },
+    ),
+    required: ['brand', 'industry', 'messages'],
+  });
+}
+
 function schemaFor(channel) {
   if (channel === 'gmail') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
@@ -125,11 +148,12 @@ function schemaFor(channel) {
     title: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,
     actions: S('ARRAY', { items: STR }),
   }, required: ['brand', 'industry', 'title', 'body'] });
-  if (channel === 'cards') return S('OBJECT', { properties: {
-    brand: brandField, industry: industryField, domain: domainField,
-    title: STR, body: STR, tag: S('STRING', { description: 'a short 1-word label/badge for the card, e.g. Offer, Order, New, Reward' }),
+  if (channel === 'cards') return multiSchema({
+    title: STR, body: STR, tag: S('STRING', { description: 'a short 1-word label/badge for THIS card, e.g. Offer, Order, New, Reward' }),
     imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,
-  }, required: ['brand', 'industry', 'title', 'body'] });
+  }, ['title', 'body'], {
+    screenTitle: S('STRING', { description: 'the inbox screen title at the top of the feed, e.g. "Updates", "Inbox", "For you" — one or two words' }),
+  });
   if (channel === 'game') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.game }),
@@ -167,9 +191,15 @@ const CHANNEL_VOICE = {
 
 function systemPrompt(ctx) {
   const brand = ctx.brand || 'the brand';
+  const stackable = !!STACKABLE[ctx.channel];
   return [
-    `You are a senior lifecycle-marketing copywriter. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send. The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`,
+    stackable
+      ? `You are a senior lifecycle-marketing copywriter. Write the message(s) for the ${ctx.channel} channel that a great brand would actually be proud to send — this surface shows a stack/thread, so the schema takes a "messages" array (see MULTIPLE MESSAGES below). The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`
+      : `You are a senior lifecycle-marketing copywriter. Write ONE message for the ${ctx.channel} channel that a great brand would actually be proud to send. The app is currently set to brand "${brand}" (${ctx.industry || 'consumer'}), but that is only a fallback — let the BRIEF decide who this is for.`,
     `Return ONLY the structured fields defined by the schema — nothing else. No HTML, no markdown (except WhatsApp *bold*), no links other than plain domains, no instructions.`,
+    stackable
+      ? `MULTIPLE MESSAGES: return a "messages" array. READ THE BRIEF CAREFULLY — if it describes several distinct messages meant to appear together on this one screen (a numbered or bulleted list like "1... 2... 3...", "three cards", "a welcome and then a reminder"), return ONE array entry per distinct message, IN THE ORDER THE BRIEF GIVES THEM, each fully and independently written with its own copy, its own tag/type, and its own image fields. If the brief describes a single message, return exactly ONE entry. NEVER invent extra messages the brief didn't ask for, NEVER collapse several distinct asks into one entry, and NEVER drop asks — if the brief lists three, return three. Maximum ${MAX_MESSAGES} entries. The identity fields (brand, industry, domain) stay at the top level and are shared by every message.`
+      : ``,
     // --- identity: the brief decides the brand/industry; the app switches its UI to match ---
     `Identity: from the brief, decide the brand and industry. If the brief names or implies a specific business or sector (e.g. "a grocery retailer", "for a bank", "Nike"), write for THAT — invent a short, realistic, brandable name if none is given — and do NOT reuse "${brand}" when the brief implies a different business. If the brief implies no particular business, keep "${brand}" (${ctx.industry || 'consumer'}). Return your choice in the "brand" and "industry" fields. Always write "brand" as the real company's FULL, correct name — never an abbreviation or an invented variant of a real brand (a brief for "birkenstock" is "Birkenstock", never "Birki"). Set "domain" to the brand's real website domain whenever "brand" is a real company you can identify or reasonably guess (e.g. nike.com, nobero.com), not only famous names; leave it empty only for clearly generic or invented brands.`,
     // --- craft ---
@@ -269,6 +299,8 @@ module.exports = async function handler(req, res) {
     return send(res, 500, { ok: false, error: 'No AI key set. Add GROQ_API_KEY (recommended) or GEMINI_API_KEY in Vercel → Settings → Environment Variables.' });
 
   const schema = schemaFor(channel);
+  // Stackable channels can return up to MAX_MESSAGES rich messages, so give them more room.
+  const outTokens = STACKABLE[channel] ? Math.min(2400, LIMITS.maxTokens * 3) : LIMITS.maxTokens;
 
   // Each returns { ok:true, text, empty? } or { ok:false, http, info }. A 429/404
   // falls through to the next model (separate quota); other errors stop.
@@ -277,7 +309,7 @@ module.exports = async function handler(req, res) {
     const payload = {
       systemInstruction: { parts: [{ text: systemPrompt(ctx) }] },
       contents: [{ role: 'user', parts: [{ text: `Brief: ${brief}` }] }],
-      generationConfig: { temperature: 0.75, maxOutputTokens: LIMITS.maxTokens, responseMimeType: 'application/json', responseSchema: schema },
+      generationConfig: { temperature: 0.75, maxOutputTokens: outTokens, responseMimeType: 'application/json', responseSchema: schema },
     };
     let r;
     try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
@@ -294,7 +326,7 @@ module.exports = async function handler(req, res) {
       + '\n\nReturn ONLY a single JSON object with these fields (omit any that do not apply for this message):\n'
       + schemaToText(schema) + '\nNo prose and no markdown — just the JSON object.';
     const payload = {
-      model, temperature: 0.75, max_tokens: LIMITS.maxTokens, response_format: { type: 'json_object' },
+      model, temperature: 0.75, max_tokens: outTokens, response_format: { type: 'json_object' },
       messages: [{ role: 'system', content: sys }, { role: 'user', content: `Brief: ${brief}` }],
     };
     let r;
@@ -323,6 +355,16 @@ module.exports = async function handler(req, res) {
       if (!message || typeof message !== 'object' || Array.isArray(message))
         return send(res, 502, { ok: false, error: 'AI returned an invalid shape' });
       if (message.type && !CHANNELS[channel].includes(message.type)) message.type = CHANNELS[channel][0];
+      // Stackable channels: normalise the `messages` array — cap length, clamp each item's
+      // type to the channel's allowed set, drop empties. Tolerate a model that returned a
+      // single flat message (no envelope) by wrapping it, so the client always sees an array.
+      if (STACKABLE[channel]) {
+        let msgs = Array.isArray(message.messages) ? message.messages : null;
+        if (!msgs) { const { brand, industry, domain, screenTitle, ...rest } = message; msgs = Object.keys(rest).length ? [rest] : []; }
+        msgs = msgs.filter(m => m && typeof m === 'object' && !Array.isArray(m)).slice(0, MAX_MESSAGES);
+        for (const m of msgs) if (m.type && !CHANNELS[channel].includes(m.type)) m.type = CHANNELS[channel][0];
+        message.messages = msgs;
+      }
       return send(res, 200, { ok: true, provider, channel, model, message });
     }
     last = out;
