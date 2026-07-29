@@ -1,6 +1,33 @@
 # Handover — Channel Studio (read this first)
 
-_Last updated: 2026-07-28._
+_Last updated: 2026-07-29._
+
+## Shipped 2026-07-29 (this session)
+- **App Inbox scroll fix** — the Cards feed didn't scroll with many cards (`.cd-app` used
+  `height:100%` instead of `flex:1;min-height:0`, and `.cd-card` lacked `flex:none` so cards
+  squished). Fixed + regression test `studio/tests/cards-scroll.mjs`.
+- **Multi-message AI generation** — a brief that lists several messages now renders one per
+  item, on the channels whose surface is a stack/thread: **cards** (app-inbox feed),
+  **whatsapp/rcs/sms** (chat thread), **push** (lock-screen / shade stack). Previously each
+  returned a single message + hard-coded filler (the cards "only the first card" bug).
+  - **Server** (`api/generate.js`): these channels' schema now returns a `messages` array
+    (shared `brand/industry/domain` at the top, `screenTitle` for cards). A `MULTIPLE
+    MESSAGES` system-prompt rule tells the model to return one entry per distinct message the
+    brief asks for (default one, max 5, never invent/drop/merge). `STACKABLE`/`multiSchema`
+    helpers; output-token budget raised for these; the array is validated/capped server-side.
+  - **Client** (`lib/applyAi.ts`): `msgsOf(m)` = the `messages` envelope or `[m]`. Each
+    stackable adapter maps it onto its store list (cards→`items`, wa/rcs/sms→message arrays,
+    push→primary `notify.push` + new `notify.stack`). **Card filler dropped** — the feed shows
+    exactly the brief; the Cards editor hint points at **+ Add card**. The AI-panel hero
+    picker hides for multi-message runs (`isMultiAi`); single runs keep re-image/pick.
+  - **Push store**: `NotifyState.stack: PushItem[]` + `pushStackSet/Add/Update/Delete`; the
+    lock screen + shade render the stack; the Notification panel gained a "Stacked below"
+    editor. A preset/Clear resets the stack.
+  - **Tests**: `studio/tests/ai-multi.mjs` (`npm run test:ai-multi`) mocks `/api/generate`
+    and asserts cards/whatsapp/push render one message per briefed item, no filler leak.
+  - **`api/` changed → needs a Vercel redeploy of `main`** before multi-message shows live.
+
+
 
 ## What this repo is
 **Channel Studio** — a React 19 + Vite + TypeScript single-page app in `studio/` that renders
