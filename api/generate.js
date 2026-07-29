@@ -160,9 +160,8 @@ function schemaFor(channel) {
     headline: STR, body: STR, prize: STR, cta: STR,
     segments: S('ARRAY', { items: STR }),
   }, required: ['brand', 'industry', 'headline', 'prize'] });
-  // messaging (whatsapp / rcs / sms)
-  return S('OBJECT', { properties: {
-    brand: brandField, industry: industryField, domain: domainField,
+  // messaging (whatsapp / rcs / sms) — a thread, so one entry per message/bubble
+  return multiSchema({
     type: S('STRING', { enum: CHANNELS[channel] || CHANNELS.whatsapp }),
     text: STR, caption: STR, title: STR, desc: STR, body: STR, footer: STR,
     btnText: STR, header: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,
@@ -170,7 +169,7 @@ function schemaFor(channel) {
     chips: S('ARRAY', { items: S('OBJECT', { properties: { label: STR, reply: STR }, required: ['label'] }) }),
     items: S('ARRAY', { items: S('OBJECT', { properties: { t: STR, d: STR, reply: STR }, required: ['t'] }) }),
     cards: S('ARRAY', { items: S('OBJECT', { properties: { name: STR, price: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt }, required: ['name'] }) }),
-  }, required: ['brand', 'industry', 'type'] });
+  }, ['type']);
 }
 
 // Per-channel voice notes — what "good" looks like on each surface.

@@ -80,39 +80,54 @@ function applyIdentity(m: AiMessage) {
 }
 
 /* ------------------------------ per channel ------------------------------ */
+/* Each messaging adapter builds one bubble per message the brief listed (msgsOf), so a
+   brief that describes a short sequence renders as a real thread. `brand`/`url` are the
+   shared top-level identity; per-part `p` carries that message's own type/copy/image. */
+async function buildWa(p: AiMessage, url: string, brand: string): Promise<WAMsg> {
+  const type = oneOf<WAType>(p.type, ['text', 'image', 'template', 'carousel'], 'template')
+  const buttons = serButtons(p.buttons)
+  if (type === 'text') return makeMsg('text', { text: p.text || p.body || '', buttons })
+  if (type === 'image') return makeMsg('image', { img: await pic(p, 600, 340, brand || 'Image'), caption: p.caption || p.body || '', buttons })
+  if (type === 'carousel' && p.cards && p.cards.length) return makeMsg('carousel', { cards: await serCards(p.cards, url) })
+  return makeMsg('template', { img: await pic(p, 600, 340, brand || ''), body: p.body || p.text || '', footer: p.footer || brand || '', buttons })
+}
 async function applyWa(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
-  s.setBrand({ name: m.brand || s.brand.name, sub: 'online', logo })
-  const type = oneOf<WAType>(m.type, ['text', 'image', 'template', 'carousel'], 'template')
-  const buttons = serButtons(m.buttons)
-  let msg: WAMsg
-  if (type === 'text') msg = makeMsg('text', { text: m.text || m.body || '', buttons })
-  else if (type === 'image') msg = makeMsg('image', { img: await pic(m, 600, 340, m.brand || 'Image'), caption: m.caption || m.body || '', buttons })
-  else if (type === 'carousel' && m.cards && m.cards.length) msg = makeMsg('carousel', { cards: await serCards(m.cards, urlOf(m, s.osm.url)) })
-  else msg = makeMsg('template', { img: await pic(m, 600, 340, m.brand || ''), body: m.body || m.text || '', footer: m.footer || m.brand || '', buttons })
-  s.waSetMessages([msg])
+  const brand = m.brand || s.brand.name
+  s.setBrand({ name: brand, sub: 'online', logo })
+  const url = urlOf(m, s.osm.url)
+  const msgs = await Promise.all(msgsOf(m).map((p) => buildWa(p, url, brand)))
+  s.waSetMessages(msgs)
 }
 
+async function buildRcs(p: AiMessage, url: string, brand: string): Promise<MMsg> {
+  const type = oneOf<MType>(p.type, ['text', 'image', 'card', 'carousel'], 'card')
+  const chips = serChips(p.chips)
+  if (type === 'text') return makeM('text', { text: p.text || p.body || '', chips })
+  if (type === 'image') return makeM('image', { img: await pic(p, 600, 340, brand || 'Image'), caption: p.caption || p.body || '', buttons: serButtons(p.buttons) })
+  if (type === 'carousel') return makeM('carousel', { cards: await serCards(p.cards, url), chips })
+  return makeM('card', { img: await pic(p, 600, 340, brand || ''), title: p.title || p.headline || '', desc: p.desc || p.body || '', buttons: serButtons(p.buttons), chips })
+}
 async function applyRcs(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
-  s.setBrand({ name: m.brand || s.brand.name, sub: 'Verified business', logo })
-  const type = oneOf<MType>(m.type, ['text', 'image', 'card', 'carousel'], 'card')
-  const chips = serChips(m.chips)
-  let msg: MMsg
-  if (type === 'text') msg = makeM('text', { text: m.text || m.body || '', chips })
-  else if (type === 'image') msg = makeM('image', { img: await pic(m, 600, 340, m.brand || 'Image'), caption: m.caption || m.body || '', buttons: serButtons(m.buttons) })
-  else if (type === 'carousel') msg = makeM('carousel', { cards: await serCards(m.cards, urlOf(m, s.osm.url)), chips })
-  else msg = makeM('card', { img: await pic(m, 600, 340, m.brand || ''), title: m.title || m.headline || '', desc: m.desc || m.body || '', buttons: serButtons(m.buttons), chips })
-  s.msgSet('rcs', [msg])
+  const brand = m.brand || s.brand.name
+  s.setBrand({ name: brand, sub: 'Verified business', logo })
+  const url = urlOf(m, s.osm.url)
+  const msgs = await Promise.all(msgsOf(m).map((p) => buildRcs(p, url, brand)))
+  s.msgSet('rcs', msgs)
 }
 
+async function buildSms(p: AiMessage, brand: string): Promise<MMsg> {
+  return p.type === 'image'
+    ? makeM('image', { img: await pic(p, 600, 340, brand || 'Image'), caption: p.caption || p.body || p.text || '' })
+    : makeM('text', { text: p.text || p.body || '' })
+}
 async function applySms(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
-  s.setBrand({ name: m.brand || s.brand.name, logo })
-  const msg = m.type === 'image'
-    ? makeM('image', { img: await pic(m, 600, 340, m.brand || 'Image'), caption: m.caption || m.body || m.text || '' })
-    : makeM('text', { text: m.text || m.body || '' })
-  s.msgSet('sms', [msg])
+  const brand = m.brand || s.brand.name
+  s.setBrand({ name: brand, logo })
+  const msgs = await Promise.all(msgsOf(m).map((p) => buildSms(p, brand)))
+  s.msgSet('sms', msgs)
 }
 
 async function applyPush(m: AiMessage, logo: string | null) {
@@ -295,13 +310,21 @@ export async function applyChosenImage(url: string): Promise<boolean> {
 /** Did this channel's adapter actually place a photo? (Gates the "New image" button —
     mirrors each adapter's own image decision.) */
 function producedImage(channel: string, m: AiMessage): boolean {
+  const f = msgsOf(m)[0] || m   // stackable channels carry the (first) message in messages[]
   switch (channel) {
     case 'instagram': case 'facebook': return true
     case 'game': return false
-    case 'whatsapp': case 'rcs': return (m.type || '') !== 'text'
-    case 'sms': return m.type === 'image'
+    case 'whatsapp': case 'rcs': return (f.type || '') !== 'text'
+    case 'sms': return f.type === 'image'
     case 'inapp': { const t = m.type || ''; return t === 'full' || t === 'image' || (t !== 'banner' && hasImg(m)) }
     case 'osm': { const t = m.type || ''; return t === 'full' || ((t === 'popup' || t === 'nudge') && hasImg(m)) }
-    default: return hasImg(m)   // push / webpush / cards / gmail
+    default: return hasImg(f)   // push / webpush / cards / gmail
   }
+}
+
+/** The query seed for the AI-panel hero photo picker — the top-level query, or the first
+    message's when the generation used the multi-message envelope (single-message runs). */
+export const heroQuery = (m: AiMessage): string => {
+  const f = msgsOf(m)[0] || m
+  return m.imageQuery || m.imageAlt || f.imageQuery || f.imageAlt || ''
 }

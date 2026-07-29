@@ -4,7 +4,7 @@ import { useToast } from '@/store/useToast'
 import { useAiPanel } from '@/store/useAiPanel'
 import { channelById } from '@/channels/registry'
 import { industryById } from '@/content/model'
-import { applyAiMessage, applyChosenImage, heroOrient, isMultiAi, COPY_SECTION } from '@/lib/applyAi'
+import { applyAiMessage, applyChosenImage, heroOrient, heroQuery, isMultiAi, COPY_SECTION } from '@/lib/applyAi'
 import { regenerateImage } from '@/lib/aiCampaign'
 import { resolveBrandLogo, type AiMessage } from '@/lib/media'
 import { PhotoPicker } from '@/shell/PhotoPicker'
@@ -173,7 +173,7 @@ export function AiPanel() {
             </div>
             {!lastIsCarousel && lastAi && (
               <PhotoPicker autoLoad orientation={heroOrient(lastAi.channel, lastAi.m)}
-                query={lastAi.m.imageQuery || lastAi.m.imageAlt || ''} onPick={choose} />
+                query={heroQuery(lastAi.m)} onPick={choose} />
             )}
           </>
         )}
