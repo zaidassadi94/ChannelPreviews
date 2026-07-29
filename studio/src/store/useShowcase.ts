@@ -33,6 +33,8 @@ interface ShowcaseState {
   brief: string
   mode: 'auto' | 'directed'
   generating: boolean
+  /** Slide background for export — transparent (drops onto any deck) or a solid. */
+  background: 'transparent' | 'white' | 'slate'
   /** The tile currently being edited in the normal channel editor (null = viewing board). */
   activeTileId: string | null
 
@@ -44,6 +46,7 @@ interface ShowcaseState {
   moveTile: (id: string, dir: -1 | 1) => void
   updateTile: (id: string, patch: Partial<ShowcaseTile>) => void
   setHeadline: (h: string) => void
+  setBackground: (b: 'transparent' | 'white' | 'slate') => void
   setBrand: (b: string) => void
   setBrief: (b: string) => void
   setMode: (m: 'auto' | 'directed') => void
@@ -61,6 +64,7 @@ export const useShowcase = create<ShowcaseState>((set, get) => ({
   brief: '',
   mode: 'auto',
   generating: false,
+  background: 'transparent',
   activeTileId: null,
 
   setOpen: (o) => set({ open: o, activeTileId: o ? get().activeTileId : null }),
@@ -81,6 +85,7 @@ export const useShowcase = create<ShowcaseState>((set, get) => ({
   }),
   updateTile: (id, patch) => set((s) => ({ tiles: s.tiles.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
   setHeadline: (h) => set({ headline: h }),
+  setBackground: (b) => set({ background: b }),
   setBrand: (b) => set({ brand: b }),
   setBrief: (b) => set({ brief: b }),
   setMode: (m) => set({ mode: m }),

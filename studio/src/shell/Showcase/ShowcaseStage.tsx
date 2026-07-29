@@ -8,8 +8,9 @@ import { ShowcaseTile } from './ShowcaseTile'
 export function ShowcaseStage() {
   const tiles = useShowcase((s) => s.tiles)
   const headline = useShowcase((s) => s.headline)
+  const background = useShowcase((s) => s.background)
   return (
-    <div className="sc-board" id="capture">
+    <div className={'sc-board bg-' + background} id="capture">
       {headline && <div className="sc-headline">{headline}</div>}
       <div className="sc-row">
         {tiles.length

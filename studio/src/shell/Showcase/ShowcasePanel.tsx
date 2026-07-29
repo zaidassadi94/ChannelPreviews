@@ -16,6 +16,7 @@ export function ShowcasePanel() {
   const brand = useShowcase((s) => s.brand)
   const brief = useShowcase((s) => s.brief)
   const mode = useShowcase((s) => s.mode)
+  const background = useShowcase((s) => s.background)
   const generating = useShowcase((s) => s.generating)
   const toggleChannel = useShowcase((s) => s.toggleChannel)
   const removeTile = useShowcase((s) => s.removeTile)
@@ -25,6 +26,7 @@ export function ShowcasePanel() {
   const setBrand = useShowcase((s) => s.setBrand)
   const setBrief = useShowcase((s) => s.setBrief)
   const setMode = useShowcase((s) => s.setMode)
+  const setBackground = useShowcase((s) => s.setBackground)
   const setActive = useShowcase((s) => s.setActive)
   const has = (c: string) => tiles.some((t) => t.channel === c)
   const [err, setErr] = useState('')
@@ -79,6 +81,14 @@ export function ShowcasePanel() {
           <label className="field" style={{ marginTop: 14 }}><span>Slide headline (optional)</span>
             <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. One brand, every channel" />
           </label>
+
+          <div className="field"><span>Slide background (for Copy / Export)</span>
+            <div className="seg-in">
+              {(['transparent', 'white', 'slate'] as const).map((b) => (
+                <button key={b} className={background === b ? 'on' : ''} onClick={() => setBackground(b)}>{b === 'transparent' ? 'Transparent' : b === 'white' ? 'White' : 'Slate'}</button>
+              ))}
+            </div>
+          </div>
 
           <p className="panel-hint" style={{ marginTop: 6 }}>{tiles.length} tile{tiles.length === 1 ? '' : 's'} · reorder, caption and badge each; hit <b>✎ Edit</b> on a tile to open its full editor.</p>
           {tiles.map((t, i) => (

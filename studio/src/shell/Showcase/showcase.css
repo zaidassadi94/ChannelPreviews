@@ -7,6 +7,10 @@
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:26px; padding:40px; box-sizing:border-box;
 }
+.sc-board.bg-white{ background:#ffffff; }
+.sc-board.bg-slate{ background:#0f1117; }
+.sc-board.bg-slate .sc-headline{ color:#f4f5f8; }
+.sc-board.bg-slate .sc-caption{ color:#c7cad4; }
 .sc-headline{
   font-size:34px; font-weight:760; letter-spacing:-.6px; color:#14151a; text-align:center;
   line-height:1.15; max-width:1000px;

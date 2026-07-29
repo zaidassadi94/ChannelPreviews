@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas'
 import { useStudio } from '@/store/useStudio'
+import { useShowcase } from '@/store/useShowcase'
 import { useToast } from '@/store/useToast'
 
 /** Rasterise the active #capture frame to a canvas.
@@ -53,11 +54,16 @@ async function grab(toast: (m: string) => void): Promise<HTMLCanvasElement | nul
   const savedBadge = badge ? badge.style.display : ''
   if (badge) badge.style.display = 'none'
 
+  // Showcase board can request a solid slide background; single channels stay transparent
+  // (so the device's rounded corners aren't filled in).
+  const sc = useShowcase.getState()
+  const bg = sc.open ? ({ white: '#ffffff', slate: '#0f1117', transparent: null } as const)[sc.background] : null
+
   try {
     // Transparent background → the frame's rounded corners aren't filled in;
     // roundToFrame then clips to the exact device shape.
     const raw = await html2canvas(node, {
-      backgroundColor: null,
+      backgroundColor: bg,
       scale: 2,
       useCORS: true,
       allowTaint: false,
@@ -96,7 +102,12 @@ export function useCapture() {
   const device = useStudio((s) => s.device)
   const ctx = useStudio((s) => s.sub || s.industry)
 
-  const filename = () => `${channel}-${ctx}-${device}.png`
+  const slug = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'slide'
+  const filename = () => {
+    const sc = useShowcase.getState()
+    if (sc.open) return `showcase-${slug(sc.brand || useStudio.getState().brand.name)}.png`
+    return `${channel}-${ctx}-${device}.png`
+  }
 
   const onExport = async () => {
     const canvas = await grab(show)

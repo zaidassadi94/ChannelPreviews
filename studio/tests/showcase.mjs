@@ -75,6 +75,18 @@ async function main() {
   const doneCount = (await page.$$eval('.msg-card', (els) => els.filter((e) => e.textContent.includes('✓')).length))
   if (doneCount < 3) problems.push(`generate-all: expected 3 tiles marked done, got ${doneCount}`)
 
+  // --- Export the slide → a transparent PNG download named showcase-*.png ---
+  try {
+    const [dl] = await Promise.all([
+      page.waitForEvent('download', { timeout: 15000 }),
+      page.getByRole('button', { name: /^Export$/ }).click(),
+    ])
+    const fn = dl.suggestedFilename()
+    if (!/^showcase-.*\.png$/.test(fn)) problems.push(`export filename should be showcase-*.png, got "${fn}"`)
+  } catch (e) {
+    problems.push('export did not produce a download: ' + (e instanceof Error ? e.message : e))
+  }
+
   await page.screenshot({ path: join(SHOTS, 'showcase.png') })
   if (errors.length) problems.push('console errors: ' + errors.join(' | '))
 
