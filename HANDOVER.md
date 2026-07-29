@@ -3,6 +3,30 @@
 _Last updated: 2026-07-29._
 
 ## Shipped 2026-07-29 (this session)
+- **Showcase mode (v1)** — a **16:9 transparent slide** composed of several channels for one
+  brand, for pasting into decks (the "16+ channels" / segment-tryptich slides). Toggle **▦
+  Showcase** in the TopBar. Approach **A (live distinct-channel tiles)**: each tile is the
+  channel's REAL Preview reading its own store slice, so every existing editor works on it.
+  - **Pick channels** (chips) → **Generate** a coherent set: **Auto** = a server *planner*
+    (`/api/generate` `mode:'plan'` → `{brand,industry,domain,plan:[{channel,angle}]}`) decides
+    one connected story, then the board fans out to the normal per-channel generator; **Directed**
+    = a brief per tile. Shared brand/logo resolve once; industry isn't switched (so tiles' auto-
+    template can't clobber). `lib/showcaseAi.ts` orchestrates; `store/useShowcase.ts` holds board
+    state.
+  - **Clean-row layout** (the Aura tryptich), optional **headline**, per-tile **caption +
+    segment badge**, **background** Transparent/White/Slate. **Copy/Export** rasterise the whole
+    board (it's `id="capture"`) → `showcase-<brand>.png`, transparent via html2canvas.
+  - **Edit a tile** → ✎ opens that channel's normal editor with a **← Back to Showcase** pill.
+  - **Frame plumbing:** `shell/FrameContext.ts` lets a Preview render as the single-channel stage
+    (owns `id="capture"`) or a board tile (no id) — fixes the id collision when several frames
+    mount. `PhoneFrame`/`DesktopFrame` read it.
+  - **Deferred to v2/v3** (agreed): hero-montage + grid layouts; **duplicate channels** (three
+    phones / three segments) which need per-tile isolated state (snapshot tiles or a store-instance
+    refactor); a per-tile "New image" from the board.
+  - **Tests:** `studio/tests/showcase.mjs` (`npm run test:showcase`) — board, chip add/remove,
+    AI generate-all (mocked planner + fan-out), edit→back-pill, and a real Export download.
+  - **`api/` changed → needs a Vercel redeploy of `main`** for the planner to work live.
+
 - **App Inbox scroll fix** — the Cards feed didn't scroll with many cards (`.cd-app` used
   `height:100%` instead of `flex:1;min-height:0`, and `.cd-card` lacked `flex:none` so cards
   squished). Fixed + regression test `studio/tests/cards-scroll.mjs`.
