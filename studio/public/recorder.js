@@ -93,7 +93,9 @@
     var el=cfg.getEl && cfg.getEl(); if(!el){ toast('Nothing to record yet.'); return; }
     var crop=null;
     if(regionOK()){ try{ crop=await CropTarget.fromElement(el); }catch(e){ crop=null; } }
-    try{ stream=await navigator.mediaDevices.getDisplayMedia({ video:{frameRate:30}, audio:false, preferCurrentTab:true }); }
+    // Ask for a high-resolution surface so the cropped region carries as many pixels as
+    // possible (Region Capture output tracks the surface resolution) — crisper GIFs/WebM.
+    try{ stream=await navigator.mediaDevices.getDisplayMedia({ video:{frameRate:30, width:{ideal:3840}, height:{ideal:2160}}, audio:false, preferCurrentTab:true }); }
     catch(e){ toast((e&&e.name==='NotAllowedError')?'Recording cancelled.':'Could not start recording.'); return; }
     var track=stream.getVideoTracks()[0];
     var cropped=false;
@@ -139,8 +141,8 @@
       +'<div class="cs-rev-vwrap"><video class="cs-rev-vid" playsinline muted loop></video></div>'
       +'<div class="cs-rev-film"><div class="cs-rev-thumbs" data-thumbs></div><div class="cs-rev-mask" data-maskL></div><div class="cs-rev-mask" data-maskR></div><div class="cs-rev-sel" data-sel></div><div class="cs-rev-ph" data-ph></div><div class="cs-rev-h a" data-ha></div><div class="cs-rev-h b" data-hb></div></div>'
       +'<div class="cs-rev-times">Trim: <b data-ta>0:00.0</b> → <b data-tb>0:00.0</b> · <span data-sd>0.0s</span><button class="cs-rev-psel" data-psel>▶ Play selection</button></div>'
-      +'<div class="cs-rev-opts"><label>GIF frame rate <select data-fps><option value="10">10 fps</option><option value="15" selected>15 fps</option><option value="20">20 fps</option></select></label>'
-      +'<label>GIF size <select data-size><option value="0" selected>Auto</option><option value="240">Small</option><option value="360">Medium</option><option value="480">Large</option></select></label>'
+      +'<div class="cs-rev-opts"><label>GIF frame rate <select data-fps><option value="10">10 fps</option><option value="15" selected>15 fps</option><option value="20">20 fps</option><option value="24">24 fps</option></select></label>'
+      +'<label>GIF size <select data-size><option value="360">Small</option><option value="480">Medium</option><option value="720">Large</option><option value="1080">X-Large</option><option value="0" selected>Max (crisp)</option></select></label>'
       +'<span class="gi" data-gi></span></div>'
       +'<div class="cs-rev-prog" data-prog><div class="track"><div class="bar" data-bar></div></div><span class="lbl" data-plbl></span></div>'
       +'</div>'
@@ -257,13 +259,14 @@
     var iw=srcVid.videoWidth, ih=srcVid.videoHeight; if(!iw||!ih){ toast('Video not ready — try again.'); return; }
     busy=true; E.webm.disabled=E.gif.disabled=true; setProgress(0,'Preparing…');
     try{
-      var cap=+E.size.value||Math.min(iw,480);
-      var scale=Math.min(1, cap/iw);
+      var cap=+E.size.value||iw;                 // "Max (crisp)" = full captured resolution
+      var scale=Math.min(1, cap/iw);             // never upscale (adds no real detail)
       var W=Math.max(2,Math.round(iw*scale)), H=Math.max(2,Math.round(ih*scale));
       var fps=+E.fps.value, d=Math.max(0.1,selB-selA);
       var nF=Math.min(450, Math.max(1, Math.round(d*fps)));
       var delay=Math.round(1000/fps);
       var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d',{willReadFrequently:true});
+      ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';   // sharp high-quality downscale
       var enc=window.gifenc.GIFEncoder();
       for(var i=0;i<nF;i++){
         var t=selA + (i/Math.max(1,nF-1))*d; if(nF===1) t=selA;
