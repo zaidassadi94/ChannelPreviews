@@ -1,5 +1,9 @@
 import { create } from 'zustand'
 
+/** Feature flag for Showcase mode. Hidden for now (owner will debug, then re-enable) — the
+    whole feature stays built; flip this to `true` to surface the TopBar button again. */
+export const SHOWCASE_ENABLED = false
+
 /** One device on the Showcase board — a channel plus its slide-only decoration (an optional
     caption line and a colored segment badge, like the green tags in the reference decks).
     The message content itself lives in that channel's normal store slice (approach A: live,

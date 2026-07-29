@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStudio } from '@/store/useStudio'
-import { useShowcase } from '@/store/useShowcase'
+import { useShowcase, SHOWCASE_ENABLED } from '@/store/useShowcase'
 import { channelById } from '@/channels/registry'
 import { TopBar } from './TopBar'
 import { StageFit } from './StageFit'
@@ -26,7 +26,7 @@ export function AppShell() {
 
   // Showcase mode: a 16:9 board of several channels. Clicking ✎ Edit on a tile drops into
   // that channel's normal editor (leaves the board, which the store preserves).
-  const showcaseOpen = useShowcase((s) => s.open)
+  const showcaseOpen = useShowcase((s) => s.open) && SHOWCASE_ENABLED
   const activeTileId = useShowcase((s) => s.activeTileId)
   const scTiles = useShowcase((s) => s.tiles)
   const editReturn = useShowcase((s) => s.editReturn)

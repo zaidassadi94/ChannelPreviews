@@ -5,7 +5,7 @@ import { Icon } from '@/lib/icons'
 import { useCapture } from '@/lib/useCapture'
 import { useRecorder } from '@/lib/useRecorder'
 import { useAiPanel } from '@/store/useAiPanel'
-import { useShowcase } from '@/store/useShowcase'
+import { useShowcase, SHOWCASE_ENABLED } from '@/store/useShowcase'
 import { ChannelPicker } from './ChannelPicker'
 
 type DeviceOpt = [value: string, label: string, icon: ReactNode]
@@ -84,9 +84,11 @@ export function TopBar() {
       <button className={'btn ghost' + (aiOpen ? ' on' : '')} onClick={toggleAi} title="Generate with AI">
         <span style={{ fontSize: 14 }}>✨</span> AI
       </button>
-      <button className={'btn ghost' + (showcaseOpen ? ' on' : '')} onClick={toggleShowcase} title="Showcase — several channels on one slide">
-        <span style={{ fontSize: 14 }}>▦</span> Showcase
-      </button>
+      {SHOWCASE_ENABLED && (
+        <button className={'btn ghost' + (showcaseOpen ? ' on' : '')} onClick={toggleShowcase} title="Showcase — several channels on one slide">
+          <span style={{ fontSize: 14 }}>▦</span> Showcase
+        </button>
+      )}
       {/* Record — the recorder owns this button's content + class (childless on purpose). */}
       <button ref={recRef} className="btn ghost" title="Record the preview (Chrome/Edge)" aria-label="Record the preview" />
       <button className="btn ghost" onClick={onCopy}>Copy</button>

@@ -35,8 +35,15 @@ async function main() {
   await page.goto(`http://localhost:${port}/`, { waitUntil: 'networkidle' })
 
   const problems = []
+  // Showcase is behind SHOWCASE_ENABLED — if the button is hidden, skip (feature parked).
+  const scBtn = await page.$('button:has-text("Showcase")')
+  if (!scBtn) {
+    await browser.close(); srv.close()
+    console.log('↷ Showcase test skipped — the feature is hidden (SHOWCASE_ENABLED=false).')
+    return
+  }
   // Enter Showcase mode.
-  await page.click('button:has-text("Showcase")')
+  await scBtn.click()
   await page.waitForTimeout(500)
 
   const tiles = await page.$$('.sc-board .sc-tile')
