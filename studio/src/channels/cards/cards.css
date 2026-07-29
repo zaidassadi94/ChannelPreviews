@@ -1,5 +1,5 @@
 /* Cards / App Inbox — a feed of persistent cards inside a mobile app. */
-.cd-app{ display:flex; flex-direction:column; height:100%; background:#eef0f4; }
+.cd-app{ flex:1; min-height:0; display:flex; flex-direction:column; background:#eef0f4; }
 .cd-head{ flex:none; background:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #eef0f4; }
 .cd-head .ic{ color:#14151a; width:22px; height:22px; display:flex; }
 .cd-head .ic svg{ width:22px; height:22px; }
@@ -11,7 +11,7 @@
 .cd-list{ flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
 .cd-empty{ text-align:center; color:#9aa0b0; font-size:13px; padding:40px 20px; }
 
-.cd-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(16,18,30,.06); border:1px solid #eef0f4; }
+.cd-card{ flex:none; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(16,18,30,.06); border:1px solid #eef0f4; }
 .cd-card.unread{ border-color:#dcd9fb; box-shadow:0 4px 14px rgba(99,91,255,.1); }
 .cd-img{ width:100%; height:118px; object-fit:cover; display:block; }
 .cd-b{ padding:12px 14px 13px; }
