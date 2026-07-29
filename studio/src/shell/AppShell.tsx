@@ -29,14 +29,16 @@ export function AppShell() {
   const showcaseOpen = useShowcase((s) => s.open)
   const activeTileId = useShowcase((s) => s.activeTileId)
   const scTiles = useShowcase((s) => s.tiles)
+  const editReturn = useShowcase((s) => s.editReturn)
   const setScOpen = useShowcase((s) => s.setOpen)
   const setScActive = useShowcase((s) => s.setActive)
+  const setEditReturn = useShowcase((s) => s.setEditReturn)
   useEffect(() => {
     if (!activeTileId) return
     const t = scTiles.find((x) => x.id === activeTileId)
-    if (t) { setChannel(t.channel); setScOpen(false) }
+    if (t) { setChannel(t.channel); setScOpen(false); setEditReturn(true) }
     setScActive(null)
-  }, [activeTileId, scTiles, setChannel, setScOpen, setScActive])
+  }, [activeTileId, scTiles, setChannel, setScOpen, setScActive, setEditReturn])
 
   return (
     <div className="app">
@@ -58,6 +60,11 @@ export function AppShell() {
             <SectionRail />
             <SectionPanel />
             <div className={'stage' + (sim ? ' sim-on' : '')}>
+              {editReturn && (
+                <button className="sc-back-pill" onClick={() => { setScOpen(true); setEditReturn(false) }} title="Back to the Showcase board">
+                  ← Back to Showcase
+                </button>
+              )}
               {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
               {aiBusy && (
                 <div className="stage-ai-busy" role="status" aria-live="polite">

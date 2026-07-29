@@ -37,8 +37,11 @@ interface ShowcaseState {
   background: 'transparent' | 'white' | 'slate'
   /** The tile currently being edited in the normal channel editor (null = viewing board). */
   activeTileId: string | null
+  /** True while you're in a channel's editor via a tile's ✎ Edit — shows a Back-to-board pill. */
+  editReturn: boolean
 
   setOpen: (o: boolean) => void
+  setEditReturn: (b: boolean) => void
   toggle: () => void
   addTile: (channel: string) => void
   removeTile: (id: string) => void
@@ -66,9 +69,11 @@ export const useShowcase = create<ShowcaseState>((set, get) => ({
   generating: false,
   background: 'transparent',
   activeTileId: null,
+  editReturn: false,
 
-  setOpen: (o) => set({ open: o, activeTileId: o ? get().activeTileId : null }),
-  toggle: () => set((s) => ({ open: !s.open, activeTileId: null })),
+  setOpen: (o) => set({ open: o, activeTileId: o ? get().activeTileId : null, editReturn: o ? false : get().editReturn }),
+  setEditReturn: (b) => set({ editReturn: b }),
+  toggle: () => set((s) => ({ open: !s.open, activeTileId: null, editReturn: false })),
   addTile: (channel) => set((s) => ({ tiles: [...s.tiles, mkTile(channel)] })),
   removeTile: (id) => set((s) => ({ tiles: s.tiles.filter((t) => t.id !== id), activeTileId: s.activeTileId === id ? null : s.activeTileId })),
   toggleChannel: (channel) => set((s) => {

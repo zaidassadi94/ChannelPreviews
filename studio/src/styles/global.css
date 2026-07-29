@@ -23,6 +23,11 @@ button{ font-family:inherit; }
 .body{ position:relative; flex:1; display:grid; grid-template-columns:88px 344px 1fr; min-height:0; }
 /* Showcase mode has no per-channel rail — just the Showcase panel + the board. */
 .body.showcase{ grid-template-columns:344px 1fr; }
+/* "Back to Showcase" pill — shown in the stage while editing a tile's channel. */
+.sc-back-pill{ position:absolute; top:16px; left:16px; z-index:20; display:inline-flex; align-items:center; gap:6px;
+  padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--accent-ink);
+  font-family:inherit; font-size:13px; font-weight:660; cursor:pointer; box-shadow:0 6px 20px rgba(16,18,30,.14); transition:.14s; }
+.sc-back-pill:hover{ border-color:var(--accent); box-shadow:0 10px 26px rgba(99,91,255,.22); }
 
 /* ---- top bar ---- */
 .topbar{ height:58px; flex:none; background:#fff; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; padding:0 16px; z-index:20; box-shadow:0 1px 0 rgba(16,18,30,.02); }

@@ -75,6 +75,17 @@ async function main() {
   const doneCount = (await page.$$eval('.msg-card', (els) => els.filter((e) => e.textContent.includes('✓')).length))
   if (doneCount < 3) problems.push(`generate-all: expected 3 tiles marked done, got ${doneCount}`)
 
+  // --- Edit a tile → drops into that channel's editor with a Back-to-Showcase pill ---
+  await page.locator('.msg-card button.icobtn[title="Edit this tile"]').first().click()
+  await page.waitForTimeout(400)
+  if (await page.$('.sc-board')) problems.push('editing a tile should leave the board')
+  const pill = await page.$('.sc-back-pill')
+  if (!pill) problems.push('no Back-to-Showcase pill while editing a tile')
+  else {
+    await pill.click(); await page.waitForTimeout(400)
+    if (!(await page.$('.sc-board'))) problems.push('Back-to-Showcase pill did not return to the board')
+  }
+
   // --- Export the slide → a transparent PNG download named showcase-*.png ---
   try {
     const [dl] = await Promise.all([
