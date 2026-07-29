@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useStudio } from '@/store/useStudio'
+import { useFrameCtx } from './FrameContext'
 import { StatusBar } from './StatusBar'
 
 /** Phone device chrome (notch/punch, status bar, home indicator, simulate badge).
@@ -11,9 +12,10 @@ export function PhoneFrame({ children, statusLight = false, bare = false, badge 
 }) {
   const device = useStudio((s) => s.device)
   const sim = useStudio((s) => s.sim)
+  const { captureId } = useFrameCtx()
   const android = device === 'android'
   return (
-    <div className={'phone' + (android ? ' android' : '') + (bare ? ' bare' : '')} id="capture">
+    <div className={'phone' + (android ? ' android' : '') + (bare ? ' bare' : '')} id={captureId}>
       {android ? <div className="punch" /> : <div className="notch" />}
       {sim && <div className="sim-badge">{badge || '● Simulate — tap the buttons'}</div>}
       <div className="screen">

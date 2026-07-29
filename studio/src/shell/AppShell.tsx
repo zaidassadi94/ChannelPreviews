@@ -1,15 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStudio } from '@/store/useStudio'
+import { useShowcase } from '@/store/useShowcase'
 import { channelById } from '@/channels/registry'
 import { TopBar } from './TopBar'
 import { StageFit } from './StageFit'
 import { SectionRail, SectionPanel } from './SectionNav'
 import { StubPreview } from './Stub'
+import { ShowcasePanel } from './Showcase/ShowcasePanel'
+import { ShowcaseStage } from './Showcase/ShowcaseStage'
 import { useAutoBrandColor } from '@/lib/useAutoBrandColor'
 import { useAiChannelSync } from '@/lib/aiCampaign'
 
 export function AppShell() {
   const channel = useStudio((s) => s.channel)
+  const setChannel = useStudio((s) => s.setChannel)
   const sim = useStudio((s) => s.sim)
   const panelOpen = useStudio((s) => s.panelOpen)
   const aiBusy = useStudio((s) => s.aiBusyChannel === s.channel)
@@ -20,6 +24,20 @@ export function AppShell() {
   useAutoBrandColor()
   useAiChannelSync()
 
+  // Showcase mode: a 16:9 board of several channels. Clicking ✎ Edit on a tile drops into
+  // that channel's normal editor (leaves the board, which the store preserves).
+  const showcaseOpen = useShowcase((s) => s.open)
+  const activeTileId = useShowcase((s) => s.activeTileId)
+  const scTiles = useShowcase((s) => s.tiles)
+  const setScOpen = useShowcase((s) => s.setOpen)
+  const setScActive = useShowcase((s) => s.setActive)
+  useEffect(() => {
+    if (!activeTileId) return
+    const t = scTiles.find((x) => x.id === activeTileId)
+    if (t) { setChannel(t.channel); setScOpen(false) }
+    setScActive(null)
+  }, [activeTileId, scTiles, setChannel, setScOpen, setScActive])
+
   return (
     <div className="app">
       <TopBar />
@@ -27,17 +45,28 @@ export function AppShell() {
         <button role="tab" aria-selected={mView === 'edit'} className={mView === 'edit' ? 'on' : ''} onClick={() => setMView('edit')}>Editor</button>
         <button role="tab" aria-selected={mView === 'preview'} className={mView === 'preview' ? 'on' : ''} onClick={() => setMView('preview')}>Preview</button>
       </div>
-      <div className={'body mobile-' + mView + (panelOpen ? '' : ' panel-collapsed')}>
-        <SectionRail />
-        <SectionPanel />
-        <div className={'stage' + (sim ? ' sim-on' : '')}>
-          {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
-          {aiBusy && (
-            <div className="stage-ai-busy" role="status" aria-live="polite">
-              <span className="cs-ai-spin" /> Generating for this channel…
+      <div className={'body mobile-' + mView + (panelOpen ? '' : ' panel-collapsed') + (showcaseOpen ? ' showcase' : '')}>
+        {showcaseOpen ? (
+          <>
+            <ShowcasePanel />
+            <div className={'stage' + (sim ? ' sim-on' : '')}>
+              <StageFit><ShowcaseStage /></StageFit>
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <>
+            <SectionRail />
+            <SectionPanel />
+            <div className={'stage' + (sim ? ' sim-on' : '')}>
+              {Preview ? <StageFit><Preview /></StageFit> : <StubPreview label={def?.label ?? channel} />}
+              {aiBusy && (
+                <div className="stage-ai-busy" role="status" aria-live="polite">
+                  <span className="cs-ai-spin" /> Generating for this channel…
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

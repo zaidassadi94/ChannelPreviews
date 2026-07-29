@@ -21,6 +21,8 @@ button{ font-family:inherit; }
 /* ============ Layout: top bar over [rail | panel | stage] ============ */
 .app{ display:flex; flex-direction:column; height:100vh; overflow:hidden; }
 .body{ position:relative; flex:1; display:grid; grid-template-columns:88px 344px 1fr; min-height:0; }
+/* Showcase mode has no per-channel rail — just the Showcase panel + the board. */
+.body.showcase{ grid-template-columns:344px 1fr; }
 
 /* ---- top bar ---- */
 .topbar{ height:58px; flex:none; background:#fff; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; padding:0 16px; z-index:20; box-shadow:0 1px 0 rgba(16,18,30,.02); }
