@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { useAutoTemplate } from '@/lib/useAutoTemplate'
-import { useStudio } from '@/store/useStudio'
+import { useStudio, type PushItem } from '@/store/useStudio'
 import { useToast } from '@/store/useToast'
 import { avColor } from '@/lib/util'
 import { PhoneFrame } from '@/shell/PhoneFrame'
@@ -18,12 +18,16 @@ function usePushSim() {
   return (label: string) => { if (!sim) return; show('▸ ' + (label ? `"${label}" → opens ${appName}` : `Opens ${appName}`)) }
 }
 
-function PushCardIOS() {
+/** `item` renders a specific notification (a stacked extra); omit it for the primary from
+    the store. `secondary` forces the collapsed look regardless of the global Expanded toggle. */
+function PushCardIOS({ item, secondary }: { item?: PushItem; secondary?: boolean } = {}) {
   const appName = useStudio((s) => s.notify.appName)
-  const p = useStudio((s) => s.notify.push)
-  const expanded = useStudio((s) => s.notify.expanded)
+  const primary = useStudio((s) => s.notify.push)
+  const expandedG = useStudio((s) => s.notify.expanded)
   const sim = useStudio((s) => s.sim)
   const onTap = usePushSim()
+  const p = item || primary
+  const expanded = secondary ? false : expandedG
   const acts = pushActions(p.actions)
   const hasImg = !!p.image
   return (
@@ -43,12 +47,14 @@ function PushCardIOS() {
   )
 }
 
-function PushCardAnd({ inShade }: { inShade?: boolean }) {
+function PushCardAnd({ inShade, item, secondary }: { inShade?: boolean; item?: PushItem; secondary?: boolean }) {
   const appName = useStudio((s) => s.notify.appName)
-  const p = useStudio((s) => s.notify.push)
-  const expanded = useStudio((s) => s.notify.expanded)
+  const primary = useStudio((s) => s.notify.push)
+  const expandedG = useStudio((s) => s.notify.expanded)
   const sim = useStudio((s) => s.sim)
   const onTap = usePushSim()
+  const p = item || primary
+  const expanded = secondary ? false : expandedG
   const acts = pushActions(p.actions)
   const hasImg = !!p.image
   return (
@@ -69,11 +75,15 @@ function PushCardAnd({ inShade }: { inShade?: boolean }) {
 
 function IosLock() {
   const wallpaper = useStudio((s) => s.notify.wallpaper)
+  const stack = useStudio((s) => s.notify.stack)
   return (
     <div className="ls" style={{ background: wallBg(wallpaper) }}>
       <StatusBar light={true} />
       <div className="ls-clock"><div className="lk">{NIcon.lock}</div><div className="dt">Monday, July 14</div><div className="tm">9:41</div></div>
-      <div className="ls-notifs"><PushCardIOS /></div>
+      <div className="ls-notifs">
+        <PushCardIOS />
+        {stack.map((it, i) => <PushCardIOS key={i} item={it} secondary />)}
+      </div>
       <div className="ls-bottom"><div className="ls-btn">{NIcon.flash}</div><div className="ls-btn">{NIcon.cam}</div></div>
       <div className="home-ind dk" />
     </div>
@@ -82,13 +92,16 @@ function IosLock() {
 
 function AndShade() {
   const wallpaper = useStudio((s) => s.notify.wallpaper)
+  const stack = useStudio((s) => s.notify.stack)
   return (
     <div className="shade" style={{ background: `linear-gradient(rgba(14,16,22,.82),rgba(14,16,22,.9)), ${wallBg(wallpaper)}` }}>
       <StatusBar light={true} />
       <div className="shade-head"><div className="tm">9:41</div><div className="dt">Monday, July 14</div></div>
       <div className="shade-list">
         <PushCardAnd inShade />
-        <div className="pn-and shade-card collapsed"><div className="row"><div className="txt"><div className="hd"><div className="icon mono" style={{ background: '#ea4335', fontSize: 9 }}>G</div><span className="appn">Gmail</span><span className="dot">·</span><span className="time">8:12</span></div><div className="title">Weekly report is ready</div><div className="body">Your dashboard summary for this week…</div></div></div></div>
+        {stack.length
+          ? stack.map((it, i) => <PushCardAnd key={i} inShade item={it} secondary />)
+          : <div className="pn-and shade-card collapsed"><div className="row"><div className="txt"><div className="hd"><div className="icon mono" style={{ background: '#ea4335', fontSize: 9 }}>G</div><span className="appn">Gmail</span><span className="dot">·</span><span className="time">8:12</span></div><div className="title">Weekly report is ready</div><div className="body">Your dashboard summary for this week…</div></div></div></div>}
       </div>
       <div className="shade-clear"><span>{NIcon.clear}</span></div>
       <div className="home-ind dk" />

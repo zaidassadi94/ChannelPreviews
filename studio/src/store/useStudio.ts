@@ -69,6 +69,10 @@ export function makeM(type: MType, over: Partial<MMsg> = {}): MMsg {
 interface MsgSlice { messages: MMsg[]; played: MMsg[]; typing: boolean }
 
 /* ---- notify model (Push / In-App / Gamification share app identity) ---- */
+/** One notification. `push` is the focused/primary one; `stack` holds any additional ones
+    shown collapsed beneath it on the lock screen / shade (a real notification stack). */
+export interface PushItem { title: string; body: string; image: string; actions: string; time: string }
+export const makePush = (over: Partial<PushItem> = {}): PushItem => ({ title: '', body: '', image: '', actions: '', time: 'now', ...over })
 export interface NotifyState {
   appName: string
   appLogo: string | null
@@ -80,7 +84,8 @@ export interface NotifyState {
   optinBody: string
   optinAllow: string
   optinDeny: string
-  push: { title: string; body: string; image: string; actions: string; time: string }
+  push: PushItem
+  stack: PushItem[]   // additional notifications shown collapsed beneath the primary (lock/shade)
   inapp: { type: string; image: string; headline: string; body: string; ctas: string; close: boolean; bannerPos: string }
   appBg: { mode: string; image: string; blur: boolean }
   game: { type: string; eyebrow: string; headline: string; sub: string; prize: string; prizeCap: string; cta: string; segments: string; close: boolean }
@@ -308,6 +313,10 @@ interface StudioState {
   // notify actions
   setNotify: (patch: Partial<Pick<NotifyState, 'appName' | 'appLogo' | 'surface' | 'wallpaper' | 'expanded' | 'optinStyle' | 'optinTitle' | 'optinBody' | 'optinAllow' | 'optinDeny'>>) => void
   setPush: (patch: Partial<NotifyState['push']>) => void
+  pushStackSet: (items: PushItem[]) => void
+  pushStackAdd: () => void
+  pushStackUpdate: (i: number, patch: Partial<PushItem>) => void
+  pushStackDelete: (i: number) => void
   setInapp: (patch: Partial<NotifyState['inapp']>) => void
   setAppBg: (patch: Partial<NotifyState['appBg']>) => void
   setGame: (patch: Partial<NotifyState['game']>) => void
@@ -362,6 +371,7 @@ export const useStudio = create<StudioState>((set, get) => ({
     appName: 'Nova', appLogo: null, surface: 'lock', wallpaper: 'aurora', expanded: true,
     optinStyle: 'twostep', optinTitle: 'Turn on notifications', optinBody: 'Get order updates and members-only offers the moment they go live.', optinAllow: 'Turn on notifications', optinDeny: 'Not now',
     push: { title: '', body: '', image: '', actions: '', time: 'now' },
+    stack: [],
     inapp: { type: 'modal', image: '', headline: '', body: '', ctas: '', close: true, bannerPos: 'top' },
     appBg: { mode: 'branded', image: '', blur: true },
     game: { type: 'scratch', eyebrow: 'Exclusive reward', headline: '', sub: '', prize: '', prizeCap: '', cta: '', segments: '', close: true },
@@ -487,6 +497,10 @@ export const useStudio = create<StudioState>((set, get) => ({
 
   setNotify: (patch) => set({ notify: { ...get().notify, ...patch } }),
   setPush: (patch) => set({ notify: { ...get().notify, push: { ...get().notify.push, ...patch } } }),
+  pushStackSet: (items) => set({ notify: { ...get().notify, stack: items } }),
+  pushStackAdd: () => set({ notify: { ...get().notify, stack: [...get().notify.stack, makePush({ title: 'New notification', body: 'Your message here.', time: '1h' })] } }),
+  pushStackUpdate: (i, patch) => set({ notify: { ...get().notify, stack: get().notify.stack.map((it, j) => (j === i ? { ...it, ...patch } : it)) } }),
+  pushStackDelete: (i) => set({ notify: { ...get().notify, stack: get().notify.stack.filter((_, j) => j !== i) } }),
   setInapp: (patch) => set({ notify: { ...get().notify, inapp: { ...get().notify.inapp, ...patch } } }),
   setAppBg: (patch) => set({ notify: { ...get().notify, appBg: { ...get().notify.appBg, ...patch } } }),
   setGame: (patch) => set({ notify: { ...get().notify, game: { ...get().notify.game, ...patch } } }),

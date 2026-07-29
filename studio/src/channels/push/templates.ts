@@ -91,5 +91,6 @@ export function applyPushTemplate(t: PushTemplate, announce = true) {
   const surface = NOTIF_SURFACES.includes(s.notify.surface) ? {} : { surface: s.device === 'ios' ? 'lock' : 'heads' }
   s.setNotify({ appName: f.appName, appLogo: null, expanded: f.expanded, ...surface })
   s.setPush({ title: f.title, body: f.body, image: f.image, actions: f.actions, time: 'now' })
+  s.pushStackSet([])   // a preset is a single notification — clear any stacked extras
   if (announce) useToast.getState().show('Preset applied' + (t.flow ? ' · hit Simulate to tap actions' : ''))
 }

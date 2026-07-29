@@ -7,7 +7,7 @@
    back to the generated monogram. Identity (industry/sub + shared brand) is applied first,
    with the AI-suppress flag so the preview's auto-first-template effect can't clobber it. */
 
-import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg, type CardItem } from '@/store/useStudio'
+import { useStudio, makeMsg, makeM, type WAType, type MType, type WAMsg, type MMsg, type CardItem, type PushItem } from '@/store/useStudio'
 import { resolveIndustry, emailPackFor } from '@/content/model'
 import { phImg, hueOf, avColor } from '@/lib/util'
 import { photoFor, cleanDomain, guessDomain, resolveBrandWordmark, type AiMessage } from '@/lib/media'
@@ -130,11 +130,21 @@ async function applySms(m: AiMessage, logo: string | null) {
   s.msgSet('sms', msgs)
 }
 
+async function buildPush(p: AiMessage, brand: string, time: string): Promise<PushItem> {
+  const image = hasImg(p) ? await pic(p, 600, 340, brand) : ''
+  return { title: p.title || p.headline || '', body: p.body || '', image, actions: (p.actions || []).filter(Boolean).slice(0, 3).join('\n'), time }
+}
 async function applyPush(m: AiMessage, logo: string | null) {
   const s = useStudio.getState()
-  s.setNotify({ appName: m.brand || s.notify.appName, appLogo: logo, expanded: m.expanded !== false })
-  const image = hasImg(m) ? await pic(m, 600, 340, m.brand || '') : ''
-  s.setPush({ title: m.title || '', body: m.body || '', image, actions: (m.actions || []).filter(Boolean).slice(0, 3).join('\n'), time: 'now' })
+  const brand = m.brand || s.notify.appName
+  const parts = msgsOf(m)
+  s.setNotify({ appName: brand, appLogo: logo, expanded: parts[0]?.expanded !== false })
+  // First message is the focused notification; the rest stack collapsed beneath it with
+  // stepped-back timestamps, like older alerts on a real lock screen.
+  const times = ['now', '2h', '5h', '1d']
+  s.setPush(await buildPush(parts[0] || m, brand, 'now'))
+  const stack = await Promise.all(parts.slice(1).map((p, i) => buildPush(p, brand, times[i + 1] || `${i + 2}d`)))
+  s.pushStackSet(stack)
 }
 
 async function applyInapp(m: AiMessage, logo: string | null) {

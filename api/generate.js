@@ -108,11 +108,10 @@ function schemaFor(channel) {
     category: S('STRING', { enum: ['primary', 'promotions', 'social', 'updates'] }),
     heading: STR, bodyText: STR, buttonLabel: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,
   }, required: ['brand', 'industry', 'subject', 'snippet', 'heading', 'bodyText'] });
-  if (channel === 'push') return S('OBJECT', { properties: {
-    brand: brandField, industry: industryField, domain: domainField,
+  if (channel === 'push') return multiSchema({
     title: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,
     actions: S('ARRAY', { items: STR }), expanded: S('BOOLEAN'),
-  }, required: ['brand', 'industry', 'title', 'body'] });
+  }, ['title', 'body']);
   if (channel === 'inapp') return S('OBJECT', { properties: {
     brand: brandField, industry: industryField, domain: domainField,
     type: S('STRING', { enum: CHANNELS.inapp }), headline: STR, body: STR, imageKeyword: kwEnum, imageQuery: imgQuery, imageAlt: imgAlt,

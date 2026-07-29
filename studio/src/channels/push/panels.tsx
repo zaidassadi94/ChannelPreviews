@@ -7,6 +7,7 @@ import { PUSH_TEMPLATES, PUSH_OPTIN_TEMPLATES, applyPushTemplate } from './templ
 
 function TemplatesPanel() {
   const setPush = useStudio((s) => s.setPush)
+  const pushStackSet = useStudio((s) => s.pushStackSet)
   return (
     <>
       <p className="panel-hint">Ready-made push notifications. Ones tagged <b>FLOW</b> have tappable actions in Simulate.</p>
@@ -27,7 +28,7 @@ function TemplatesPanel() {
           </button>
         ))}
       </div>
-      <button className="btn ghost block" style={{ marginTop: 12 }} onClick={() => setPush({ title: 'New notification', body: 'Your message here.', image: '', actions: '' })}>{Icon.refresh}Clear &amp; start blank</button>
+      <button className="btn ghost block" style={{ marginTop: 12 }} onClick={() => { setPush({ title: 'New notification', body: 'Your message here.', image: '', actions: '' }); pushStackSet([]) }}>{Icon.refresh}Clear &amp; start blank</button>
     </>
   )
 }
@@ -66,8 +67,12 @@ function OptinPanel() {
 function NotificationPanel() {
   const push = useStudio((s) => s.notify.push)
   const expanded = useStudio((s) => s.notify.expanded)
+  const stack = useStudio((s) => s.notify.stack)
   const setPush = useStudio((s) => s.setPush)
   const setNotify = useStudio((s) => s.setNotify)
+  const stackAdd = useStudio((s) => s.pushStackAdd)
+  const stackUpd = useStudio((s) => s.pushStackUpdate)
+  const stackDel = useStudio((s) => s.pushStackDelete)
   return (
     <>
       <label className="field"><span>Title (bold line)</span><input type="text" value={push.title} onChange={(e) => setPush({ title: e.target.value })} /></label>
@@ -77,6 +82,24 @@ function NotificationPanel() {
       <div className="toggle-row"><span>Expanded (rich / big picture)</span>
         <label className="switch"><input type="checkbox" checked={expanded} onChange={(e) => setNotify({ expanded: e.target.checked })} /><span className="slider" /></label>
       </div>
+
+      <p className="panel-hint" style={{ marginTop: 18 }}><b>Stacked below</b> — extra notifications shown collapsed beneath this one on the <b>Lock Screen</b> and <b>Shade</b>. Ask the AI for several and they land here automatically.</p>
+      {stack.map((it, i) => (
+        <div className="msg-card" key={i}>
+          <div className="mc-top">
+            <span className="lbl">{i + 1}</span>
+            <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: 'var(--muted)' }}>Notification</span>
+            <button className="icobtn" title="Delete" onClick={() => stackDel(i)}>✕</button>
+          </div>
+          <label className="field"><span>Title</span><input type="text" value={it.title} onChange={(e) => stackUpd(i, { title: e.target.value })} /></label>
+          <label className="field"><span>Body</span><textarea value={it.body} onChange={(e) => stackUpd(i, { body: e.target.value })} /></label>
+          <div className="mc-row">
+            <label className="field"><span>Time</span><input type="text" value={it.time} onChange={(e) => stackUpd(i, { time: e.target.value })} placeholder="e.g. 2h" /></label>
+          </div>
+          <div className="field"><span>Thumbnail (optional)</span><ImageField pick value={it.image} onChange={(v) => stackUpd(i, { image: v })} placeholder="or paste an image URL (optional)" /></div>
+        </div>
+      ))}
+      <div className="addmsg"><button onClick={stackAdd}>+ Add stacked notification</button></div>
     </>
   )
 }
