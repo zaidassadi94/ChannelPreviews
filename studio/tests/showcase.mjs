@@ -53,11 +53,33 @@ async function main() {
   const back = await page.$$('.sc-board .sc-tile')
   if (back.length !== 3) problems.push(`toggling SMS off should return to 3, got ${back.length}`)
 
+  // --- AI generate-all: mock the planner + per-channel calls, then Generate ---
+  await page.route('**/api/generate', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}')
+    if (body.mode === 'plan') {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        ok: true, mode: 'plan', brand: 'Aura', industry: 'beauty', domain: 'aura.com',
+        plan: (body.channels || []).map((c) => ({ channel: c, angle: 'angle for ' + c })) }) })
+    }
+    const ch = body.channel
+    const inner = { title: 'Aura ' + ch, body: 'Your signature scent, on us.', headline: 'Aura', text: 'Aura ' + ch, imageQuery: 'perfume bottle' }
+    const msg = { brand: 'Aura', industry: 'beauty', domain: 'aura.com',
+      subject: 'Aura ' + ch, heading: 'Aura', bodyText: 'Your signature scent.', caption: 'Aura', ...inner, messages: [inner] }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, provider: 'mock', channel: ch, model: 'mock', message: msg }) })
+  })
+
+  await page.getByRole('button', { name: /Generate \d+ tile/ }).click()
+  await page.waitForTimeout(2500)
+  const boardText = await page.$eval('.sc-board', (el) => el.innerText)
+  if (!/Aura/.test(boardText)) problems.push(`generate-all: board doesn't show the generated brand (got: ${boardText.slice(0, 120)})`)
+  const doneCount = (await page.$$eval('.msg-card', (els) => els.filter((e) => e.textContent.includes('✓')).length))
+  if (doneCount < 3) problems.push(`generate-all: expected 3 tiles marked done, got ${doneCount}`)
+
   await page.screenshot({ path: join(SHOTS, 'showcase.png') })
   if (errors.length) problems.push('console errors: ' + errors.join(' | '))
 
   await browser.close(); srv.close()
   if (problems.length) { console.error('FAIL:\n - ' + problems.join('\n - ')); process.exit(1) }
-  console.log('✓ Showcase scaffold verified — 3-tile board, chip add/remove, no console errors.')
+  console.log('✓ Showcase verified — 3-tile board, chip add/remove, AI generate-all, no console errors.')
 }
 main().catch((e) => { console.error(e); process.exit(1) })

@@ -10,11 +10,15 @@ export interface ShowcaseTile {
   caption: string
   badge: string
   badgeColor: string
+  /** Per-tile brief, used in Directed mode (Auto mode plans the angle instead). */
+  brief: string
+  /** Transient generation status for the tile's progress cue. */
+  status?: 'idle' | 'busy' | 'done' | 'error'
 }
 
 let _sid = 1
 const sid = () => 'sc' + _sid++
-const mkTile = (channel: string): ShowcaseTile => ({ id: sid(), channel, caption: '', badge: '', badgeColor: '#16a34a' })
+const mkTile = (channel: string): ShowcaseTile => ({ id: sid(), channel, caption: '', badge: '', badgeColor: '#16a34a', brief: '', status: 'idle' })
 
 /** Default row — three distinct channels, matching the "clean tryptich" reference. */
 const DEFAULT_CHANNELS = ['whatsapp', 'gmail', 'push']
@@ -24,6 +28,11 @@ interface ShowcaseState {
   tiles: ShowcaseTile[]
   layout: 'row'
   headline: string
+  /** Prompt state for AI generate-all. */
+  brand: string
+  brief: string
+  mode: 'auto' | 'directed'
+  generating: boolean
   /** The tile currently being edited in the normal channel editor (null = viewing board). */
   activeTileId: string | null
 
@@ -35,6 +44,11 @@ interface ShowcaseState {
   moveTile: (id: string, dir: -1 | 1) => void
   updateTile: (id: string, patch: Partial<ShowcaseTile>) => void
   setHeadline: (h: string) => void
+  setBrand: (b: string) => void
+  setBrief: (b: string) => void
+  setMode: (m: 'auto' | 'directed') => void
+  setGenerating: (g: boolean) => void
+  setTileStatus: (id: string, status: ShowcaseTile['status']) => void
   setActive: (id: string | null) => void
 }
 
@@ -43,6 +57,10 @@ export const useShowcase = create<ShowcaseState>((set, get) => ({
   tiles: DEFAULT_CHANNELS.map(mkTile),
   layout: 'row',
   headline: '',
+  brand: '',
+  brief: '',
+  mode: 'auto',
+  generating: false,
   activeTileId: null,
 
   setOpen: (o) => set({ open: o, activeTileId: o ? get().activeTileId : null }),
@@ -63,5 +81,10 @@ export const useShowcase = create<ShowcaseState>((set, get) => ({
   }),
   updateTile: (id, patch) => set((s) => ({ tiles: s.tiles.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
   setHeadline: (h) => set({ headline: h }),
+  setBrand: (b) => set({ brand: b }),
+  setBrief: (b) => set({ brief: b }),
+  setMode: (m) => set({ mode: m }),
+  setGenerating: (g) => set({ generating: g }),
+  setTileStatus: (id, status) => set((s) => ({ tiles: s.tiles.map((t) => (t.id === id ? { ...t, status } : t)) })),
   setActive: (id) => set({ activeTileId: id }),
 }))
