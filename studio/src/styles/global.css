@@ -136,6 +136,9 @@ button:focus-visible, a:focus-visible, [role="tab"]:focus-visible,
 .pick-thumb{ padding:0; border:1px solid var(--line); border-radius:7px; overflow:hidden; cursor:pointer; aspect-ratio:1/1; background:var(--panel); }
 .pick-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .pick-thumb:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--ring); }
+/* Logo result: show the whole mark on white (contain), not a cropped cover. */
+.pick-thumb.logo{ background:#fff; }
+.pick-thumb.logo img{ object-fit:contain; padding:8px; }
 
 /* ---- structured button editor (WhatsApp/RCS interactive buttons) ---- */
 .btns-ed{ display:flex; flex-direction:column; gap:8px; }

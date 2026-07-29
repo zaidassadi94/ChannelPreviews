@@ -51,7 +51,7 @@ function WebsitePanel() {
     <>
       <label className="field"><span>Site / brand name</span><input type="text" value={o.site} onChange={(e) => setOsm({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL</span><input type="text" value={o.url} onChange={(e) => setOsm({ url: e.target.value })} /></label>
-      <div className="field"><span>Logo</span><ImageField value={o.logo || ''} onChange={(v) => setOsm({ logo: v || null })} placeholder="or paste a logo URL (blank = monogram)" /></div>
+      <div className="field"><span>Logo</span><ImageField logo logoQuery={o.site} value={o.logo || ''} onChange={(v) => setOsm({ logo: v || null })} placeholder="or paste a logo URL (blank = monogram)" /></div>
       <div className="field"><span>Accent color (banners &amp; buttons)</span>
         <div className="color-row">
           <input type="color" className="color-swatch" value={swatch} onChange={(e) => setOsm({ accent: e.target.value })} aria-label="Accent color" />

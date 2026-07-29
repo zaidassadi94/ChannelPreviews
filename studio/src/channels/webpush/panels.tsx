@@ -99,7 +99,7 @@ function SitePanel() {
     <>
       <label className="field"><span>Site / brand name</span><input type="text" value={w.site} onChange={(e) => setWebpush({ site: e.target.value })} /></label>
       <label className="field"><span>Site URL (shown in the notification)</span><input type="text" value={w.url} onChange={(e) => setWebpush({ url: e.target.value })} /></label>
-      <div className="field"><span>Site icon</span><ImageField value={w.logo || ''} onChange={(v) => setWebpush({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
+      <div className="field"><span>Site icon</span><ImageField logo logoQuery={w.site} value={w.logo || ''} onChange={(v) => setWebpush({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

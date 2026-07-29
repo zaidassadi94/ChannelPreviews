@@ -43,7 +43,7 @@ function AdvertiserPanel() {
       <label className="field"><span>Business name</span><input type="text" value={g.brand} onChange={(e) => setIg({ brand: e.target.value })} /></label>
       <label className="field"><span>Handle (@username)</span><input type="text" value={g.handle} onChange={(e) => setIg({ handle: e.target.value })} /></label>
       <div className="toggle-row"><span>Verified badge</span><label className="switch"><input type="checkbox" checked={g.verified} onChange={(e) => setIg({ verified: e.target.checked })} /><span className="slider" /></label></div>
-      <div className="field"><span>Profile photo</span><ImageField value={g.logo || ''} onChange={(v) => setIg({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
+      <div className="field"><span>Profile photo</span><ImageField logo logoQuery={g.brand} value={g.logo || ''} onChange={(v) => setIg({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
     </>
   )
 }

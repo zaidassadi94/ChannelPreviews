@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { fileToBackdrop } from '@/lib/backdrop'
 import { PhotoPicker } from '@/shell/PhotoPicker'
+import { LogoPicker } from '@/shell/LogoPicker'
 
 /** A reusable image input for any content/logo image field: upload (drag-drop or
  *  browse) on top, a URL box below. Uploaded files become a downscaled data:
@@ -8,15 +9,18 @@ import { PhotoPicker } from '@/shell/PhotoPicker'
  *  URL box is hidden-empty while an uploaded image is showing so a huge data
  *  URI never fills the field. Emits '' when cleared.
  *
- *  Set `pick` on CONTENT images (not logos) to show an inline Pexels photo picker —
- *  search + refresh, expanded so it's discoverable; `query` pre-fills the search. */
-export function ImageField({ value, onChange, placeholder = 'or paste an image URL', max = 1200, pick = false, query }: {
+ *  Set `pick` on CONTENT images to show an inline Pexels photo picker (search + refresh;
+ *  `query` pre-fills it). Set `logo` on LOGO/avatar fields to show a brand-logo search
+ *  (type a brand or website → the real logo via /api/logo); `logoQuery` seeds it. */
+export function ImageField({ value, onChange, placeholder = 'or paste an image URL', max = 1200, pick = false, query, logo = false, logoQuery }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   max?: number
   pick?: boolean
   query?: string
+  logo?: boolean
+  logoQuery?: string
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [drag, setDrag] = useState(false)
@@ -57,6 +61,7 @@ export function ImageField({ value, onChange, placeholder = 'or paste an image U
       <input type="text" className="imgf-url" placeholder={placeholder}
         value={isData ? '' : value} onChange={(e) => onChange(e.target.value)} />
       {pick && <PhotoPicker query={query} onPick={onChange} autoLoad />}
+      {logo && <LogoPicker query={logoQuery} onPick={onChange} />}
       {err && <p className="bgf-err">{err}</p>}
     </div>
   )

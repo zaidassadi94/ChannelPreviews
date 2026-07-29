@@ -66,7 +66,7 @@ function AppPanel() {
     <>
       <label className="field"><span>App name</span><input type="text" value={cards.appName} onChange={(e) => setCards({ appName: e.target.value })} /></label>
       <label className="field"><span>Screen title</span><input type="text" value={cards.screenTitle} onChange={(e) => setCards({ screenTitle: e.target.value })} placeholder="Updates" /></label>
-      <div className="field"><span>App icon</span><ImageField value={cards.logo || ''} onChange={(v) => setCards({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
+      <div className="field"><span>App icon</span><ImageField logo logoQuery={cards.appName} value={cards.logo || ''} onChange={(v) => setCards({ logo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

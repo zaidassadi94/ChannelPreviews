@@ -151,7 +151,7 @@ function AppPanel() {
   return (
     <>
       <label className="field"><span>App name</span><input type="text" value={appName} onChange={(e) => setNotify({ appName: e.target.value })} /></label>
-      <div className="field"><span>App icon</span><ImageField value={appLogo || ''} onChange={(v) => setNotify({ appLogo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
+      <div className="field"><span>App icon</span><ImageField logo logoQuery={appName} value={appLogo || ''} onChange={(v) => setNotify({ appLogo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
     </>
   )
 }

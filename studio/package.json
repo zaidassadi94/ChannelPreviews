@@ -13,7 +13,8 @@
     "test:cards-scroll": "node tests/cards-scroll.mjs",
     "test:ai-multi": "node tests/ai-multi.mjs",
     "test:showcase": "node tests/showcase.mjs",
-    "test:gmail-mobile": "node tests/gmail-mobile.mjs"
+    "test:gmail-mobile": "node tests/gmail-mobile.mjs",
+    "test:logo-search": "node tests/logo-search.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

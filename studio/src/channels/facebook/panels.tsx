@@ -42,7 +42,7 @@ function AdvertiserPanel() {
     <>
       <label className="field"><span>Page name</span><input type="text" value={f.page} onChange={(e) => setFb({ page: e.target.value })} /></label>
       <div className="toggle-row"><span>Verified badge</span><label className="switch"><input type="checkbox" checked={f.verified} onChange={(e) => setFb({ verified: e.target.checked })} /><span className="slider" /></label></div>
-      <div className="field"><span>Page photo</span><ImageField value={f.logo || ''} onChange={(v) => setFb({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
+      <div className="field"><span>Page photo</span><ImageField logo logoQuery={f.page} value={f.logo || ''} onChange={(v) => setFb({ logo: v || null })} placeholder="or paste a photo URL (blank = monogram)" /></div>
     </>
   )
 }
