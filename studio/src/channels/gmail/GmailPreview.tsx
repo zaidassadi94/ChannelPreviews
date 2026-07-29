@@ -55,22 +55,53 @@ function EmailBody() {
   return <div className="email-body" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-/** A content-sized, sandboxed iframe for arbitrary email HTML. Auto-sizes to its content
-    and forwards wheel scrolling to the reading pane (the iframe would otherwise swallow it). */
+/** Ensure the email declares a mobile viewport so genuinely responsive emails reflow (their
+    `@media` rules fire against the iframe width). Only injected when the email has none. */
+function withViewport(html: string): string {
+  if (/<meta[^>]+name=["']?viewport/i.test(html)) return html
+  const meta = '<meta name="viewport" content="width=device-width, initial-scale=1">'
+  if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (m) => m + meta)
+  if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, (m) => m + '<head>' + meta + '</head>')
+  return meta + html
+}
+
+/** A content-sized, sandboxed iframe for arbitrary email HTML. Sizes to its content, and —
+    like Gmail on mobile — FITS the email to the reading pane: a responsive email reflows to
+    the width; a fixed-width (desktop) email is scaled down so it's never cut off. Sizing is
+    applied imperatively so a React re-render (wrap height) can't clobber it. */
 function EmailFrame({ html }: { html: string }) {
   const ref = useRef<HTMLIFrameElement>(null)
-  const [h, setH] = useState(600)
+  const [wrapH, setWrapH] = useState(600)
   const onLoad = () => {
     const f = ref.current, d = f?.contentDocument
     if (!f || !d) return
-    setH(Math.max(d.body?.scrollHeight || 0, d.documentElement?.scrollHeight || 0, 120))
+    const avail = (f.parentElement?.clientWidth || f.clientWidth || 1)
+    // Measure the email's natural content width at the pane width first.
+    f.style.transform = 'none'; f.style.transformOrigin = 'top left'; f.style.width = '100%'
+    const contentW = Math.max(d.body?.scrollWidth || 0, d.documentElement?.scrollWidth || 0, 1)
+    if (contentW > avail + 1) {
+      // Fixed-width / non-responsive email → render at its natural width and scale to fit.
+      f.style.width = contentW + 'px'
+      const ch = Math.max(d.body?.scrollHeight || 0, d.documentElement?.scrollHeight || 0, 120)
+      const scale = avail / contentW
+      f.style.transform = `scale(${scale})`
+      f.style.height = ch + 'px'
+      setWrapH(Math.ceil(ch * scale))
+    } else {
+      // Responsive / narrow email → it already fits the pane; just size to its height.
+      const ch = Math.max(d.body?.scrollHeight || 0, d.documentElement?.scrollHeight || 0, 120)
+      f.style.height = ch + 'px'
+      setWrapH(ch)
+    }
     const scroller = f.closest('.gm-open-scroll, .gm-d-open, .dev-scroll, .stage') as HTMLElement | null
     if (scroller) d.addEventListener('wheel', (ev) => { scroller.scrollTop += ev.deltaY; ev.preventDefault() }, { passive: false })
   }
   return (
-    <iframe ref={ref} className="email-body email-frame" title="Email preview"
-      srcDoc={html} onLoad={onLoad}
-      style={{ width: '100%', height: h, border: 0, display: 'block', background: '#fff' }} />
+    <div className="email-frame-wrap" style={{ width: '100%', height: wrapH, overflow: 'hidden', background: '#fff' }}>
+      <iframe ref={ref} className="email-body email-frame" title="Email preview"
+        srcDoc={withViewport(html)} onLoad={onLoad}
+        style={{ width: '100%', border: 0, display: 'block', background: '#fff' }} />
+    </div>
   )
 }
 
