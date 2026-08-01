@@ -5,7 +5,38 @@ ideas surfaced along the way. Nothing here is blocking — the app builds, the s
 passes, and everything shipped is live-on-`main`. A new session should read this **and**
 `HANDOVER.md` before picking up work, and confirm each item with the owner before building.
 
-_Last updated: 2026-07-28._
+_Last updated: 2026-07-29._
+
+---
+
+## Parked this session (2026-07-29)
+
+### Showcase mode — v2/v3 (built as v1, then HIDDEN behind a flag)
+Showcase v1 shipped (16:9 multi-channel deck slide; see `HANDOVER.md`) but the owner asked to
+**hide it for now to debug later** — it's gated behind `SHOWCASE_ENABLED = false` in
+`studio/src/store/useShowcase.ts` (flip to `true` to re-enable; all code stays built). Agreed
+follow-ups once it's back:
+- **Hero-montage + grid layouts** (the overlapping Etihad-style collage; v1 is the clean row).
+- **Duplicate channels** — e.g. three phones each a different segment (the Aura RFM/Predictive/
+  Affinity slide). Needs per-tile isolated state (v1's approach A reuses the singleton store, so
+  it can't hold two independent instances of the same channel); options are snapshot tiles or a
+  store-instance refactor. Medium–large.
+- **Per-tile "New image"** re-roll from the board (currently edit the tile to change its photo).
+
+### Logo search for the shared messaging avatar (offered)
+The brand-logo search now lives on the explicit logo fields (Gmail/Push/Cards/OSM/IG/FB/WebPush).
+WhatsApp/RCS/SMS use the **shared `brand.logo`** for their sender avatar, which has no dedicated
+logo field in those panels — so the search isn't there yet. Offered to add it; owner hasn't said
+yes. Small.
+
+### Gmail pasted-HTML **export** on mobile (view is fixed; export is approximate)
+The on-screen mobile view now fits pasted HTML emails (scale-to-fit / reflow). But **Export/Record**
+go through html2canvas, whose `onclone` swaps the email iframe for a plain `<div>` in the *main*
+document — so a pasted email's `@media` rules evaluate against the desktop window, not the phone,
+and the view's fit-to-width scaling isn't reflected in the exported PNG. Fine for our own
+inline/fluid emails; only pasted third-party HTML on mobile is affected. A real fix would render
+the export from the iframe (or replicate the scaling in the clone). Medium; only if exporting
+pasted mobile emails matters.
 
 ---
 

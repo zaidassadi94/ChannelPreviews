@@ -451,6 +451,29 @@ promoted. These are polish + reach.
 8. **Real-logo polish.** `resolveBrandLogo` falls back to favicons without `LOGODEV_KEY`;
    consider a small curated logo set for the demo brands so mockups look crisp keyless.
 
+## Session log — multi-message + Showcase + fixes (2026-07-29, trunk on `main`)
+A grab-bag session, all fast-forwarded to `main`, each commit build-green (tsc strict) + a
+dedicated headless-Chromium test. Full detail + file pointers in the repo-root `HANDOVER.md`
+"Shipped 2026-07-29" section; headlines:
+- **App Inbox scroll fix** — `.cd-app` → `flex:1;min-height:0`, `.cd-card` → `flex:none`.
+- **Multi-message AI** — a `messages` array envelope for the stack/thread channels (cards,
+  whatsapp/rcs/sms, push): one rendered message per briefed item; dropped the hard-coded card
+  filler (the "only first card" bug); push gained a stacked-notifications model (`notify.stack`).
+  Server `mode`-aware `systemPrompt` + `STACKABLE`/`multiSchema`; client `msgsOf()` in `applyAi.ts`.
+- **Showcase mode v1** — a 16:9 multi-channel deck slide (planner `mode:'plan'` on `/api/generate`
+  + fan-out; `FrameContext` to render Previews as board tiles). Built end-to-end, then **hidden
+  behind `SHOWCASE_ENABLED=false`** at the owner's request (debug-later). `store/useShowcase.ts`,
+  `shell/Showcase/*`, `lib/showcaseAi.ts`.
+- **Gmail HTML mobile fit** — `EmailFrame` scales fixed-width pasted emails to the phone pane
+  (Gmail-style), reflows responsive ones. (Export of pasted mobile HTML still approximate — see
+  `deferred.md`.)
+- **Logo search** — `shell/LogoPicker.tsx` + `ImageField` `logo`/`logoQuery` props on every logo
+  field (brand/site → real logo via `/api/logo`, seeded + auto-searched).
+- **Sharper Record GIFs** — `public/recorder.js`: high-res capture + "Max (crisp)" full-resolution
+  GIF (removed the 480px cap) + high-quality downscale.
+- **Browser-bridge for the smoke test** — the provisioned Chromium revision differs from the
+  pinned Playwright; symlink recipe is in `HANDOVER.md` (redo per fresh container).
+
 ## Session log — AI panel + images + Gmail (2026-07-28, trunk on `main`)
 Started by diagnosing an **AI brand-identity drift** (same brief → correct/stale/invented
 brand; copy & image drifted off-topic). Root cause: every generation fed the *previous* run's

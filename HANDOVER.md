@@ -26,6 +26,11 @@ _Last updated: 2026-07-29._
   - **Tests:** `studio/tests/showcase.mjs` (`npm run test:showcase`) — board, chip add/remove,
     AI generate-all (mocked planner + fan-out), edit→back-pill, and a real Export download.
   - **`api/` changed → needs a Vercel redeploy of `main`** for the planner to work live.
+  - **⚠️ HIDDEN FOR NOW (owner's call):** the TopBar **▦ Showcase** button is gated behind
+    `SHOWCASE_ENABLED = false` in `store/useShowcase.ts`, and `AppShell` won't enter the mode
+    while it's false — so it's unreachable in the UI. **All the code stays built**; flip that one
+    constant to `true` to bring it (and `test:showcase`, which auto-skips while hidden) back. The
+    owner wanted to debug it before making it visible.
 
 - **App Inbox scroll fix** — the Cards feed didn't scroll with many cards (`.cd-app` used
   `height:100%` instead of `flex:1;min-height:0`, and `.cd-card` lacked `flex:none` so cards
@@ -50,6 +55,25 @@ _Last updated: 2026-07-29._
   - **Tests**: `studio/tests/ai-multi.mjs` (`npm run test:ai-multi`) mocks `/api/generate`
     and asserts cards/whatsapp/push render one message per briefed item, no filler leak.
   - **`api/` changed → needs a Vercel redeploy of `main`** before multi-message shows live.
+
+- **Gmail HTML emails fit the mobile pane** — a pasted fixed-width (desktop) email overflowed
+  and got cut off on mobile. `EmailFrame` (`channels/gmail/GmailPreview.tsx`) now mirrors Gmail
+  mobile: it measures the email's content width and, if wider than the pane, renders at natural
+  width and **scales the whole email to fit** (never cut off); a genuinely responsive email
+  **reflows** with no scaling (a viewport meta is injected when missing). Sizing is applied
+  imperatively so a React re-render can't clobber it. Test: `studio/tests/gmail-mobile.mjs`.
+  Client-only.
+- **Logo search on logo fields** — logo/avatar fields were upload/paste only; each now has an
+  inline **"Find a logo"** search (`shell/LogoPicker.tsx`, reuses `resolveBrandLogo` → `/api/logo`
+  Logo.dev/favicon, no AI). `ImageField` gained `logo` + `logoQuery` props (mirrors `pick`);
+  seeded with the field's brand/app name and auto-searches once on mount. Wired into Gmail sender
+  logo + wordmark, Push/Cards app icon, Onsite logo, Instagram/Facebook profile, Web Push site
+  icon. Crisp logos need `LOGODEV_KEY`, else favicon fallback. Test: `studio/tests/logo-search.mjs`.
+  Uses the existing `/api/logo` (no new function).
+- **Sharper Record GIFs** — GIF export blurred because it hard-capped width at 480px (throwing
+  away Retina capture) with low-quality downscaling. `studio/public/recorder.js`: capture at a
+  high-res surface (getDisplayMedia ideal 3840×2160), GIF size menu now up to **Max (crisp) =
+  full captured resolution** (default), high-quality downscale, +24 fps. Client/public asset only.
 
 
 
@@ -82,9 +106,16 @@ cd studio && npm install && npm run build   # tsc --noEmit strict + vite build (
 node tests/smoke.mjs                          # "Smoke test passed — 12 channels, no console errors"
 node -c ../api/generate.js                    # api/ is CommonJS — syntax-check
 ```
+Per-feature Chromium tests added this session (all mock `/api/*`, run headless):
+`npm run test:cards-scroll`, `test:ai-multi`, `test:gmail-mobile`, `test:logo-search`,
+`test:showcase` (skips while Showcase is hidden). Run the relevant one after touching a feature.
+
 Playwright/Chromium is pre-installed (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). If the
-smoke test can't find the browser, the provisioned revision may differ from the pinned
-Playwright — the browser bridge trick is in the git history, or just re-provision.
+smoke test can't find the browser, the provisioned revision differs from the pinned Playwright —
+symlink the full Chromium into the expected headless-shell path, e.g.
+`mkdir -p /opt/pw-browsers/chromium_headless_shell-1234/chrome-headless-shell-linux64 && ln -sf
+/opt/pw-browsers/chromium-*/chrome-linux/chrome $_/chrome-headless-shell` (revision numbers drift
+per container — adjust to what's under `/opt/pw-browsers`).
 
 ---
 
