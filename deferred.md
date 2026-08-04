@@ -11,17 +11,30 @@ _Last updated: 2026-07-29._
 
 ## Parked this session (2026-07-29)
 
-### Showcase mode — v2/v3 (built as v1, then HIDDEN behind a flag)
-Showcase v1 shipped (16:9 multi-channel deck slide; see `HANDOVER.md`) but the owner asked to
-**hide it for now to debug later** — it's gated behind `SHOWCASE_ENABLED = false` in
-`studio/src/store/useShowcase.ts` (flip to `true` to re-enable; all code stays built). Agreed
-follow-ups once it's back:
-- **Hero-montage + grid layouts** (the overlapping Etihad-style collage; v1 is the clean row).
-- **Duplicate channels** — e.g. three phones each a different segment (the Aura RFM/Predictive/
-  Affinity slide). Needs per-tile isolated state (v1's approach A reuses the singleton store, so
-  it can't hold two independent instances of the same channel); options are snapshot tiles or a
-  store-instance refactor. Medium–large.
-- **Per-tile "New image"** re-roll from the board (currently edit the tile to change its photo).
+### Showcase mode — ROLL IT BACK ENTIRELY (owner's decision, do in a fresh session)
+Showcase v1 shipped (16:9 multi-channel deck slide) and is currently **hidden** behind
+`SHOWCASE_ENABLED = false` in `studio/src/store/useShowcase.ts`. **The owner has decided to
+remove it, not re-enable it.** Do the removal carefully in a **new, dedicated session** (it
+touched shared shell files, so a clean revert needs care — don't rush it into an unrelated
+change). What to unwind:
+- **Delete:** `studio/src/store/useShowcase.ts`, `studio/src/shell/Showcase/` (ShowcaseStage,
+  ShowcaseTile, ShowcasePanel, showcase.css), `studio/tests/showcase.mjs`, the `test:showcase`
+  script.
+- **Revert the shell hooks:** `shell/AppShell.tsx` (the showcase branch + the edit-tile effect +
+  the Back-to-Showcase pill), `shell/TopBar.tsx` (the gated Showcase button), `global.css`
+  (`.body.showcase`, `.sc-back-pill`).
+- **`shell/FrameContext.ts`** — decide whether to keep it. `PhoneFrame`/`DesktopFrame` now read
+  `captureId`/`inShowcase` from it; the simplest clean revert is to inline `id="capture"` back
+  into both frames and delete `FrameContext.ts`. Verify single-channel Export/Record still target
+  `#capture`.
+- **Server:** `api/generate.js` — remove the `mode:'plan'` planner (planSchema/planPrompt, the
+  isPlan branches, `lib/showcaseAi.ts`). The multi-message envelope (`STACKABLE`/`multiSchema`)
+  must STAY — it's used by the shipped multi-message feature, not Showcase.
+- Gate every step on `npm run build` + `node tests/smoke.mjs` green, and keep the multi-message,
+  Gmail-mobile, logo-search and brand-sections features working. Commits `2096230…faea87c`
+  (+ `981bfc4` hide) are the Showcase history to reverse.
+- The relevant commits are on `main`; a straight `git revert` of them may conflict with later
+  work — reconcile by hand.
 
 ### Logo search for the shared messaging avatar (offered)
 The brand-logo search now lives on the explicit logo fields (Gmail/Push/Cards/OSM/IG/FB/WebPush).

@@ -26,11 +26,12 @@ _Last updated: 2026-07-29._
   - **Tests:** `studio/tests/showcase.mjs` (`npm run test:showcase`) — board, chip add/remove,
     AI generate-all (mocked planner + fan-out), edit→back-pill, and a real Export download.
   - **`api/` changed → needs a Vercel redeploy of `main`** for the planner to work live.
-  - **⚠️ HIDDEN FOR NOW (owner's call):** the TopBar **▦ Showcase** button is gated behind
+  - **⚠️ HIDDEN, AND SLATED FOR REMOVAL:** the TopBar **▦ Showcase** button is gated behind
     `SHOWCASE_ENABLED = false` in `store/useShowcase.ts`, and `AppShell` won't enter the mode
-    while it's false — so it's unreachable in the UI. **All the code stays built**; flip that one
-    constant to `true` to bring it (and `test:showcase`, which auto-skips while hidden) back. The
-    owner wanted to debug it before making it visible.
+    while it's false — so it's unreachable in the UI. **The owner has since decided to roll the
+    whole feature back** (do it in a fresh, dedicated session) — see the step-by-step unwind in
+    `deferred.md` → "Showcase mode — ROLL IT BACK ENTIRELY". Until then it stays hidden; don't
+    build on it.
 
 - **App Inbox scroll fix** — the Cards feed didn't scroll with many cards (`.cd-app` used
   `height:100%` instead of `flex:1;min-height:0`, and `.cd-card` lacked `flex:none` so cards
@@ -74,6 +75,12 @@ _Last updated: 2026-07-29._
   away Retina capture) with low-quality downscaling. `studio/public/recorder.js`: capture at a
   high-res surface (getDisplayMedia ideal 3840×2160), GIF size menu now up to **Max (crisp) =
   full captured resolution** (default), high-quality downscale, +24 fps. Client/public asset only.
+- **"Brand" sections + logo everywhere + Gmail-on-Content** — every channel's identity section is
+  now labelled **Brand** (was Sender/App/Site/Website/Profile/Page). The logo control (upload +
+  paste + brand-logo search) is now on **all 12** channels — added to WhatsApp/RCS/SMS (shared
+  `brand.logo`) and to In-App/Game (new Brand section over `notify.appName/appLogo`). Gmail opens
+  on **Content** (per-channel `DEFAULT_SECTION` map in the store; `setChannel` seeds the section).
+  Test: `studio/tests/brand-sections.mjs`. Client-only.
 
 
 
