@@ -53,9 +53,13 @@ async function main() {
   const item = await page.evaluateHandle((nm) => [...document.querySelectorAll('.chpick-item')].find((i) => i.querySelector('.nm')?.textContent.trim() === nm) || null, label)
   await item.asElement().click(); await page.waitForTimeout(250)
 
-  // Content section → HTML mode.
-  const railIdx = (await page.$$eval('.rail-item', (b) => b.map((x) => x.textContent.trim()))).findIndex((t) => /^content$/i.test(t))
-  await (await page.$$('.rail-item'))[railIdx].click(); await page.waitForTimeout(150)
+  // Content section → HTML mode. Gmail now opens on Content by default; only click the rail
+  // item to open it if it isn't already the open section (clicking the open one collapses it).
+  const activeOpen = await page.$eval('.rail-item.on', (el) => el.textContent.trim()).catch(() => '')
+  if (!/content/i.test(activeOpen)) {
+    const railIdx = (await page.$$eval('.rail-item', (b) => b.map((x) => x.textContent.trim()))).findIndex((t) => /^content$/i.test(t))
+    await (await page.$$('.rail-item'))[railIdx].click(); await page.waitForTimeout(150)
+  }
   await page.locator('.seg-in button', { hasText: 'HTML' }).click(); await page.waitForTimeout(150)
   const ta = page.locator('textarea[placeholder^="Paste your full email HTML"]')
 

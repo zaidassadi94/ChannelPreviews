@@ -126,5 +126,5 @@ export const webpushSections: SectionDef[] = [
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'optin', label: 'Opt-in', icon: Icon.context, Panel: OptinPanel },
   { id: 'backdrop', label: 'Backdrop', icon: Icon.context, Panel: BackdropPanel },
-  { id: 'site', label: 'Site', icon: Icon.sender, Panel: SitePanel },
+  { id: 'site', label: 'Brand', icon: Icon.sender, Panel: SitePanel },
 ]

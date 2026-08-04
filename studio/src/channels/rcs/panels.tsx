@@ -67,6 +67,7 @@ function SenderPanel() {
       <label className="field"><span>Business name</span>
         <input type="text" value={brand.name} onChange={(e) => setBrand({ name: e.target.value })} />
       </label>
+      <div className="field"><span>Logo</span><ImageField logo logoQuery={brand.name} value={brand.logo || ''} onChange={(v) => setBrand({ logo: v || null })} placeholder="or paste a logo URL (blank = monogram)" /></div>
       <label className="field"><span>Agent description</span>
         <input type="text" value={brand.desc} onChange={(e) => setBrand({ desc: e.target.value })} />
       </label>
@@ -171,6 +172,6 @@ function ChipsField({ value, onChange }: { value: string; onChange: (v: string) 
 export const rcsSections: SectionDef[] = [
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'conversation', label: 'Chat', icon: Icon.convo, Panel: ConversationPanel },
-  { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
+  { id: 'sender', label: 'Brand', icon: Icon.sender, Panel: SenderPanel },
   { id: 'context', label: 'Context', icon: Icon.context, Panel: ContextPanel },
 ]

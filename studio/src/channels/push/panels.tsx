@@ -162,5 +162,5 @@ export const pushSections: SectionDef[] = [
   { id: 'actions', label: 'Actions', icon: Icon.templates, Panel: ActionsPanel },
   { id: 'surface', label: 'Surface', icon: Icon.context, Panel: SurfacePanel },
   { id: 'optin', label: 'Opt-in', icon: Icon.context, Panel: OptinPanel },
-  { id: 'app', label: 'App', icon: Icon.sender, Panel: AppPanel },
+  { id: 'app', label: 'Brand', icon: Icon.sender, Panel: AppPanel },
 ]

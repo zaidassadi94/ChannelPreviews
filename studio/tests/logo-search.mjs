@@ -42,7 +42,7 @@ async function main() {
   const label = await page.$$eval('.chpick-item .nm', (els) => els.map((e) => e.textContent.trim()).find((t) => /gmail/i.test(t)) || null)
   const item = await page.evaluateHandle((nm) => [...document.querySelectorAll('.chpick-item')].find((i) => i.querySelector('.nm')?.textContent.trim() === nm) || null, label)
   await item.asElement().click(); await page.waitForTimeout(250)
-  const idx = (await page.$$eval('.rail-item', (b) => b.map((x) => x.textContent.trim()))).findIndex((t) => /^sender$/i.test(t))
+  const idx = (await page.$$eval('.rail-item', (b) => b.map((x) => x.textContent.trim()))).findIndex((t) => /^brand$/i.test(t))
   await (await page.$$('.rail-item'))[idx].click(); await page.waitForTimeout(200)
 
   // The logo search box should be present, and its seeded auto-search should surface a result.

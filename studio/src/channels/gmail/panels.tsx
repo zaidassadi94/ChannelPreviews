@@ -136,7 +136,7 @@ function ExtrasPanel() {
 export const gmailSections: SectionDef[] = [
   { id: 'view', label: 'View', icon: Icon.phone, Panel: ViewPanel },
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
-  { id: 'sender', label: 'Sender', icon: Icon.sender, Panel: SenderPanel },
+  { id: 'sender', label: 'Brand', icon: Icon.sender, Panel: SenderPanel },
   { id: 'content', label: 'Content', icon: Icon.convo, Panel: ContentPanel },
   { id: 'extras', label: 'Extras', icon: Icon.templates, Panel: ExtrasPanel },
 ]

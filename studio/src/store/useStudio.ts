@@ -5,6 +5,10 @@ import type { AiMessage } from '@/lib/media'
 let _uid = 1
 export const nid = () => 'm' + _uid++
 
+/** The section a channel opens on when you switch to it (else its first section). Gmail
+    lands on the email Content, not the View toggle. */
+const DEFAULT_SECTION: Record<string, string> = { gmail: 'content' }
+
 export type WAType = 'text' | 'image' | 'template' | 'carousel'
 export interface WAMsg {
   id: string
@@ -398,7 +402,7 @@ export const useStudio = create<StudioState>((set, get) => ({
   webpush: { os: 'mac', site: 'Nova', url: 'nova.shop', logo: null, title: '', body: '', image: '', actions: '', mode: 'notification', bg: 'branded', bgImage: '', blur: false, optinStyle: 'twostep', optinTitle: 'Never miss a drop', optinBody: 'Get browser alerts for new arrivals, restocks and members-only offers.', optinAllow: 'Allow notifications', optinDeny: 'Maybe later' },
   cards: { appName: 'Nova', logo: null, screenTitle: 'Updates', items: [] },
 
-  setChannel: (c) => set({ channel: c, section: '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
+  setChannel: (c) => set({ channel: c, section: DEFAULT_SECTION[c] || '', sim: false, wa: { ...get().wa, played: [] }, msg: clearedPlayed(get().msg) }),
   setSection: (s) => set({ section: s }),
   setPanelOpen: (v) => set({ panelOpen: v }),
   setDevice: (d) => set({ device: d }),

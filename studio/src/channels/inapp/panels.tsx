@@ -118,10 +118,23 @@ function BackgroundPanel() {
   )
 }
 
+function BrandPanel() {
+  const appName = useStudio((s) => s.notify.appName)
+  const appLogo = useStudio((s) => s.notify.appLogo)
+  const setNotify = useStudio((s) => s.setNotify)
+  return (
+    <>
+      <label className="field"><span>App name</span><input type="text" value={appName} onChange={(e) => setNotify({ appName: e.target.value })} /></label>
+      <div className="field"><span>App icon</span><ImageField logo logoQuery={appName} value={appLogo || ''} onChange={(v) => setNotify({ appLogo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
+    </>
+  )
+}
+
 export const inappSections: SectionDef[] = [
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'content', label: 'Content', icon: Icon.convo, Panel: ContentPanel },
   { id: 'buttons', label: 'Buttons', icon: Icon.templates, Panel: ButtonsPanel },
   { id: 'layout', label: 'Layout', icon: Icon.context, Panel: LayoutPanel },
-  { id: 'background', label: 'Background', icon: Icon.sender, Panel: BackgroundPanel },
+  { id: 'background', label: 'Background', icon: Icon.context, Panel: BackgroundPanel },
+  { id: 'brand', label: 'Brand', icon: Icon.sender, Panel: BrandPanel },
 ]

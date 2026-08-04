@@ -1,6 +1,7 @@
 import { useStudio } from '@/store/useStudio'
 import { Icon } from '@/lib/icons'
 import type { SectionDef } from '@/channels/registry'
+import { ImageField } from '@/shell/ImageField'
 import { GAME_TEMPLATES, applyGameTemplate } from './templates'
 
 const GM_TYPES: [string, string][] = [['scratch', 'Scratch'], ['wheel', 'Wheel'], ['box', 'Box'], ['slots', 'Slots']]
@@ -56,8 +57,21 @@ function WheelPanel() {
   )
 }
 
+function BrandPanel() {
+  const appName = useStudio((s) => s.notify.appName)
+  const appLogo = useStudio((s) => s.notify.appLogo)
+  const setNotify = useStudio((s) => s.setNotify)
+  return (
+    <>
+      <label className="field"><span>App name</span><input type="text" value={appName} onChange={(e) => setNotify({ appName: e.target.value })} /></label>
+      <div className="field"><span>App icon</span><ImageField logo logoQuery={appName} value={appLogo || ''} onChange={(v) => setNotify({ appLogo: v || null })} placeholder="or paste an icon URL (blank = monogram)" /></div>
+    </>
+  )
+}
+
 export const gameSections: SectionDef[] = [
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'reward', label: 'Reward', icon: Icon.convo, Panel: RewardPanel },
   { id: 'wheel', label: 'Wheel', icon: Icon.context, Panel: WheelPanel },
+  { id: 'brand', label: 'Brand', icon: Icon.sender, Panel: BrandPanel },
 ]

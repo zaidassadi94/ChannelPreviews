@@ -108,7 +108,7 @@ function MessagePanel() {
 export const osmSections: SectionDef[] = [
   { id: 'templates', label: 'Presets', icon: Icon.templates, Panel: TemplatesPanel },
   { id: 'format', label: 'Format', icon: Icon.phone, Panel: FormatPanel },
-  { id: 'website', label: 'Website', icon: Icon.sender, Panel: WebsitePanel },
+  { id: 'website', label: 'Brand', icon: Icon.sender, Panel: WebsitePanel },
   { id: 'background', label: 'Backdrop', icon: Icon.context, Panel: BackgroundPanel },
   { id: 'message', label: 'Message', icon: Icon.convo, Panel: MessagePanel },
 ]
